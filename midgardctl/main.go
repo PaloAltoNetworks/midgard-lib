@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/aporeto-inc/midgard-client"
+	"github.com/aporeto-inc/midgard-lib/client"
 	"golang.org/x/crypto/pkcs12"
 
 	log "github.com/Sirupsen/logrus"

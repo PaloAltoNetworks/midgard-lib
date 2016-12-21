@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aporeto-inc/midgard-client/models"
+	"github.com/aporeto-inc/midgard-lib/models"
 )
 
 // ExtractJWTFromHeader extracts the JWT from the given http.Header.

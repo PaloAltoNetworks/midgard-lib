@@ -1,6 +1,6 @@
 include domingo.mk
 
-PROJECT_NAME := midgard-client
+PROJECT_NAME := midgard-lib
 
 ci: domingo_contained_build
 

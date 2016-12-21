@@ -3,7 +3,7 @@ package models
 import "fmt"
 import "github.com/aporeto-inc/elemental"
 
-import "github.com/aporeto-inc/midgard/claims"
+import "github.com/aporeto-inc/midgard-lib/claims"
 
 // AuthIdentity represents the Identity of the object
 var AuthIdentity = elemental.Identity{
