@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/aporeto-inc/midgard/client"
+	"github.com/aporeto-inc/midgard-client"
 	"golang.org/x/crypto/pkcs12"
 
 	log "github.com/Sirupsen/logrus"
@@ -87,7 +87,7 @@ func main() {
 // issueFromGoogle issues a new Midgard token from a Google token.
 func issueFromGoogle(url, token string, pretty bool) {
 
-	client := client.NewClient(url)
+	client := midgardclient.NewClient(url)
 	token, err := client.IssueFromGoogle(token)
 
 	if err != nil {
@@ -126,7 +126,7 @@ func issueFromCertificate(url, p12Path, p12Password, CAPath string, pretty bool)
 	pool := x509.NewCertPool()
 	pool.AppendCertsFromPEM(caCert)
 
-	client := client.NewClientWithCAPool(url, pool, nil, true)
+	client := midgardclient.NewClientWithCAPool(url, pool, nil, true)
 
 	token, err := client.IssueFromCertificate([]tls.Certificate{cert})
 	if err != nil {
@@ -140,7 +140,7 @@ func issueFromCertificate(url, p12Path, p12Password, CAPath string, pretty bool)
 // authentify authentifies the given token against Midgard.
 func authentify(url, token string, pretty bool) {
 
-	client := client.NewClient(url)
+	client := midgardclient.NewClient(url)
 
 	_, err := client.Authentify(token)
 	if err != nil {
