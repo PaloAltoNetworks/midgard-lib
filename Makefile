@@ -17,7 +17,7 @@ install_monolithe_plugins:
 	pip install -U 'git+https://github.com/aporeto-inc/elemental.git@${ELEMENTAL_VERSION}#subdirectory=monolithe'
 
 codegen:
-	monogen -o aporeto-inc -r midgard -t ${GITHUB_TOKEN} -p specs -L elemental
+	monogen -f specs -L elemental
 	rm -f models/*.go && cp codegen/elemental/1.0/*.go models
 	rm -rf codegen
 
