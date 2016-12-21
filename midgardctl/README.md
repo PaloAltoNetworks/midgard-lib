@@ -6,7 +6,7 @@ midgardctl is a small command line utilities that uses the Midgard Client to iss
 
 Simply run:
 
-    $ go get github.com/aporeto-inc/midgard-client/midgardctl
+    $ go get github.com/aporeto-inc/midgard-lib/midgardctl
 
 ### Usage
 

@@ -20,7 +20,7 @@ import (
     "log"
 
     "github.com/aporeto-inc/manipulate/maniphttp"
-    "github.com/aporeto-inc/midgard-client"
+    "github.com/aporeto-inc/midgard-lib"
     "golang.org/x/crypto/pkcs12"
 
     gaia "github.com/aporeto-inc/gaia/golang"
