@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/aporeto-inc/midgard/models"
+	"github.com/aporeto-inc/midgard-client/models"
 
 	log "github.com/Sirupsen/logrus"
 )

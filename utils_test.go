@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/aporeto-inc/midgard/models"
+	"github.com/aporeto-inc/midgard-client/models"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
