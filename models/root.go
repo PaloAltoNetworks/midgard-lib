@@ -50,15 +50,15 @@ func (o *Root) Identifier() string {
 	return o.ID
 }
 
-func (o *Root) String() string {
-
-	return fmt.Sprintf("<%s:%s>", o.Identity().Name, o.Identifier())
-}
-
 // SetIdentifier sets the value of the object's unique identifier.
 func (o *Root) SetIdentifier(ID string) {
 
 	o.ID = ID
+}
+
+func (o *Root) String() string {
+
+	return fmt.Sprintf("<%s:%s>", o.Identity().Name, o.Identifier())
 }
 
 // GetCreatedAt returns the createdAt of the receiver

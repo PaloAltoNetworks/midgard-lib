@@ -62,14 +62,14 @@ func (o *Issue) Identifier() string {
 	return ""
 }
 
-func (o *Issue) String() string {
-
-	return fmt.Sprintf("<%s:%s>", o.Identity().Name, o.Identifier())
-}
-
 // SetIdentifier sets the value of the object's unique identifier.
 func (o *Issue) SetIdentifier(ID string) {
 
+}
+
+func (o *Issue) String() string {
+
+	return fmt.Sprintf("<%s:%s>", o.Identity().Name, o.Identifier())
 }
 
 // Validate valides the current information stored into the structure.
