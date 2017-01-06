@@ -62,7 +62,7 @@ func (c *GoogleClaims) FromToken(token string) error {
 		return fmt.Errorf("Audience '%s' is not acceptable.", c.Audience)
 	}
 
-	if !c.VerifyIssuer(JWTGoogleIssuer, false) {
+	if !c.VerifyIssuer(JWTGoogleIssuer, false) && !c.VerifyIssuer("https://"+JWTGoogleIssuer, false) {
 		return fmt.Errorf("Issuer '%s' is not acceptable.", c.Issuer)
 	}
 
