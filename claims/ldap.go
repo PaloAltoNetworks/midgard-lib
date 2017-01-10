@@ -12,12 +12,12 @@ const defaultMultiKeyValue = "true"
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
-	Address      string
-	BindDN       string
-	BindPassword string
-	BaseDN       string
-	Username     string
-	Password     string
+	Address      string `json:"LDAPAddress"`
+	BindDN       string `json:"LDAPBindDN"`
+	BindPassword string `json:"LDAPBindPassword"`
+	BaseDN       string `json:"LDAPBaseDN"`
+	Username     string `json:"LDAPUsername"`
+	Password     string `json:"LDAPPassword"`
 }
 
 // NewLDAPInfo returns a new LDAPInfo, or an error
@@ -46,49 +46,49 @@ func NewLDAPInfo(metadata map[string]interface{}, defaultMetadata map[string]int
 		info.Address = metadata["LDAPAddress"].(string)
 	}
 
-	if _, ok := metadata["bindDN"]; !ok {
-		if _, ok := defaultMetadata["bindDN"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'bindDN'")
+	if _, ok := metadata["LDAPBindDN"]; !ok {
+		if _, ok := defaultMetadata["LDAPBindDN"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'LDAPBindDN'")
 		}
-		info.BindDN = defaultMetadata["bindDN"].(string)
+		info.BindDN = defaultMetadata["LDAPBindDN"].(string)
 	} else {
-		info.BindDN = metadata["bindDN"].(string)
+		info.BindDN = metadata["LDAPBindDN"].(string)
 	}
 
-	if _, ok := metadata["bindPassword"]; !ok {
-		if _, ok := defaultMetadata["bindPassword"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'bindPassword'")
+	if _, ok := metadata["LDAPBindPassword"]; !ok {
+		if _, ok := defaultMetadata["LDAPBindPassword"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'LDAPBindPassword'")
 		}
-		info.BindPassword = defaultMetadata["bindPassword"].(string)
+		info.BindPassword = defaultMetadata["LDAPBindPassword"].(string)
 	} else {
-		info.BindPassword = metadata["bindPassword"].(string)
+		info.BindPassword = metadata["LDAPBindPassword"].(string)
 	}
 
-	if _, ok := metadata["username"]; !ok {
-		if _, ok := defaultMetadata["username"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'username'")
+	if _, ok := metadata["LDAPUsername"]; !ok {
+		if _, ok := defaultMetadata["LDAPUsername"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'LDAPUsername'")
 		}
-		info.Username = defaultMetadata["username"].(string)
+		info.Username = defaultMetadata["LDAPUsername"].(string)
 	} else {
-		info.Username = metadata["username"].(string)
+		info.Username = metadata["LDAPUsername"].(string)
 	}
 
-	if _, ok := metadata["password"]; !ok {
-		if _, ok := defaultMetadata["password"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'password'")
+	if _, ok := metadata["LDAPPassword"]; !ok {
+		if _, ok := defaultMetadata["LDAPPassword"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'LDAPPassword'")
 		}
-		info.Password = defaultMetadata["password"].(string)
+		info.Password = defaultMetadata["LDAPPassword"].(string)
 	} else {
-		info.Password = metadata["password"].(string)
+		info.Password = metadata["LDAPPassword"].(string)
 	}
 
-	if _, ok := metadata["baseDN"]; !ok {
-		if _, ok := defaultMetadata["baseDN"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'baseDN'")
+	if _, ok := metadata["LDAPBaseDN"]; !ok {
+		if _, ok := defaultMetadata["LDAPBaseDN"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'LDAPBaseDN'")
 		}
-		info.BaseDN = defaultMetadata["baseDN"].(string)
+		info.BaseDN = defaultMetadata["LDAPBaseDN"].(string)
 	} else {
-		info.BaseDN = metadata["baseDN"].(string)
+		info.BaseDN = metadata["LDAPBaseDN"].(string)
 	}
 
 	return info, nil
