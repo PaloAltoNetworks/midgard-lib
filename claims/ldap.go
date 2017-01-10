@@ -21,14 +21,15 @@ const (
 
 func findLDAPKey(k string, metadata map[string]interface{}, defaultMetadata map[string]interface{}) (string, error) {
 
-	if _, ok := metadata[k]; !ok {
-		if _, ok := defaultMetadata[k]; !ok {
-			return "", fmt.Errorf("Metadata must contain the key '%s'", k)
-		}
-		return defaultMetadata[k].(string), nil
+	if v, ok := metadata[k]; ok && v.(string) != "" {
+		return v.(string), nil
 	}
 
-	return metadata[k].(string), nil
+	if v, ok := defaultMetadata[k]; ok && v.(string) != "" {
+		return v.(string), nil
+	}
+
+	return "", fmt.Errorf("Metadata must contain the key '%s'", k)
 }
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.

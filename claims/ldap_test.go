@@ -67,6 +67,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPUsername":     "lskywalker",
 			"LDAPPassword":     "secret",
 			"LDAPBaseDN":       "ou=zoupla,dc=toto,dc=com",
+			"LDAPBindDN":       "",
 		}, nil)
 
 		Convey("Then err should not be nil", func() {
