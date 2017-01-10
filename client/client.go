@@ -120,69 +120,11 @@ func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
 		},
 	}
 
-	req := models.NewIssue()
-	req.Realm = models.IssueRealmGoogle
-	req.Data = googleJWT
+	issueRequest := models.NewIssue()
+	issueRequest.Realm = models.IssueRealmGoogle
+	issueRequest.Data = googleJWT
 
-	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(req); err != nil {
-		log.WithFields(log.Fields{
-			"package":     "midgardclient",
-			"error":       err.Error(),
-			"googletoken": googleJWT,
-			"realm":       "google",
-		}).Error("Could not encode request object.")
-		return "", err
-	}
-
-	request, err := http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-		}).Error("Unable to create request.")
-		return "", err
-	}
-	request.Close = true
-
-	resp, err := client.Do(request)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   "google",
-		}).Error("Midgard could not be reached.")
-		return "", err
-	}
-
-	if resp.StatusCode != 200 {
-		log.WithFields(log.Fields{
-			"package":     "midgardclient",
-			"googletoken": googleJWT,
-			"realm":       "google",
-		}).Debug("Midgard could not issue a token.")
-		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
-	}
-
-	defer resp.Body.Close()
-	if err := json.NewDecoder(resp.Body).Decode(req); err != nil {
-		log.WithFields(log.Fields{
-			"package":     "midgardclient",
-			"error":       err.Error(),
-			"googletoken": googleJWT,
-			"realm":       "google",
-		}).Error("Midgard client could not decode the data.")
-		return "", err
-	}
-
-	log.WithFields(log.Fields{
-		"package":     "midgardclient",
-		"googletoken": googleJWT,
-		"token":       req.Token,
-		"realm":       "google",
-	}).Debug("Token successfully issued.")
-
-	return req.Token, nil
+	return a.sendRequest(client, issueRequest)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate.
@@ -199,65 +141,10 @@ func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, e
 		},
 	}
 
-	req := models.NewIssue()
-	req.Realm = models.IssueRealmCertificate
+	issueRequest := models.NewIssue()
+	issueRequest.Realm = models.IssueRealmCertificate
 
-	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(req); err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   "certificate",
-		}).Error("Could not encode request object.")
-		return "", err
-	}
-
-	request, err := http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-		}).Error("Unable to create request.")
-		return "", err
-	}
-	request.Close = true
-
-	resp, err := client.Do(request)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   "certificate",
-		}).Error("Midgard could not be reached.")
-		return "", err
-	}
-
-	if resp.StatusCode != 200 {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   "certificate",
-		}).Debug("Midgard could not issue a token.")
-		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
-	}
-
-	defer resp.Body.Close()
-	if err := json.NewDecoder(resp.Body).Decode(req); err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   "certificate",
-		}).Error("Midgard Client could not decode the data.")
-		return "", err
-	}
-
-	log.WithFields(log.Fields{
-		"package": "midgardclient",
-		"token":   req.Token,
-		"realm":   "certificate",
-	}).Debug("Token successfully issued.")
-
-	return req.Token, nil
+	return a.sendRequest(client, issueRequest)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
@@ -273,15 +160,21 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
 		},
 	}
 
-	req := models.NewIssue()
-	req.Realm = models.IssueRealmLdap
+	issueRequest := models.NewIssue()
+	issueRequest.Metadata = info.ToMap()
+	issueRequest.Realm = models.IssueRealmLdap
+
+	return a.sendRequest(client, issueRequest)
+}
+
+func (a *Client) sendRequest(client *http.Client, issueRequest *models.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(req); err != nil {
+	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
 		log.WithFields(log.Fields{
 			"package": "midgardclient",
 			"error":   err.Error(),
-			"realm":   "certificate",
+			"realm":   issueRequest.Realm,
 		}).Error("Could not encode request object.")
 		return "", err
 	}
@@ -291,6 +184,7 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
 		log.WithFields(log.Fields{
 			"package": "midgardclient",
 			"error":   err.Error(),
+			"realm":   issueRequest.Realm,
 		}).Error("Unable to create request.")
 		return "", err
 	}
@@ -301,7 +195,7 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
 		log.WithFields(log.Fields{
 			"package": "midgardclient",
 			"error":   err.Error(),
-			"realm":   "certificate",
+			"realm":   issueRequest.Realm,
 		}).Error("Midgard could not be reached.")
 		return "", err
 	}
@@ -309,27 +203,26 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
 	if resp.StatusCode != 200 {
 		log.WithFields(log.Fields{
 			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   "certificate",
+			"realm":   issueRequest.Realm,
 		}).Debug("Midgard could not issue a token.")
 		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
-	if err := json.NewDecoder(resp.Body).Decode(req); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(issueRequest); err != nil {
 		log.WithFields(log.Fields{
 			"package": "midgardclient",
 			"error":   err.Error(),
-			"realm":   "certificate",
+			"realm":   issueRequest.Realm,
 		}).Error("Midgard Client could not decode the data.")
 		return "", err
 	}
 
 	log.WithFields(log.Fields{
 		"package": "midgardclient",
-		"token":   req.Token,
-		"realm":   "certificate",
+		"token":   issueRequest.Token,
+		"realm":   issueRequest.Realm,
 	}).Debug("Token successfully issued.")
 
-	return req.Token, nil
+	return issueRequest.Token, nil
 }
