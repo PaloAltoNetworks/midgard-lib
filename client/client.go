@@ -274,7 +274,7 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
 	}
 
 	req := models.NewIssue()
-	req.Realm = models.IssueLdapRealm
+	req.Realm = models.IssueRealmLdap
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(req); err != nil {

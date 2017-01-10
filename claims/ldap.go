@@ -8,7 +8,28 @@ import (
 	ldap "gopkg.in/ldap.v2"
 )
 
-const defaultMultiKeyValue = "true"
+const (
+	defaultMultiKeyValue = "true"
+
+	ldapAddressKey      = "LDAPAddress"
+	ldapBindDNKey       = "LDAPBindDN"
+	ldapBindPasswordKey = "LDAPBindPassword"
+	ldapUsernameKey     = "LDAPUsername"
+	ldapPasswordKey     = "LDAPPassword"
+	ldapBaseDNKey       = "LDAPBaseDN"
+)
+
+func findLDAPKey(k string, metadata map[string]interface{}, defaultMetadata map[string]interface{}) (string, error) {
+
+	if _, ok := metadata[k]; !ok {
+		if _, ok := defaultMetadata[k]; !ok {
+			return "", fmt.Errorf("Metadata must contain the key '%s'", k)
+		}
+		return defaultMetadata[k].(string), nil
+	}
+
+	return metadata[k].(string), nil
+}
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
@@ -37,61 +58,52 @@ func NewLDAPInfo(metadata map[string]interface{}, defaultMetadata map[string]int
 
 	info := &LDAPInfo{}
 
-	if _, ok := metadata["LDAPAddress"]; !ok {
-		if _, ok := defaultMetadata["LDAPAddress"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'LDAPAddress'")
-		}
-		info.Address = defaultMetadata["LDAPAddress"].(string)
-	} else {
-		info.Address = metadata["LDAPAddress"].(string)
+	var err error
+
+	info.Address, err = findLDAPKey(ldapAddressKey, metadata, defaultMetadata)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, ok := metadata["LDAPBindDN"]; !ok {
-		if _, ok := defaultMetadata["LDAPBindDN"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'LDAPBindDN'")
-		}
-		info.BindDN = defaultMetadata["LDAPBindDN"].(string)
-	} else {
-		info.BindDN = metadata["LDAPBindDN"].(string)
+	info.BindDN, err = findLDAPKey(ldapBindDNKey, metadata, defaultMetadata)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, ok := metadata["LDAPBindPassword"]; !ok {
-		if _, ok := defaultMetadata["LDAPBindPassword"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'LDAPBindPassword'")
-		}
-		info.BindPassword = defaultMetadata["LDAPBindPassword"].(string)
-	} else {
-		info.BindPassword = metadata["LDAPBindPassword"].(string)
+	info.BindPassword, err = findLDAPKey(ldapBindPasswordKey, metadata, defaultMetadata)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, ok := metadata["LDAPUsername"]; !ok {
-		if _, ok := defaultMetadata["LDAPUsername"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'LDAPUsername'")
-		}
-		info.Username = defaultMetadata["LDAPUsername"].(string)
-	} else {
-		info.Username = metadata["LDAPUsername"].(string)
+	info.Username, err = findLDAPKey(ldapUsernameKey, metadata, defaultMetadata)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, ok := metadata["LDAPPassword"]; !ok {
-		if _, ok := defaultMetadata["LDAPPassword"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'LDAPPassword'")
-		}
-		info.Password = defaultMetadata["LDAPPassword"].(string)
-	} else {
-		info.Password = metadata["LDAPPassword"].(string)
+	info.Password, err = findLDAPKey(ldapPasswordKey, metadata, defaultMetadata)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, ok := metadata["LDAPBaseDN"]; !ok {
-		if _, ok := defaultMetadata["LDAPBaseDN"]; !ok {
-			return nil, fmt.Errorf("Metadata must contain the key 'LDAPBaseDN'")
-		}
-		info.BaseDN = defaultMetadata["LDAPBaseDN"].(string)
-	} else {
-		info.BaseDN = metadata["LDAPBaseDN"].(string)
+	info.BaseDN, err = findLDAPKey(ldapBaseDNKey, metadata, defaultMetadata)
+	if err != nil {
+		return nil, err
 	}
 
 	return info, nil
+}
+
+// ToMap convert the LDAPInfo into a map[string]interface{}.
+func (i *LDAPInfo) ToMap() map[string]interface{} {
+
+	return map[string]interface{}{
+		ldapAddressKey:      i.Address,
+		ldapBindDNKey:       i.BindDN,
+		ldapBindPasswordKey: i.BindPassword,
+		ldapUsernameKey:     i.Username,
+		ldapPasswordKey:     i.Password,
+		ldapBaseDNKey:       i.BaseDN,
+	}
 }
 
 // LDAPClaims represents the claims used by a LDAP.
