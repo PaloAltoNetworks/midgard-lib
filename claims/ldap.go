@@ -9,6 +9,54 @@ import (
 	ldap "gopkg.in/ldap.v2"
 )
 
+// LDAPInfo holds information to authenticate a user using an LDAP Server.
+type LDAPInfo struct {
+	Address      string
+	BindDN       string
+	BindPassword string
+	BaseDN       string
+	Username     string
+	Password     string
+}
+
+// NewLDAPInfo returns a new LDAPInfo, or an error
+func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
+
+	info := &LDAPInfo{}
+
+	if _, ok := metadata["LDAPAddress"]; !ok {
+		return nil, fmt.Errorf("Metadata must contain the key 'LDAPAddress'")
+	}
+	info.Address = metadata["LDAPAddress"].(string)
+
+	if _, ok := metadata["bindDN"]; !ok {
+		return nil, fmt.Errorf("Metadata must contain the key 'bindDN'")
+	}
+	info.BindDN = metadata["bindDN"].(string)
+
+	if _, ok := metadata["bindPassword"]; !ok {
+		return nil, fmt.Errorf("Metadata must contain the key 'bindPassword'")
+	}
+	info.BindPassword = metadata["bindPassword"].(string)
+
+	if _, ok := metadata["username"]; !ok {
+		return nil, fmt.Errorf("Metadata must contain the key 'username'")
+	}
+	info.Username = metadata["username"].(string)
+
+	if _, ok := metadata["password"]; !ok {
+		return nil, fmt.Errorf("Metadata must contain the key 'password'")
+	}
+	info.Password = metadata["password"].(string)
+
+	if _, ok := metadata["baseDN"]; !ok {
+		return nil, fmt.Errorf("Metadata must contain the key 'baseDN'")
+	}
+	info.BaseDN = metadata["baseDN"].(string)
+
+	return info, nil
+}
+
 // LDAPClaims represents the claims used by a LDAP.
 type LDAPClaims struct {
 	Attributes map[string]string
@@ -20,95 +68,96 @@ type LDAPClaims struct {
 func NewLDAPClaims() *LDAPClaims {
 
 	return &LDAPClaims{
-		StandardClaims: jwt.StandardClaims{},
 		Attributes:     map[string]string{},
+		StandardClaims: jwt.StandardClaims{},
 	}
 }
 
-// FromMetadata verifies and returns the ldap claims for the given metadata.
-func (c *LDAPClaims) FromMetadata(metadata map[string]interface{}) error {
+// FromLDAPINfo verifies and returns the ldap claims for the given metadata.
+func (c *LDAPClaims) FromLDAPINfo(info *LDAPInfo) error {
 
-	var LDAPAddress string
-	var bindDN string
-	var bindPassword string
-	var baseDN string
-	var username string
-	var password string
-
-	if _, ok := metadata["LDAPAddress"]; !ok {
-		return fmt.Errorf("Metadata must contain the key 'LDAPAddress'")
+	if info == nil {
+		return fmt.Errorf("LDAPInfo cannot be nil")
 	}
-	LDAPAddress = metadata["LDAPAddress"].(string)
 
-	if _, ok := metadata["bindDN"]; !ok {
-		return fmt.Errorf("Metadata must contain the key 'bindDN'")
-	}
-	bindDN = metadata["bindDN"].(string)
-
-	if _, ok := metadata["bindPassword"]; !ok {
-		return fmt.Errorf("Metadata must contain the key 'bindPassword'")
-	}
-	bindPassword = metadata["bindPassword"].(string)
-
-	if _, ok := metadata["username"]; !ok {
-		return fmt.Errorf("Metadata must contain the key 'username'")
-	}
-	username = metadata["username"].(string)
-
-	if _, ok := metadata["password"]; !ok {
-		return fmt.Errorf("Metadata must contain the key 'password'")
-	}
-	password = metadata["password"].(string)
-
-	if _, ok := metadata["baseDN"]; !ok {
-		return fmt.Errorf("Metadata must contain the key 'baseDN'")
-	}
-	baseDN = metadata["baseDN"].(string)
-
-	l, err := ldap.Dial("tcp", LDAPAddress)
+	entry, err := c.retrieveEntry(info)
 	if err != nil {
 		return err
 	}
+
+	return c.populateClaim(entry)
+}
+
+// ToMidgardClaims returns the MidgardClaims from google claims.
+func (c *LDAPClaims) ToMidgardClaims() *MidgardClaims {
+
+	now := time.Now()
+
+	return &MidgardClaims{
+		StandardClaims: jwt.StandardClaims{
+			Audience:  JWTAudience,
+			Issuer:    JWTIssuer,
+			ExpiresAt: now.Add(JWTValidity).Unix(),
+			IssuedAt:  now.Unix(),
+			Subject:   c.Subject,
+		},
+		Realm: "LDAP",
+		Data:  c.Attributes,
+	}
+}
+
+func (c *LDAPClaims) retrieveEntry(info *LDAPInfo) (*ldap.Entry, error) {
+
+	l, err := ldap.Dial("tcp", info.Address)
+	if err != nil {
+		return nil, err
+	}
 	defer l.Close()
 
-	if err = l.Bind(bindDN, bindPassword); err != nil {
-		return err
+	if err = l.Bind(info.BindDN, info.BindPassword); err != nil {
+		return nil, err
 	}
 
 	// Search for the given username
 	searchRequest := ldap.NewSearchRequest(
-		baseDN,
+		info.BaseDN,
 		ldap.ScopeWholeSubtree,
 		ldap.NeverDerefAliases,
 		0,
 		0,
 		false,
-		fmt.Sprintf("(&(uid=%s))", username),
+		fmt.Sprintf("(&(uid=%s))", info.Username),
 		nil,
 		nil,
 	)
 
 	sr, err := l.Search(searchRequest)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(sr.Entries) != 1 {
-		return fmt.Errorf("User does not exist or too many entries returned")
+		return nil, fmt.Errorf("User does not exist or too many entries returned")
 	}
 
-	entry := sr.Entries[0]
-	if err = l.Bind(entry.DN, password); err != nil {
-		return err
-	}
+	return sr.Entries[0], nil
+}
+
+func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
+
+	var subOrgs []string
+	var organization string
+	var subject string
 
 	dns, err := ldap.ParseDN(entry.DN)
 	if err != nil {
 		return err
 	}
 
-	var subOrgs []string
-	var organization string
+	if subject = entry.GetAttributeValue("uid"); subject == "" {
+		return fmt.Errorf("Unable to find uid in LDAP entry")
+	}
+	c.Subject = subject
 
 	for _, rdn := range dns.RDNs {
 		attr := rdn.Attributes[0]
@@ -139,7 +188,7 @@ func (c *LDAPClaims) FromMetadata(metadata map[string]interface{}) error {
 			continue
 		}
 
-		if attr.Values[0] == "" {
+		if len(attr.Values) == 0 || attr.Values[0] == "" {
 			continue
 		}
 
@@ -147,22 +196,4 @@ func (c *LDAPClaims) FromMetadata(metadata map[string]interface{}) error {
 	}
 
 	return nil
-}
-
-// ToMidgardClaims returns the MidgardClaims from google claims.
-func (c *LDAPClaims) ToMidgardClaims() *MidgardClaims {
-
-	now := time.Now()
-
-	return &MidgardClaims{
-		StandardClaims: jwt.StandardClaims{
-			Audience:  JWTAudience,
-			Issuer:    JWTIssuer,
-			ExpiresAt: now.Add(JWTValidity).Unix(),
-			IssuedAt:  now.Unix(),
-			Subject:   c.Subject,
-		},
-		Realm: "LDAP",
-		Data:  c.Attributes,
-	}
 }
