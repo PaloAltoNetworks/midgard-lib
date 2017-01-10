@@ -83,7 +83,7 @@ func NewLDAPInfo(metadata map[string]interface{}, defaultMetadata map[string]int
 	}
 
 	if _, ok := metadata["baseDN"]; !ok {
-		if _, ok := defaultMetadata["password"]; !ok {
+		if _, ok := defaultMetadata["baseDN"]; !ok {
 			return nil, fmt.Errorf("Metadata must contain the key 'baseDN'")
 		}
 		info.BaseDN = defaultMetadata["baseDN"].(string)
