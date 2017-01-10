@@ -2,6 +2,7 @@ package claims
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -10,12 +11,7 @@ import (
 
 // LDAPClaims represents the claims used by a LDAP.
 type LDAPClaims struct {
-	Organizations       []string
-	OrganizationalUnits []string
-	CommonName          string
-	Email               string
-	GivenName           string
-	FamilyName          string
+	Attributes map[string]string
 
 	jwt.StandardClaims
 }
@@ -24,9 +20,8 @@ type LDAPClaims struct {
 func NewLDAPClaims() *LDAPClaims {
 
 	return &LDAPClaims{
-		StandardClaims:      jwt.StandardClaims{},
-		Organizations:       []string{},
-		OrganizationalUnits: []string{},
+		StandardClaims: jwt.StandardClaims{},
+		Attributes:     map[string]string{},
 	}
 }
 
@@ -114,6 +109,7 @@ func (c *LDAPClaims) FromMetadata(metadata map[string]interface{}) error {
 
 	var subOrgs []string
 	var organization string
+
 	for _, rdn := range dns.RDNs {
 		attr := rdn.Attributes[0]
 		if attr.Type == "ou" {
@@ -128,14 +124,27 @@ func (c *LDAPClaims) FromMetadata(metadata map[string]interface{}) error {
 		}
 	}
 
-	c.OrganizationalUnits = subOrgs
-	c.Organizations = []string{organization}
-	c.CommonName = entry.GetAttributeValue("uid")
-	c.GivenName = entry.GetAttributeValue("cn")
-	c.FamilyName = entry.GetAttributeValue("sn")
-	c.Email = entry.GetAttributeValue("mail")
-	c.Subject = entry.GetAttributeValue("uidNumber")
-	c.IssuedAt = time.Now().Unix()
+	if len(subOrgs) > 0 {
+		c.Attributes["organizationalUnit"] = subOrgs[0]
+	}
+
+	if organization != "" {
+		c.Attributes["organization"] = organization
+	}
+
+	c.Attributes["dn"] = strings.Replace(entry.DN, " ", "_", -1)
+
+	for _, attr := range entry.Attributes {
+		if attr.Name == "userPassword" || attr.Name == "objectClass" {
+			continue
+		}
+
+		if attr.Values[0] == "" {
+			continue
+		}
+
+		c.Attributes[attr.Name] = strings.Replace(attr.Values[0], " ", "_", -1)
+	}
 
 	return nil
 }
@@ -154,13 +163,6 @@ func (c *LDAPClaims) ToMidgardClaims() *MidgardClaims {
 			Subject:   c.Subject,
 		},
 		Realm: "LDAP",
-		Data: map[string]string{
-			"commonName":         c.CommonName,
-			"organization":       c.Organizations[0],
-			"organizationalUnit": c.OrganizationalUnits[0],
-			"givenName":          c.GivenName,
-			"familyName":         c.FamilyName,
-			"email":              c.Email,
-		},
+		Data:  c.Attributes,
 	}
 }
