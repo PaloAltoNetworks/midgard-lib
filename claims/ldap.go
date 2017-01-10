@@ -8,6 +8,8 @@ import (
 	ldap "gopkg.in/ldap.v2"
 )
 
+const defaultMultiKeyValue = "true"
+
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
 	Address      string
@@ -19,39 +21,75 @@ type LDAPInfo struct {
 }
 
 // NewLDAPInfo returns a new LDAPInfo, or an error
-func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
+func NewLDAPInfo(metadata map[string]interface{}, defaultMetadata map[string]interface{}) (*LDAPInfo, error) {
+
+	if metadata == nil && defaultMetadata == nil {
+		return nil, fmt.Errorf("You must provide at least metadata or defaultMetdata")
+	}
+
+	if metadata == nil {
+		metadata = map[string]interface{}{}
+	}
+
+	if defaultMetadata == nil {
+		defaultMetadata = map[string]interface{}{}
+	}
 
 	info := &LDAPInfo{}
 
 	if _, ok := metadata["LDAPAddress"]; !ok {
-		return nil, fmt.Errorf("Metadata must contain the key 'LDAPAddress'")
+		if _, ok := defaultMetadata["LDAPAddress"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'LDAPAddress'")
+		}
+		info.Address = defaultMetadata["LDAPAddress"].(string)
+	} else {
+		info.Address = metadata["LDAPAddress"].(string)
 	}
-	info.Address = metadata["LDAPAddress"].(string)
 
 	if _, ok := metadata["bindDN"]; !ok {
-		return nil, fmt.Errorf("Metadata must contain the key 'bindDN'")
+		if _, ok := defaultMetadata["bindDN"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'bindDN'")
+		}
+		info.BindDN = defaultMetadata["bindDN"].(string)
+	} else {
+		info.BindDN = metadata["bindDN"].(string)
 	}
-	info.BindDN = metadata["bindDN"].(string)
 
 	if _, ok := metadata["bindPassword"]; !ok {
-		return nil, fmt.Errorf("Metadata must contain the key 'bindPassword'")
+		if _, ok := defaultMetadata["bindPassword"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'bindPassword'")
+		}
+		info.BindPassword = defaultMetadata["bindPassword"].(string)
+	} else {
+		info.BindPassword = metadata["bindPassword"].(string)
 	}
-	info.BindPassword = metadata["bindPassword"].(string)
 
 	if _, ok := metadata["username"]; !ok {
-		return nil, fmt.Errorf("Metadata must contain the key 'username'")
+		if _, ok := defaultMetadata["username"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'username'")
+		}
+		info.Username = defaultMetadata["username"].(string)
+	} else {
+		info.Username = metadata["username"].(string)
 	}
-	info.Username = metadata["username"].(string)
 
 	if _, ok := metadata["password"]; !ok {
-		return nil, fmt.Errorf("Metadata must contain the key 'password'")
+		if _, ok := defaultMetadata["password"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'password'")
+		}
+		info.Password = defaultMetadata["password"].(string)
+	} else {
+		info.Password = metadata["password"].(string)
 	}
-	info.Password = metadata["password"].(string)
 
 	if _, ok := metadata["baseDN"]; !ok {
-		return nil, fmt.Errorf("Metadata must contain the key 'baseDN'")
+		if _, ok := defaultMetadata["password"]; !ok {
+			return nil, fmt.Errorf("Metadata must contain the key 'baseDN'")
+		}
+		info.BaseDN = defaultMetadata["baseDN"].(string)
+	} else {
+		info.BaseDN = metadata["baseDN"].(string)
 	}
-	info.BaseDN = metadata["baseDN"].(string)
 
 	return info, nil
 }
@@ -144,8 +182,6 @@ func (c *LDAPClaims) retrieveEntry(info *LDAPInfo) (*ldap.Entry, error) {
 
 func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
 
-	var subOrgs []string
-	var organization string
 	var subject string
 
 	dns, err := ldap.ParseDN(entry.DN)
@@ -161,23 +197,11 @@ func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
 	for _, rdn := range dns.RDNs {
 		attr := rdn.Attributes[0]
 		if attr.Type == "ou" {
-			subOrgs = append(subOrgs, attr.Value)
+			c.Attributes["ou:"+attr.Value] = defaultMultiKeyValue
 		}
 		if attr.Type == "dc" {
-			if len(organization) == 0 {
-				organization = attr.Value
-			} else {
-				organization = organization + "." + attr.Value
-			}
+			c.Attributes["dc:"+attr.Value] = defaultMultiKeyValue
 		}
-	}
-
-	if len(subOrgs) > 0 {
-		c.Attributes["organizationalUnit"] = subOrgs[0]
-	}
-
-	if organization != "" {
-		c.Attributes["organization"] = organization
 	}
 
 	c.Attributes["dn"] = entry.DN
@@ -191,7 +215,13 @@ func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
 			continue
 		}
 
-		c.Attributes[attr.Name] = attr.Values[0]
+		if len(attr.Values) == 1 {
+			c.Attributes[attr.Name] = attr.Values[0]
+		} else {
+			for _, v := range attr.Values {
+				c.Attributes[attr.Name+":"+v] = defaultMultiKeyValue
+			}
+		}
 	}
 
 	return nil
