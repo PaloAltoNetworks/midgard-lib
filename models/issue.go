@@ -40,6 +40,9 @@ type Issue struct {
 	// Data contains additional data. The value depends on the issuer type.
 	Data string `json:"data" cql:"data,omitempty" bson:"data"`
 
+	// Metadata contains various additional information. Meaning depends on the realm.
+	Metadata map[string]interface{} `json:"metadata" cql:"-" bson:"-"`
+
 	// Realm is the realm
 	Realm IssueRealmValue `json:"realm" cql:"-" bson:"-"`
 
@@ -50,7 +53,9 @@ type Issue struct {
 // NewIssue returns a new *Issue
 func NewIssue() *Issue {
 
-	return &Issue{}
+	return &Issue{
+		Metadata: map[string]interface{}{},
+	}
 }
 
 // Identity returns the Identity of the object.
@@ -115,6 +120,15 @@ var IssueAttributesMap = map[string]elemental.AttributeSpecification{
 		Orderable:      true,
 		Stored:         true,
 		Type:           "string",
+	},
+	"Metadata": elemental.AttributeSpecification{
+		AllowedChoices: []string{},
+		Description:    `Metadata contains various additional information. Meaning depends on the realm.`,
+		Exposed:        true,
+		Name:           "metadata",
+		Orderable:      true,
+		SubType:        "metadata",
+		Type:           "external",
 	},
 	"Realm": elemental.AttributeSpecification{
 		AllowedChoices: []string{"Certificate", "Facebook", "Github", "Google", "LDAP", "Twitter"},
