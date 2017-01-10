@@ -35,7 +35,7 @@ func normalizeAuth(a *models.Auth) []string {
 	}
 
 	for key, value := range a.Claims.Data {
-		ret = append(ret, "auth:"+strings.ToLower(key)+"="+strings.Replace(value, " ", "_", -1))
+		ret = append(ret, "auth:"+strings.ToLower(key)+"="+value)
 	}
 
 	return ret

@@ -2,7 +2,6 @@ package claims
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -181,7 +180,7 @@ func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
 		c.Attributes["organization"] = organization
 	}
 
-	c.Attributes["dn"] = strings.Replace(entry.DN, " ", "_", -1)
+	c.Attributes["dn"] = entry.DN
 
 	for _, attr := range entry.Attributes {
 		if attr.Name == "userPassword" || attr.Name == "objectClass" {
@@ -192,7 +191,7 @@ func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
 			continue
 		}
 
-		c.Attributes[attr.Name] = strings.Replace(attr.Values[0], " ", "_", -1)
+		c.Attributes[attr.Name] = attr.Values[0]
 	}
 
 	return nil
