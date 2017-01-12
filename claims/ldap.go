@@ -2,8 +2,10 @@ package claims
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/aporeto-inc/elemental"
 	jwt "github.com/dgrijalva/jwt-go"
 	ldap "gopkg.in/ldap.v2"
 )
@@ -187,10 +189,16 @@ func (c *LDAPClaims) retrieveEntry(info *LDAPInfo) (*ldap.Entry, error) {
 	}
 
 	if len(sr.Entries) != 1 {
-		return nil, fmt.Errorf("User does not exist or too many entries returned")
+		return nil, elemental.NewError("Invalid user", "User does not exist", "midgard", http.StatusUnauthorized)
 	}
 
-	return sr.Entries[0], nil
+	entry := sr.Entries[0]
+
+	if err = l.Bind(entry.DN, info.Password); err != nil {
+		return nil, elemental.NewError("Invalid user", "User does not exist", "midgard", http.StatusUnauthorized)
+	}
+
+	return entry, nil
 }
 
 func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
