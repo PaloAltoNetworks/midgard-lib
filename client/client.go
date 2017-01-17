@@ -11,8 +11,13 @@ import (
 	"github.com/aporeto-inc/midgard-lib/claims"
 	"github.com/aporeto-inc/midgard-lib/models"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 )
+
+// Logger is the main logger for midgard client.
+var Logger = logrus.New()
+
+var log = Logger.WithField("package", "github.com/aporeto-inc/midgard/client")
 
 // A Client allows to interract with a midgard server.
 type Client struct {
@@ -64,9 +69,8 @@ func (a *Client) Authentify(token string) ([]string, error) {
 
 	request, err := http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
 		}).Error("Unable to create request.")
 		return nil, err
 	}
@@ -74,17 +78,15 @@ func (a *Client) Authentify(token string) ([]string, error) {
 
 	resp, err := client.Do(request)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
 		}).Error("Midgard could not be reached.")
 		return nil, err
 	}
 
 	if resp.StatusCode != 200 {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"token":   token,
+		log.WithFields(logrus.Fields{
+			"token": token,
 		}).Debug("Midgard rejected the token.")
 		return nil, fmt.Errorf("Unauthorized.")
 	}
@@ -93,16 +95,14 @@ func (a *Client) Authentify(token string) ([]string, error) {
 
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(auth); err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
 		}).Error("Could not decode json.")
 		return nil, err
 	}
 
-	log.WithFields(log.Fields{
-		"package": "midgardclient",
-		"token":   token,
+	log.WithFields(logrus.Fields{
+		"token": token,
 	}).Debug("Successfully authenticated.")
 
 	return normalizeAuth(auth), nil
@@ -171,20 +171,18 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *models.Issue) (s
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   issueRequest.Realm,
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
+			"realm": issueRequest.Realm,
 		}).Error("Could not encode request object.")
 		return "", err
 	}
 
 	request, err := http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   issueRequest.Realm,
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
+			"realm": issueRequest.Realm,
 		}).Error("Unable to create request.")
 		return "", err
 	}
@@ -192,36 +190,32 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *models.Issue) (s
 
 	resp, err := client.Do(request)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   issueRequest.Realm,
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
+			"realm": issueRequest.Realm,
 		}).Error("Midgard could not be reached.")
 		return "", err
 	}
 
 	if resp.StatusCode != 200 {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"realm":   issueRequest.Realm,
+		log.WithFields(logrus.Fields{
+			"realm": issueRequest.Realm,
 		}).Debug("Midgard could not issue a token.")
 		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(issueRequest); err != nil {
-		log.WithFields(log.Fields{
-			"package": "midgardclient",
-			"error":   err.Error(),
-			"realm":   issueRequest.Realm,
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
+			"realm": issueRequest.Realm,
 		}).Error("Midgard Client could not decode the data.")
 		return "", err
 	}
 
-	log.WithFields(log.Fields{
-		"package": "midgardclient",
-		"token":   issueRequest.Token,
-		"realm":   issueRequest.Realm,
+	log.WithFields(logrus.Fields{
+		"token": issueRequest.Token,
+		"realm": issueRequest.Realm,
 	}).Debug("Token successfully issued.")
 
 	return issueRequest.Token, nil
