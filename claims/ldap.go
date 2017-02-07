@@ -1,8 +1,10 @@
 package claims
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/aporeto-inc/elemental"
@@ -165,6 +167,10 @@ func (c *LDAPClaims) retrieveEntry(info *LDAPInfo) (*ldap.Entry, error) {
 		return nil, err
 	}
 	defer l.Close()
+
+	if err = l.StartTLS(&tls.Config{ServerName: strings.Split(info.Address, ":")[0]}); err != nil {
+		return nil, err
+	}
 
 	if err = l.Bind(info.BindDN, info.BindPassword); err != nil {
 		return nil, err
