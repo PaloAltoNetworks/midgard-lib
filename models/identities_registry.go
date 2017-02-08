@@ -23,3 +23,13 @@ func IdentifiableForIdentity(identity string) elemental.Identifiable {
 		return nil
 	}
 }
+
+// AllIdentities returns all existing identities.
+func AllIdentities() []elemental.Identity {
+
+	return []elemental.Identity{
+		RootIdentity,
+		IssueIdentity,
+		AuthIdentity,
+	}
+}

@@ -24,6 +24,9 @@ const (
 
 	// IssueRealmTwitter represents the value Twitter.
 	IssueRealmTwitter IssueRealmValue = "Twitter"
+
+	// IssueRealmAporeto represents the value Aporeto.
+	IssueRealmAporeto IssueRealmValue = "Aporeto"
 )
 
 // IssueIdentity represents the Identity of the object
@@ -85,7 +88,7 @@ func (o *Issue) Validate() error {
 
 	errors := elemental.Errors{}
 
-	if err := elemental.ValidateStringInList("realm", string(o.Realm), []string{"Certificate", "Facebook", "Github", "Google", "LDAP", "Twitter"}, false); err != nil {
+	if err := elemental.ValidateStringInList("realm", string(o.Realm), []string{"Certificate", "Facebook", "Github", "Google", "LDAP", "Twitter", "Aporeto"}, false); err != nil {
 		errors = append(errors, err)
 	}
 
@@ -131,7 +134,7 @@ var IssueAttributesMap = map[string]elemental.AttributeSpecification{
 		Type:           "external",
 	},
 	"Realm": elemental.AttributeSpecification{
-		AllowedChoices: []string{"Certificate", "Facebook", "Github", "Google", "LDAP", "Twitter"},
+		AllowedChoices: []string{"Certificate", "Facebook", "Github", "Google", "LDAP", "Twitter", "Aporeto"},
 		Description:    `Realm is the realm`,
 		Exposed:        true,
 		Name:           "realm",
