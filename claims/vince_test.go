@@ -1,6 +1,9 @@
 package claims
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -26,6 +29,11 @@ func TestVinceClaims_FromMetadata(t *testing.T) {
 
 	Convey("Given I have a Vince claim", t, func() {
 
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("ok")
+		}))
+		defer ts.Close()
+
 		c := NewVinceClaims()
 
 		Convey("When I call FromMetadata using valid metadata", func() {
@@ -35,7 +43,7 @@ func TestVinceClaims_FromMetadata(t *testing.T) {
 				"vincePassword": "secret",
 			}
 
-			err := c.fromMetadata(m)
+			err := c.FromMetadata(m, ts.URL, nil)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -48,7 +56,7 @@ func TestVinceClaims_FromMetadata(t *testing.T) {
 				"vincePassword": "secret",
 			}
 
-			err := c.fromMetadata(m)
+			err := c.FromMetadata(m, "--ignore--", nil)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -62,7 +70,7 @@ func TestVinceClaims_FromMetadata(t *testing.T) {
 				"vinceAccount": "aporeto",
 			}
 
-			err := c.fromMetadata(m)
+			err := c.FromMetadata(m, "--ignore--", nil)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -82,7 +90,7 @@ func TestVinceClaims_ToMidgardClaims(t *testing.T) {
 			"vincePassword": "secret",
 		}
 
-		c.fromMetadata(m)
+		c.FromMetadata(m, "--ignore--", nil)
 
 		Convey("When I run ToMidgardClaims()", func() {
 

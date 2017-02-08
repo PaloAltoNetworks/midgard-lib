@@ -1,9 +1,13 @@
 package claims
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/aporeto-inc/elemental"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
@@ -37,7 +41,8 @@ func NewVinceClaims() *VinceClaims {
 	}
 }
 
-func (c *VinceClaims) fromMetadata(metadata map[string]interface{}) error {
+// FromMetadata reads the claims from metadata.
+func (c *VinceClaims) FromMetadata(metadata map[string]interface{}, vinceURL string, certPool *x509.CertPool) error {
 
 	var err error
 
@@ -50,6 +55,40 @@ func (c *VinceClaims) fromMetadata(metadata map[string]interface{}) error {
 	c.Password, err = findVinceKey(vincePasswordKey, metadata)
 	if err != nil {
 		return err
+	}
+
+	if err := c.authentify(vinceURL, certPool); err != nil {
+		return elemental.NewError("Not Authorized", "Authentication failed", "midgard", http.StatusUnauthorized)
+	}
+
+	return nil
+}
+
+func (c *VinceClaims) authentify(vinceURL string, certPool *x509.CertPool) error {
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: false,
+				RootCAs:            certPool,
+			},
+		},
+	}
+
+	request, err := http.NewRequest(http.MethodGet, vinceURL+"/accounts", nil)
+	request.Header.Set("Authorization", c.Account+" "+c.Password)
+	if err != nil {
+		return err
+	}
+	request.Close = true
+
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Unauthorized.")
 	}
 
 	return nil

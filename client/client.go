@@ -167,6 +167,26 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
 	return a.sendRequest(client, issueRequest)
 }
 
+// IssueFromVince issues a Midgard jwt from a Vince.
+func (a *Client) IssueFromVince(account string, password string) (string, error) {
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: a.skipVerify,
+				ClientCAs:          a.clientCAPool,
+				RootCAs:            a.rootCAPool,
+			},
+		},
+	}
+
+	issueRequest := models.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password}
+	issueRequest.Realm = models.IssueRealmVince
+
+	return a.sendRequest(client, issueRequest)
+}
+
 func (a *Client) sendRequest(client *http.Client, issueRequest *models.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
