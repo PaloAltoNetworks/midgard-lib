@@ -14,6 +14,7 @@ type CertificateClaims struct {
 	OrganizationalUnits []string
 	CommonName          string
 	Email               string
+	SerialNumber        string
 
 	jwt.StandardClaims
 }
@@ -45,6 +46,7 @@ func (c *CertificateClaims) FromCertificate(certificate *x509.Certificate) error
 	c.Subject = certificate.SerialNumber.String()
 	c.IssuedAt = time.Now().Unix()
 	c.ExpiresAt = certificate.NotAfter.Unix()
+	c.SerialNumber = certificate.SerialNumber.String()
 
 	return nil
 }
@@ -57,6 +59,7 @@ func (c *CertificateClaims) ToMidgardClaims() *MidgardClaims {
 	data := map[string]string{
 		"commonName":   c.CommonName,
 		"organization": c.Organizations[0],
+		"serialNumber": c.SerialNumber,
 	}
 
 	if c.OrganizationalUnits != nil && len(c.OrganizationalUnits) > 0 {
