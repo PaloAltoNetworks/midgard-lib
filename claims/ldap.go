@@ -195,13 +195,13 @@ func (c *LDAPClaims) retrieveEntry(info *LDAPInfo) (*ldap.Entry, error) {
 	}
 
 	if len(sr.Entries) != 1 {
-		return nil, elemental.NewError("Invalid user", "User does not exist", "midgard", http.StatusUnauthorized)
+		return nil, elemental.NewError("Forbidden", "Invalid login or password", "midgard", http.StatusUnauthorized)
 	}
 
 	entry := sr.Entries[0]
 
 	if err = l.Bind(entry.DN, info.Password); err != nil {
-		return nil, elemental.NewError("Incorrect password", "Password provided is incorrect", "midgard", http.StatusUnauthorized)
+		return nil, elemental.NewError("Forbidden", "Invalid login or password", "midgard", http.StatusUnauthorized)
 	}
 
 	return entry, nil
