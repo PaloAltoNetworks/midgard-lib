@@ -74,7 +74,6 @@ func (a *Client) Authentify(token string) ([]string, error) {
 		}).Error("Unable to create request.")
 		return nil, err
 	}
-	request.Close = true
 
 	resp, err := client.Do(request)
 	if err != nil {
@@ -206,7 +205,6 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *models.Issue) (s
 		}).Error("Unable to create request.")
 		return "", err
 	}
-	request.Close = true
 
 	resp, err := client.Do(request)
 	if err != nil {
