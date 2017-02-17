@@ -62,8 +62,10 @@ func (c *CertificateClaims) ToMidgardClaims() *MidgardClaims {
 		"serialNumber": c.SerialNumber,
 	}
 
-	if c.OrganizationalUnits != nil && len(c.OrganizationalUnits) > 0 {
-		data["organizationalUnit"] = c.OrganizationalUnits[0]
+	if c.OrganizationalUnits != nil {
+		for _, ou := range c.OrganizationalUnits {
+			data["ou:"+ou] = "true"
+		}
 	}
 
 	return &MidgardClaims{
