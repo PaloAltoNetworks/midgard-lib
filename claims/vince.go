@@ -75,7 +75,7 @@ func (c *VinceClaims) authentify(vinceURL string, certPool *x509.CertPool) error
 		},
 	}
 
-	request, err := http.NewRequest(http.MethodGet, vinceURL+"/accounts", nil)
+	request, err := http.NewRequest(http.MethodGet, vinceURL+"/check", nil)
 	request.Header.Set("Authorization", c.Account+" "+c.Password)
 	if err != nil {
 		return err
