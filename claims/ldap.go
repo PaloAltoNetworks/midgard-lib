@@ -23,13 +23,9 @@ const (
 	ldapBaseDNKey       = "LDAPBaseDN"
 )
 
-func findLDAPKey(k string, metadata map[string]interface{}, defaultMetadata map[string]interface{}) (string, error) {
+func findLDAPKey(k string, metadata map[string]interface{}) (string, error) {
 
 	if v, ok := metadata[k]; ok && v.(string) != "" {
-		return v.(string), nil
-	}
-
-	if v, ok := defaultMetadata[k]; ok && v.(string) != "" {
 		return v.(string), nil
 	}
 
@@ -47,9 +43,9 @@ type LDAPInfo struct {
 }
 
 // NewLDAPInfo returns a new LDAPInfo, or an error
-func NewLDAPInfo(metadata map[string]interface{}, defaultMetadata map[string]interface{}) (*LDAPInfo, error) {
+func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 
-	if metadata == nil && defaultMetadata == nil {
+	if metadata == nil {
 		return nil, fmt.Errorf("You must provide at least metadata or defaultMetdata")
 	}
 
@@ -57,40 +53,36 @@ func NewLDAPInfo(metadata map[string]interface{}, defaultMetadata map[string]int
 		metadata = map[string]interface{}{}
 	}
 
-	if defaultMetadata == nil {
-		defaultMetadata = map[string]interface{}{}
-	}
-
 	info := &LDAPInfo{}
 
 	var err error
 
-	info.Address, err = findLDAPKey(ldapAddressKey, metadata, defaultMetadata)
+	info.Address, err = findLDAPKey(ldapAddressKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.BindDN, err = findLDAPKey(ldapBindDNKey, metadata, defaultMetadata)
+	info.BindDN, err = findLDAPKey(ldapBindDNKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.BindPassword, err = findLDAPKey(ldapBindPasswordKey, metadata, defaultMetadata)
+	info.BindPassword, err = findLDAPKey(ldapBindPasswordKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.Username, err = findLDAPKey(ldapUsernameKey, metadata, defaultMetadata)
+	info.Username, err = findLDAPKey(ldapUsernameKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.Password, err = findLDAPKey(ldapPasswordKey, metadata, defaultMetadata)
+	info.Password, err = findLDAPKey(ldapPasswordKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.BaseDN, err = findLDAPKey(ldapBaseDNKey, metadata, defaultMetadata)
+	info.BaseDN, err = findLDAPKey(ldapBaseDNKey, metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +119,8 @@ func NewLDAPClaims() *LDAPClaims {
 	}
 }
 
-// FromLDAPINfo verifies and returns the ldap claims for the given metadata.
-func (c *LDAPClaims) FromLDAPINfo(info *LDAPInfo) error {
+// FromLDAPInfo verifies and returns the ldap claims for the given metadata.
+func (c *LDAPClaims) FromLDAPInfo(info *LDAPInfo) error {
 
 	if info == nil {
 		return fmt.Errorf("LDAPInfo cannot be nil")

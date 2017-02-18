@@ -147,7 +147,7 @@ func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, e
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
-func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
+func (a *Client) IssueFromLDAP(info *claims.LDAPInfo, vinceAccount string) (string, error) {
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -160,8 +160,11 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo) (string, error) {
 	}
 
 	issueRequest := models.NewIssue()
-	issueRequest.Metadata = info.ToMap()
 	issueRequest.Realm = models.IssueRealmLdap
+	issueRequest.Metadata = info.ToMap()
+	if vinceAccount != "" {
+		issueRequest.Metadata["account"] = vinceAccount
+	}
 
 	return a.sendRequest(client, issueRequest)
 }

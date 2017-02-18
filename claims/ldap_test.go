@@ -19,7 +19,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPUsername":     "lskywalker",
 			"LDAPPassword":     "secret",
 			"LDAPBaseDN":       "ou=zoupla,dc=toto,dc=com",
-		}, nil)
+		})
 
 		Convey("Then err should be nil", func() {
 			So(err, ShouldBeNil)
@@ -47,7 +47,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPUsername":     "lskywalker",
 			"LDAPPassword":     "secret",
 			"LDAPBaseDN":       "ou=zoupla,dc=toto,dc=com",
-		}, nil)
+		})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -68,7 +68,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPPassword":     "secret",
 			"LDAPBaseDN":       "ou=zoupla,dc=toto,dc=com",
 			"LDAPBindDN":       "",
-		}, nil)
+		})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -88,7 +88,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPUsername": "lskywalker",
 			"LDAPPassword": "secret",
 			"LDAPBaseDN":   "ou=zoupla,dc=toto,dc=com",
-		}, nil)
+		})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -108,7 +108,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPBindPassword": "toto",
 			"LDAPPassword":     "secret",
 			"LDAPBaseDN":       "ou=zoupla,dc=toto,dc=com",
-		}, nil)
+		})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -128,7 +128,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPBindPassword": "toto",
 			"LDAPUsername":     "lskywalker",
 			"LDAPBaseDN":       "ou=zoupla,dc=toto,dc=com",
-		}, nil)
+		})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -148,7 +148,7 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 			"LDAPBindPassword": "toto",
 			"LDAPUsername":     "lskywalker",
 			"LDAPPassword":     "secret",
-		}, nil)
+		})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -160,66 +160,9 @@ func TestLDAPClais_LDAPInfo(t *testing.T) {
 		})
 	})
 
-	Convey("Given I create a new LDAPInfo with no metadata and defautMetada", t, func() {
-
-		i, err := NewLDAPInfo(nil,
-			map[string]interface{}{
-				"LDAPAddress":      "123:123",
-				"LDAPBindDN":       "cn=admin,dc=toto,dc=com",
-				"LDAPBindPassword": "toto",
-				"LDAPUsername":     "lskywalker",
-				"LDAPPassword":     "secret",
-				"LDAPBaseDN":       "ou=zoupla,dc=toto,dc=com",
-			})
-
-		Convey("Then err should not be nil", func() {
-			So(err, ShouldBeNil)
-		})
-
-		Convey("Then info should be correct", func() {
-			So(i.Address, ShouldEqual, "123:123")
-			So(i.BindDN, ShouldEqual, "cn=admin,dc=toto,dc=com")
-			So(i.BindPassword, ShouldEqual, "toto")
-			So(i.Username, ShouldEqual, "lskywalker")
-			So(i.Password, ShouldEqual, "secret")
-			So(i.BaseDN, ShouldEqual, "ou=zoupla,dc=toto,dc=com")
-		})
-	})
-
-	Convey("Given I create a new LDAPInfo with a combination metadata and defautMetada", t, func() {
-
-		i, err := NewLDAPInfo(
-			map[string]interface{}{
-				"LDAPAddress": "123:123",
-				"LDAPBindDN":  "cn=admin,dc=toto,dc=com",
-				"LDAPBaseDN":  "ou=zoupla,dc=toto,dc=com",
-			},
-			map[string]interface{}{
-				"LDAPAddress":      "default:123:123",
-				"LDAPBindDN":       "default:n=admin,dc=toto,dc=com",
-				"LDAPBindPassword": "default:toto",
-				"LDAPUsername":     "default:lskywalker",
-				"LDAPPassword":     "default:secret",
-				"LDAPBaseDN":       "default:ou=zoupla,dc=toto,dc=com",
-			})
-
-		Convey("Then err should not be nil", func() {
-			So(err, ShouldBeNil)
-		})
-
-		Convey("Then info should be correct", func() {
-			So(i.Address, ShouldEqual, "123:123")
-			So(i.BindDN, ShouldEqual, "cn=admin,dc=toto,dc=com")
-			So(i.BindPassword, ShouldEqual, "default:toto")
-			So(i.Username, ShouldEqual, "default:lskywalker")
-			So(i.Password, ShouldEqual, "default:secret")
-			So(i.BaseDN, ShouldEqual, "ou=zoupla,dc=toto,dc=com")
-		})
-	})
-
 	Convey("Given I create a new LDAPInfo nothing", t, func() {
 
-		i, err := NewLDAPInfo(nil, nil)
+		i, err := NewLDAPInfo(nil)
 
 		Convey("Then err should not be be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -372,20 +315,20 @@ func TestLDAPClaims_FromLDAPInfo(t *testing.T) {
 			"LDAPUsername":     "lskywalker",
 			"LDAPPassword":     "secret",
 			"LDAPBaseDN":       "secret",
-		}, nil)
+		})
 
 		c := NewLDAPClaims()
 
-		Convey("When I call FromLDAPINfo with no LDAP Server", func() {
-			err := c.FromLDAPINfo(i)
+		Convey("When I call FromLDAPInfo with no LDAP Server", func() {
+			err := c.FromLDAPInfo(i)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
 			})
 		})
 
-		Convey("When I call FromLDAPINfo with no LDAPInfo", func() {
-			err := c.FromLDAPINfo(nil)
+		Convey("When I call FromLDAPInfo with no LDAPInfo", func() {
+			err := c.FromLDAPInfo(nil)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)

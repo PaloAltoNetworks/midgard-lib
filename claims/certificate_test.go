@@ -114,7 +114,7 @@ func TestCertificateClaims_ToMidgardClaims(t *testing.T) {
 
 		c := NewCertificateClaims()
 		c.Organizations = []string{"Organization", "Organization2"}
-		c.OrganizationalUnits = []string{"OrganizationalUnit", "OrganizationalUnit2"}
+		c.OrganizationalUnits = []string{"ou1", "ou2"}
 		c.CommonName = "CommonName"
 		c.ExpiresAt = 253370764800
 		c.IssuedAt = 1474932961
@@ -141,7 +141,8 @@ func TestCertificateClaims_ToMidgardClaims(t *testing.T) {
 			})
 
 			Convey("Then data OrganizationalUnit should be correct", func() {
-				So(m.Data["organizationalUnit"], ShouldEqual, "OrganizationalUnit")
+				So(m.Data["ou:ou1"], ShouldEqual, "true")
+				So(m.Data["ou:ou2"], ShouldEqual, "true")
 			})
 
 			Convey("Then Issuer should be correct", func() {
