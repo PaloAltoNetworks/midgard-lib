@@ -109,7 +109,8 @@ func (c *VinceClaims) ToMidgardClaims() *MidgardClaims {
 		},
 		Realm: "Vince",
 		Data: map[string]string{
-			"account": c.Account,
+			"account":      c.Account,
+			"organization": c.Account,
 		},
 	}
 }
