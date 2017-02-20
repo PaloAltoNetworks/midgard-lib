@@ -37,7 +37,7 @@ func TestUtils_extractJWT(t *testing.T) {
 			})
 
 			Convey("Then err.Error should be correct", func() {
-				So(err.Error(), ShouldEqual, "Missing Authorization Header.")
+				So(err.Error(), ShouldEqual, "Missing Authorization Header")
 			})
 
 			Convey("Then token should be empty", func() {
@@ -55,7 +55,7 @@ func TestUtils_extractJWT(t *testing.T) {
 			})
 
 			Convey("Then err.Error should be correct", func() {
-				So(err.Error(), ShouldEqual, "Invalid Authorization Header.")
+				So(err.Error(), ShouldEqual, "Invalid Authorization Header")
 			})
 
 			Convey("Then token should be empty", func() {
@@ -73,7 +73,7 @@ func TestUtils_extractJWT(t *testing.T) {
 			})
 
 			Convey("Then err.Error should be correct", func() {
-				So(err.Error(), ShouldEqual, "Invalid Authorization Header.")
+				So(err.Error(), ShouldEqual, "Invalid Authorization Header")
 			})
 
 			Convey("Then token should be empty", func() {

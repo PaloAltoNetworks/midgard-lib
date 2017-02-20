@@ -97,7 +97,7 @@ func (o *Issue) Validate() error {
 		errors = append(errors, err)
 	}
 
-	if err := elemental.ValidatePattern("validity", o.Validity, `^[0-9]+[smh]$`); err != nil {
+	if err := elemental.ValidatePattern("validity", o.Validity, `^([0-9]+h[0-9]+m[0-9]+s|[0-9]+m[0-9]+s|[0-9]+m[0-9]+s|[0-9]+h[0-9]+s|[0-9]+h[0-9]+m|[0-9]+s|[0-9]+h|[0-9]+m)$`); err != nil {
 		errors = append(errors, err)
 	}
 
@@ -165,7 +165,7 @@ var IssueAttributesMap = map[string]elemental.AttributeSpecification{
 		Type:           "string",
 	},
 	"Validity": elemental.AttributeSpecification{
-		AllowedChars:   `^[0-9]+[smh]$`,
+		AllowedChars:   `^([0-9]+h[0-9]+m[0-9]+s|[0-9]+m[0-9]+s|[0-9]+m[0-9]+s|[0-9]+h[0-9]+s|[0-9]+h[0-9]+m|[0-9]+s|[0-9]+h|[0-9]+m)$`,
 		AllowedChoices: []string{},
 		Description:    `Validity configures the max validity time for a token. If it is bigger than the configured max validity, it will be capped.`,
 		Exposed:        true,

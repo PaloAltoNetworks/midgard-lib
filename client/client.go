@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/aporeto-inc/midgard-lib/claims"
 	"github.com/aporeto-inc/midgard-lib/models"
@@ -87,7 +88,7 @@ func (a *Client) Authentify(token string) ([]string, error) {
 		log.WithFields(logrus.Fields{
 			"token": token,
 		}).Debug("Midgard rejected the token.")
-		return nil, fmt.Errorf("Unauthorized.")
+		return nil, fmt.Errorf("Unauthorized")
 	}
 
 	auth := models.NewAuth()
@@ -110,6 +111,12 @@ func (a *Client) Authentify(token string) ([]string, error) {
 // IssueFromGoogle issues a Midgard jwt from a Google JWT.
 func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
 
+	return a.IssueFromGoogleWithValidity(googleJWT, 24*time.Hour)
+}
+
+// IssueFromGoogleWithValidity issues a Midgard jwt from a Google JWT for the given validity duration.
+func (a *Client) IssueFromGoogleWithValidity(googleJWT string, validity time.Duration) (string, error) {
+
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -122,12 +129,18 @@ func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
 	issueRequest := models.NewIssue()
 	issueRequest.Realm = models.IssueRealmGoogle
 	issueRequest.Data = googleJWT
+	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
 	return a.sendRequest(client, issueRequest)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate.
 func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, error) {
+	return a.IssueFromCertificateWithValidity(certificates, 24*time.Hour)
+}
+
+// IssueFromCertificateWithValidity issues a Midgard jwt from a certificate for the given validity duration.
+func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate, validity time.Duration) (string, error) {
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -142,12 +155,18 @@ func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, e
 
 	issueRequest := models.NewIssue()
 	issueRequest.Realm = models.IssueRealmCertificate
+	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
 	return a.sendRequest(client, issueRequest)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
 func (a *Client) IssueFromLDAP(info *claims.LDAPInfo, vinceAccount string) (string, error) {
+	return a.IssueFromLDAPWithValidity(info, vinceAccount, 24*time.Hour)
+}
+
+// IssueFromLDAPWithValidity issues a Midgard jwt from a LDAP for the given validity duration.
+func (a *Client) IssueFromLDAPWithValidity(info *claims.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -161,6 +180,7 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo, vinceAccount string) (stri
 
 	issueRequest := models.NewIssue()
 	issueRequest.Realm = models.IssueRealmLdap
+	issueRequest.Validity = fmt.Sprintf("%s", validity)
 	issueRequest.Metadata = info.ToMap()
 	if vinceAccount != "" {
 		issueRequest.Metadata["account"] = vinceAccount
@@ -171,6 +191,11 @@ func (a *Client) IssueFromLDAP(info *claims.LDAPInfo, vinceAccount string) (stri
 
 // IssueFromVince issues a Midgard jwt from a Vince.
 func (a *Client) IssueFromVince(account string, password string) (string, error) {
+	return a.IssueFromVinceWithValidity(account, password, 24*time.Hour)
+}
+
+// IssueFromVinceWithValidity issues a Midgard jwt from a Vince for the given validity duration.
+func (a *Client) IssueFromVinceWithValidity(account string, password string, validity time.Duration) (string, error) {
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -185,6 +210,7 @@ func (a *Client) IssueFromVince(account string, password string) (string, error)
 	issueRequest := models.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password}
 	issueRequest.Realm = models.IssueRealmVince
+	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
 	return a.sendRequest(client, issueRequest)
 }

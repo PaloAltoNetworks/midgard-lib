@@ -14,13 +14,13 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 	auth := header.Get("Authorization")
 
 	if auth == "" {
-		return "", fmt.Errorf("Missing Authorization Header.")
+		return "", fmt.Errorf("Missing Authorization Header")
 	}
 
 	parts := strings.Split(auth, " ")
 
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", fmt.Errorf("Invalid Authorization Header.")
+		return "", fmt.Errorf("Invalid Authorization Header")
 	}
 
 	return parts[1], nil
