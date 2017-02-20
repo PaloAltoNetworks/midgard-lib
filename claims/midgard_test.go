@@ -131,7 +131,7 @@ func TestMidgardClaims_FromToken(t *testing.T) {
 				})
 
 				Convey("Then err message should be correct", func() {
-					So(err.Error(), ShouldEqual, "Audience 'aporeto.com' is not acceptable.")
+					So(err.Error(), ShouldEqual, "Audience 'aporeto.com' is not acceptable")
 				})
 			})
 		})
@@ -156,7 +156,7 @@ func TestMidgardClaims_FromToken(t *testing.T) {
 				})
 
 				Convey("Then err message should be correct", func() {
-					So(err.Error(), ShouldEqual, "Issuer 'midgard.aporeto.com' is not acceptable.")
+					So(err.Error(), ShouldEqual, "Issuer 'midgard.aporeto.com' is not acceptable")
 				})
 			})
 		})

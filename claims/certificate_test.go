@@ -78,7 +78,7 @@ func TestCertificateClaims_FromCertificate(t *testing.T) {
 			})
 
 			Convey("Then err.Error() should be correct", func() {
-				So(err.Error(), ShouldEqual, "Your certificate doesn't contain any O.")
+				So(err.Error(), ShouldEqual, "Your certificate doesn't contain any O")
 			})
 		})
 	})
@@ -102,7 +102,7 @@ func TestCertificateClaims_FromCertificate(t *testing.T) {
 			})
 
 			Convey("Then err.Error() should be correct", func() {
-				So(err.Error(), ShouldEqual, "Your certificate doesn't contain a CN.")
+				So(err.Error(), ShouldEqual, "Your certificate doesn't contain a CN")
 			})
 		})
 	})
