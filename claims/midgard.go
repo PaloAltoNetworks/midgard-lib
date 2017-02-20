@@ -2,7 +2,6 @@ package claims
 
 import (
 	"fmt"
-	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
@@ -16,9 +15,6 @@ var (
 
 	// JWTAudience sets the audience to use for generating JWT.
 	JWTAudience string
-
-	// JWTValidity sets the validity duration of the issued JWT.
-	JWTValidity time.Duration
 )
 
 // MidgardClaims represents the claims used by Midgard.
@@ -54,11 +50,11 @@ func (c *MidgardClaims) FromToken(tokenString string) error {
 	c = token.Claims.(*MidgardClaims)
 
 	if !c.VerifyAudience(JWTAudience, false) {
-		return fmt.Errorf("Audience '%s' is not acceptable.", c.Audience)
+		return fmt.Errorf("Audience '%s' is not acceptable", c.Audience)
 	}
 
 	if !c.VerifyIssuer(JWTIssuer, false) {
-		return fmt.Errorf("Issuer '%s' is not acceptable.", c.Issuer)
+		return fmt.Errorf("Issuer '%s' is not acceptable", c.Issuer)
 	}
 
 	return nil

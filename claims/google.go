@@ -51,7 +51,7 @@ func (c *GoogleClaims) FromToken(token string) error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Google did not validate the token.")
+		return fmt.Errorf("Google did not validate the token")
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(c); err != nil {
@@ -59,11 +59,11 @@ func (c *GoogleClaims) FromToken(token string) error {
 	}
 
 	if !c.VerifyAudience(JWTGoogleClientID, false) {
-		return fmt.Errorf("Audience '%s' is not acceptable.", c.Audience)
+		return fmt.Errorf("Audience '%s' is not acceptable", c.Audience)
 	}
 
 	if !c.VerifyIssuer(JWTGoogleIssuer, false) && !c.VerifyIssuer("https://"+JWTGoogleIssuer, false) {
-		return fmt.Errorf("Issuer '%s' is not acceptable.", c.Issuer)
+		return fmt.Errorf("Issuer '%s' is not acceptable", c.Issuer)
 	}
 
 	return nil
@@ -81,11 +81,10 @@ func (c *GoogleClaims) ToMidgardClaims() *MidgardClaims {
 
 	return &MidgardClaims{
 		StandardClaims: jwt.StandardClaims{
-			Audience:  JWTAudience,
-			Issuer:    JWTIssuer,
-			ExpiresAt: now.Add(JWTValidity).Unix(),
-			IssuedAt:  now.Unix(),
-			Subject:   c.Subject,
+			Audience: JWTAudience,
+			Issuer:   JWTIssuer,
+			IssuedAt: now.Unix(),
+			Subject:  c.Subject,
 		},
 		Realm: "google",
 		Data: map[string]string{

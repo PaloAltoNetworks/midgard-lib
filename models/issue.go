@@ -51,6 +51,9 @@ type Issue struct {
 
 	// Token is the token to use for the registration.
 	Token string `json:"token" cql:"-" bson:"-"`
+
+	// Validity configures the max validity time for a token. If it is bigger than the configured max validity, it will be capped.
+	Validity string `json:"validity" cql:"validity,omitempty" bson:"validity"`
 }
 
 // NewIssue returns a new *Issue
@@ -58,6 +61,7 @@ func NewIssue() *Issue {
 
 	return &Issue{
 		Metadata: map[string]interface{}{},
+		Validity: "24h",
 	}
 }
 
@@ -87,9 +91,18 @@ func (o *Issue) String() string {
 func (o *Issue) Validate() error {
 
 	errors := elemental.Errors{}
+	requiredErrors := elemental.Errors{}
 
 	if err := elemental.ValidateStringInList("realm", string(o.Realm), []string{"Certificate", "Facebook", "Github", "Google", "LDAP", "Twitter", "Vince"}, false); err != nil {
 		errors = append(errors, err)
+	}
+
+	if err := elemental.ValidatePattern("validity", o.Validity, `^[0-9]+[smh]$`); err != nil {
+		errors = append(errors, err)
+	}
+
+	if len(requiredErrors) > 0 {
+		return requiredErrors
 	}
 
 	if len(errors) > 0 {
@@ -149,6 +162,18 @@ var IssueAttributesMap = map[string]elemental.AttributeSpecification{
 		Format:         "free",
 		Name:           "token",
 		ReadOnly:       true,
+		Type:           "string",
+	},
+	"Validity": elemental.AttributeSpecification{
+		AllowedChars:   `^[0-9]+[smh]$`,
+		AllowedChoices: []string{},
+		Description:    `Validity configures the max validity time for a token. If it is bigger than the configured max validity, it will be capped.`,
+		Exposed:        true,
+		Filterable:     true,
+		Format:         "free",
+		Name:           "validity",
+		Orderable:      true,
+		Stored:         true,
 		Type:           "string",
 	},
 }

@@ -141,11 +141,10 @@ func (c *LDAPClaims) ToMidgardClaims() *MidgardClaims {
 
 	return &MidgardClaims{
 		StandardClaims: jwt.StandardClaims{
-			Audience:  JWTAudience,
-			Issuer:    JWTIssuer,
-			ExpiresAt: now.Add(JWTValidity).Unix(),
-			IssuedAt:  now.Unix(),
-			Subject:   c.Subject,
+			Audience: JWTAudience,
+			Issuer:   JWTIssuer,
+			IssuedAt: now.Unix(),
+			Subject:  c.Subject,
 		},
 		Realm: "LDAP",
 		Data:  c.Attributes,

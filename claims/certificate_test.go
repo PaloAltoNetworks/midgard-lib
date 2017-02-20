@@ -122,11 +122,11 @@ func TestCertificateClaims_ToMidgardClaims(t *testing.T) {
 
 		JWTAudience = "audience"
 		JWTIssuer = "issuer"
-		JWTValidity = 24 * time.Hour
 
 		Convey("When I convert it to a Midgard claims", func() {
 
 			m := c.ToMidgardClaims()
+			m.ExpiresAt = time.Now().Add(24 * time.Hour).Unix()
 
 			Convey("Then Realm should be correct", func() {
 				So(m.Realm, ShouldEqual, "certificate")

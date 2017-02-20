@@ -33,11 +33,11 @@ func NewCertificateClaims() *CertificateClaims {
 func (c *CertificateClaims) FromCertificate(certificate *x509.Certificate) error {
 
 	if certificate.Subject.Organization == nil || len(certificate.Subject.Organization) == 0 {
-		return fmt.Errorf("Your certificate doesn't contain any O.")
+		return fmt.Errorf("Your certificate doesn't contain any O")
 	}
 
 	if certificate.Subject.CommonName == "" {
-		return fmt.Errorf("Your certificate doesn't contain a CN.")
+		return fmt.Errorf("Your certificate doesn't contain a CN")
 	}
 
 	c.Organizations = certificate.Subject.Organization
@@ -70,11 +70,10 @@ func (c *CertificateClaims) ToMidgardClaims() *MidgardClaims {
 
 	return &MidgardClaims{
 		StandardClaims: jwt.StandardClaims{
-			Audience:  JWTAudience,
-			Issuer:    JWTIssuer,
-			ExpiresAt: now.Add(JWTValidity).Unix(),
-			IssuedAt:  now.Unix(),
-			Subject:   c.Subject,
+			Audience: JWTAudience,
+			Issuer:   JWTIssuer,
+			IssuedAt: now.Unix(),
+			Subject:  c.Subject,
 		},
 		Realm: "certificate",
 		Data:  data,

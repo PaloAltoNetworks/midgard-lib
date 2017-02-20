@@ -105,6 +105,11 @@ func (o *Root) SetUpdatedAt(updatedAt time.Time) {
 func (o *Root) Validate() error {
 
 	errors := elemental.Errors{}
+	requiredErrors := elemental.Errors{}
+
+	if len(requiredErrors) > 0 {
+		return requiredErrors
+	}
 
 	if len(errors) > 0 {
 		return errors

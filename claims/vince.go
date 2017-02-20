@@ -88,7 +88,7 @@ func (c *VinceClaims) authentify(vinceURL string, certPool *x509.CertPool) error
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Unauthorized.")
+		return fmt.Errorf("Unauthorized")
 	}
 
 	return nil
@@ -101,11 +101,10 @@ func (c *VinceClaims) ToMidgardClaims() *MidgardClaims {
 
 	return &MidgardClaims{
 		StandardClaims: jwt.StandardClaims{
-			Audience:  JWTAudience,
-			Issuer:    JWTIssuer,
-			ExpiresAt: now.Add(JWTValidity).Unix(),
-			IssuedAt:  now.Unix(),
-			Subject:   c.Subject,
+			Audience: JWTAudience,
+			Issuer:   JWTIssuer,
+			IssuedAt: now.Unix(),
+			Subject:  c.Subject,
 		},
 		Realm: "Vince",
 		Data: map[string]string{

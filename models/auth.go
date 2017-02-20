@@ -54,6 +54,11 @@ func (o *Auth) String() string {
 func (o *Auth) Validate() error {
 
 	errors := elemental.Errors{}
+	requiredErrors := elemental.Errors{}
+
+	if len(requiredErrors) > 0 {
+		return requiredErrors
+	}
 
 	if len(errors) > 0 {
 		return errors
