@@ -242,5 +242,7 @@ func (c *LDAPClaims) populateClaim(entry *ldap.Entry) error {
 		}
 	}
 
+	c.Attributes["realm"] = "ldap"
+
 	return nil
 }

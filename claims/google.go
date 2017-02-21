@@ -93,6 +93,7 @@ func (c *GoogleClaims) ToMidgardClaims() *MidgardClaims {
 			"familyName":   c.FamilyName,
 			"name":         c.Name,
 			"organization": org,
+			"realm":        "google",
 		},
 	}
 }
