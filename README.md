@@ -23,7 +23,7 @@ import (
     "github.com/aporeto-inc/midgard-lib"
     "golang.org/x/crypto/pkcs12"
 
-    gaia "github.com/aporeto-inc/gaia/golang"
+    squallModels "github.com/aporeto-inc/gaia/squall/golang"
 )
 
 const (
@@ -59,8 +59,8 @@ func main() {
     store := maniphttp.NewHTTPStore("Bearer", token, "https://squall.aporeto.com", "SuperAdmin", maniphttp.NewTLSConfiguration("", "", "", true))
 
     // Retrieve the tags list using the Manipulate store.
-    var dest gaia.TagsList
-    store.RetrieveChildren(nil, nil, gaia.TagIdentity, &dest); err != nil {
+    var dest squallModels.TagsList
+    store.RetrieveChildren(nil, nil, squallModels.TagIdentity, &dest); err != nil {
 
     // Print the tags.
     fmt.Println(dest)
