@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	midgardModels "github.com/aporeto-inc/gaia/midgard/golang"
+	midgardmodels "github.com/aporeto-inc/gaia/midgard/golang"
 	"github.com/aporeto-inc/midgard-lib/claims"
 
 	"github.com/Sirupsen/logrus"
@@ -91,7 +91,7 @@ func (a *Client) Authentify(token string) ([]string, error) {
 		return nil, fmt.Errorf("Unauthorized")
 	}
 
-	auth := midgardModels.NewAuth()
+	auth := midgardmodels.NewAuth()
 
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(auth); err != nil {
@@ -126,8 +126,8 @@ func (a *Client) IssueFromGoogleWithValidity(googleJWT string, validity time.Dur
 		},
 	}
 
-	issueRequest := midgardModels.NewIssue()
-	issueRequest.Realm = midgardModels.IssueRealmGoogle
+	issueRequest := midgardmodels.NewIssue()
+	issueRequest.Realm = midgardmodels.IssueRealmGoogle
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
@@ -153,8 +153,8 @@ func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate
 		},
 	}
 
-	issueRequest := midgardModels.NewIssue()
-	issueRequest.Realm = midgardModels.IssueRealmCertificate
+	issueRequest := midgardmodels.NewIssue()
+	issueRequest.Realm = midgardmodels.IssueRealmCertificate
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
 	return a.sendRequest(client, issueRequest)
@@ -178,8 +178,8 @@ func (a *Client) IssueFromLDAPWithValidity(info *claims.LDAPInfo, vinceAccount s
 		},
 	}
 
-	issueRequest := midgardModels.NewIssue()
-	issueRequest.Realm = midgardModels.IssueRealmLdap
+	issueRequest := midgardmodels.NewIssue()
+	issueRequest.Realm = midgardmodels.IssueRealmLdap
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 	issueRequest.Metadata = info.ToMap()
 	if vinceAccount != "" {
@@ -207,15 +207,15 @@ func (a *Client) IssueFromVinceWithValidity(account string, password string, val
 		},
 	}
 
-	issueRequest := midgardModels.NewIssue()
+	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password}
-	issueRequest.Realm = midgardModels.IssueRealmVince
+	issueRequest.Realm = midgardmodels.IssueRealmVince
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
 	return a.sendRequest(client, issueRequest)
 }
 
-func (a *Client) sendRequest(client *http.Client, issueRequest *midgardModels.Issue) (string, error) {
+func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {

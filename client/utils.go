@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	midgardModels "github.com/aporeto-inc/gaia/midgard/golang"
+	midgardmodels "github.com/aporeto-inc/gaia/midgard/golang"
 )
 
 // ExtractJWTFromHeader extracts the JWT from the given http.Header.
@@ -27,7 +27,7 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 }
 
 // normalizeAuth normalizes the response to a simple structure.
-func normalizeAuth(a *midgardModels.Auth) []string {
+func normalizeAuth(a *midgardmodels.Auth) []string {
 
 	ret := []string{
 		"auth:realm=" + a.Claims.Realm,
