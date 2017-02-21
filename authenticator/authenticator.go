@@ -40,16 +40,18 @@ type MidgardAuthenticator struct {
 	cache          cache.Cacher
 	pendingCache   cache.Cacher
 	customAuthFunc CustomAuthFunc
+	cacheValidity  time.Duration
 }
 
 // NewMidgardAuthenticator creates a new MidgardAuthenticator to use with Bahamut.
-func NewMidgardAuthenticator(midgardURL string, serverCAPool *x509.CertPool, clientCAPool *x509.CertPool, skipVerify bool, customAuthFunc CustomAuthFunc) *MidgardAuthenticator {
+func NewMidgardAuthenticator(midgardURL string, serverCAPool *x509.CertPool, clientCAPool *x509.CertPool, skipVerify bool, customAuthFunc CustomAuthFunc, cacheValidity time.Duration) *MidgardAuthenticator {
 
 	return &MidgardAuthenticator{
 		midgardClient:  midgardclient.NewClientWithCAPool(midgardURL, serverCAPool, clientCAPool, skipVerify),
 		customAuthFunc: customAuthFunc,
 		cache:          cache.NewMemoryCache(),
 		pendingCache:   cache.NewMemoryCache(),
+		cacheValidity:  cacheValidity,
 	}
 }
 
@@ -104,7 +106,7 @@ func (a *MidgardAuthenticator) IsAuthenticated(ctx *bahamut.Context) (bool, erro
 		"identity": identity,
 	}).Debug("Sucessfully authenticated ReST request.")
 
-	a.cache.SetWithExpiration(token, identity, 10*time.Minute)
+	a.cache.SetWithExpiration(token, identity, a.cacheValidity)
 
 	ctx.UserInfo = identity
 

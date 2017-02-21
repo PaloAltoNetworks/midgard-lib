@@ -60,6 +60,7 @@ func (c *CertificateClaims) ToMidgardClaims() *MidgardClaims {
 		"commonName":   c.CommonName,
 		"organization": c.Organizations[0],
 		"serialNumber": c.SerialNumber,
+		"realm":        "certificate",
 	}
 
 	if c.OrganizationalUnits != nil {
