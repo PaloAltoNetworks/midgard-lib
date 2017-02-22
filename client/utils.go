@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	midgardmodels "github.com/aporeto-inc/gaia/midgard/golang"
+	midgardmodels "github.com/aporeto-inc/gaia/midgardmodels/golang"
 )
 
 // ExtractJWTFromHeader extracts the JWT from the given http.Header.

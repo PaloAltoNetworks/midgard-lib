@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	midgardmodels "github.com/aporeto-inc/gaia/midgard/golang"
+	midgardmodels "github.com/aporeto-inc/gaia/midgardmodels/golang"
 	"github.com/aporeto-inc/midgard-lib/claims"
 
 	"github.com/Sirupsen/logrus"
