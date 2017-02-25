@@ -62,7 +62,7 @@ func TestClient_Authentify(t *testing.T) {
 			n, err := cl.Authentify("thetoken")
 
 			Convey("Then I should get valid normalization", func() {
-				So(n, ShouldContain, "auth:subject=10237207344299343489")
+				So(n, ShouldContain, "@auth:subject=10237207344299343489")
 			})
 
 			Convey("Then err should be nil", func() {

@@ -98,19 +98,19 @@ func TestUtils_normalizeAuth(t *testing.T) {
 			v := normalizeAuth(auth)
 
 			Convey("Then the realm should be correct", func() {
-				So(v, ShouldContain, "auth:realm=realm")
+				So(v, ShouldContain, "@auth:realm=realm")
 			})
 
 			Convey("Then the subject should be correct", func() {
-				So(v, ShouldContain, "auth:subject=subject")
+				So(v, ShouldContain, "@auth:subject=subject")
 			})
 
 			Convey("Then the d1 should be correct", func() {
-				So(v, ShouldContain, "auth:d1=v1")
+				So(v, ShouldContain, "@auth:d1=v1")
 			})
 
 			Convey("Then the d2 should be correct", func() {
-				So(v, ShouldContain, "auth:d2=v2")
+				So(v, ShouldContain, "@auth:d2=v2")
 			})
 		})
 	})

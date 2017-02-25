@@ -30,12 +30,12 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 func normalizeAuth(a *midgardmodels.Auth) []string {
 
 	ret := []string{
-		"auth:realm=" + a.Claims.Realm,
-		"auth:subject=" + a.Claims.Subject,
+		"@auth:realm=" + a.Claims.Realm,
+		"@auth:subject=" + a.Claims.Subject,
 	}
 
 	for key, value := range a.Claims.Data {
-		ret = append(ret, "auth:"+strings.ToLower(key)+"="+value)
+		ret = append(ret, "@auth:"+strings.ToLower(key)+"="+value)
 	}
 
 	return ret
