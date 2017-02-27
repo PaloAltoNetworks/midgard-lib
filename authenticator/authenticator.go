@@ -88,7 +88,7 @@ func (a *MidgardAuthenticator) AuthenticateSession(session *bahamut.PushSession)
 	}
 
 	ok, identity, err := a.commonAuth(session.Parameters.Get("token"))
-	session.UserInfo = identity
+	session.Identity = identity
 
 	return ok, err
 }
@@ -112,7 +112,7 @@ func (a *MidgardAuthenticator) AuthenticateRequest(ctx *bahamut.Context) (bool, 
 	}
 
 	ok, identity, err := a.commonAuth(ctx.Request.Password)
-	ctx.UserInfo = identity
+	ctx.Identity = identity
 
 	return ok, err
 }
