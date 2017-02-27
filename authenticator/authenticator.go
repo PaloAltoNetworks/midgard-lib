@@ -28,39 +28,53 @@ const (
 	CustomAuthResultContinue
 )
 
-// CustomAuthFunc is the type of a function that can be ran to
-// decide custom authentication operations. It returns a CustomAuthResult.
-type CustomAuthFunc func(*bahamut.Context) (CustomAuthResult, error)
+// CustomAuthRequestFunc is the type of a function that can be ran to
+// decide custom authentication operations for requests. It returns a CustomAuthResult.
+type CustomAuthRequestFunc func(*bahamut.Context) (CustomAuthResult, error)
+
+// CustomAuthSessionFunc is the type of a function that can be ran to
+// decide custom authentication operations sessions. It returns a CustomAuthResult.
+type CustomAuthSessionFunc func(*bahamut.PushSession) (CustomAuthResult, error)
 
 // An MidgardAuthenticator is the enforcer of the authorizations of all API calls.
 //
 // It implements the bahamut.MidgardAuthenticator interface.
 type MidgardAuthenticator struct {
-	midgardClient  *midgardclient.Client
-	cache          cache.Cacher
-	pendingCache   cache.Cacher
-	customAuthFunc CustomAuthFunc
-	cacheValidity  time.Duration
+	cache                 cache.Cacher
+	cacheValidity         time.Duration
+	customAuthRequestFunc CustomAuthRequestFunc
+	customAuthSessionFunc CustomAuthSessionFunc
+	midgardClient         *midgardclient.Client
+	pendingCache          cache.Cacher
 }
 
 // NewMidgardAuthenticator creates a new MidgardAuthenticator to use with Bahamut.
-func NewMidgardAuthenticator(midgardURL string, serverCAPool *x509.CertPool, clientCAPool *x509.CertPool, skipVerify bool, customAuthFunc CustomAuthFunc, cacheValidity time.Duration) *MidgardAuthenticator {
+func NewMidgardAuthenticator(
+	midgardURL string,
+	serverCAPool *x509.CertPool,
+	clientCAPool *x509.CertPool,
+	skipVerify bool,
+	customAuthRequestFunc CustomAuthRequestFunc,
+	customAuthSessionFunc CustomAuthSessionFunc,
+	cacheValidity time.Duration,
+) *MidgardAuthenticator {
 
 	return &MidgardAuthenticator{
-		midgardClient:  midgardclient.NewClientWithCAPool(midgardURL, serverCAPool, clientCAPool, skipVerify),
-		customAuthFunc: customAuthFunc,
-		cache:          cache.NewMemoryCache(),
-		pendingCache:   cache.NewMemoryCache(),
-		cacheValidity:  cacheValidity,
+		cache:                 cache.NewMemoryCache(),
+		cacheValidity:         cacheValidity,
+		customAuthSessionFunc: customAuthSessionFunc,
+		midgardClient:         midgardclient.NewClientWithCAPool(midgardURL, serverCAPool, clientCAPool, skipVerify),
+		pendingCache:          cache.NewMemoryCache(),
+		customAuthRequestFunc: customAuthRequestFunc,
 	}
 }
 
-// IsAuthenticated is the main method that returns whether the client is authenticated or not.
-func (a *MidgardAuthenticator) IsAuthenticated(ctx *bahamut.Context) (bool, error) {
+// AuthenticateSession authenticates the given session.
+func (a *MidgardAuthenticator) AuthenticateSession(session *bahamut.PushSession) (bool, error) {
 
-	if a.customAuthFunc != nil {
+	if a.customAuthSessionFunc != nil {
 
-		result, err := a.customAuthFunc(ctx)
+		result, err := a.customAuthSessionFunc(session)
 		if err != nil {
 			return false, err
 		}
@@ -73,15 +87,44 @@ func (a *MidgardAuthenticator) IsAuthenticated(ctx *bahamut.Context) (bool, erro
 		}
 	}
 
-	token := ctx.Request.Password
+	ok, identity, err := a.commonAuth(session.Parameters.Get("token"))
+	session.UserInfo = identity
+
+	return ok, err
+}
+
+// AuthenticateRequest authenticates the request from the given context.
+func (a *MidgardAuthenticator) AuthenticateRequest(ctx *bahamut.Context) (bool, error) {
+
+	if a.customAuthRequestFunc != nil {
+
+		result, err := a.customAuthRequestFunc(ctx)
+		if err != nil {
+			return false, err
+		}
+
+		switch result {
+		case CustomAuthResultOK:
+			return true, nil
+		case CustomAuthResultNOK:
+			return false, nil
+		}
+	}
+
+	ok, identity, err := a.commonAuth(ctx.Request.Password)
+	ctx.UserInfo = identity
+
+	return ok, err
+}
+
+func (a *MidgardAuthenticator) commonAuth(token string) (bool, []string, error) {
 
 	if wg := a.pendingCache.Get(token); wg != nil {
 		wg.(*sync.WaitGroup).Wait()
 	}
 
 	if i := a.cache.Get(token); i != nil {
-		ctx.UserInfo = i
-		return true, nil
+		return true, i.([]string), nil
 	}
 
 	var wg sync.WaitGroup
@@ -95,20 +138,16 @@ func (a *MidgardAuthenticator) IsAuthenticated(ctx *bahamut.Context) (bool, erro
 	identity, err := a.midgardClient.Authentify(token)
 	if err != nil {
 		log.Entry.WithFields(logrus.Fields{
-			"error":   err.Error(),
-			"context": ctx.String(),
+			"error": err.Error(),
 		}).Debug("ReST Authentication rejected.")
-		return false, nil
+		return false, nil, nil
 	}
 
 	log.Entry.WithFields(logrus.Fields{
-		"context":  ctx.String(),
 		"identity": identity,
 	}).Debug("Sucessfully authenticated ReST request.")
 
 	a.cache.SetWithExpiration(token, identity, a.cacheValidity)
 
-	ctx.UserInfo = identity
-
-	return true, nil
+	return true, identity, nil
 }
