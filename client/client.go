@@ -10,7 +10,7 @@ import (
 	"time"
 
 	midgardmodels "github.com/aporeto-inc/gaia/midgardmodels/golang"
-	"github.com/aporeto-inc/midgard-lib/claims"
+	"github.com/aporeto-inc/midgard-lib/ldaputils"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -161,12 +161,12 @@ func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
-func (a *Client) IssueFromLDAP(info *claims.LDAPInfo, vinceAccount string) (string, error) {
+func (a *Client) IssueFromLDAP(info *ldaputils.LDAPInfo, vinceAccount string) (string, error) {
 	return a.IssueFromLDAPWithValidity(info, vinceAccount, 24*time.Hour)
 }
 
 // IssueFromLDAPWithValidity issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAPWithValidity(info *claims.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromLDAPWithValidity(info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
 	client := &http.Client{
 		Transport: &http.Transport{

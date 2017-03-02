@@ -111,6 +111,11 @@ func (a *MidgardAuthenticator) AuthenticateRequest(ctx *bahamut.Context) (bool, 
 		}
 	}
 
+	// TODO: I think that if the context already have some identity, we could skip the auth part,
+	// as it means it's coming from a push session already authenticated.
+	//
+	// But I'm not sure ;)
+
 	ok, identity, err := a.commonAuth(ctx.Request.Password)
 	ctx.Identity = identity
 
