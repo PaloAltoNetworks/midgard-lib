@@ -13,10 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/aporeto-inc/addedeffect/cache"
 	"github.com/aporeto-inc/elemental"
-	"github.com/aporeto-inc/squall/log"
 
 	midgardclient "github.com/aporeto-inc/midgard-lib/client"
 )
@@ -154,15 +152,8 @@ func (a *MidgardAuthenticator) commonAuth(token string) (bool, []string, error) 
 
 	identity, err := a.midgardClient.Authentify(token)
 	if err != nil {
-		log.Entry.WithFields(logrus.Fields{
-			"error": err.Error(),
-		}).Debug("ReST Authentication rejected.")
 		return false, nil, nil
 	}
-
-	log.Entry.WithFields(logrus.Fields{
-		"identity": identity,
-	}).Debug("Sucessfully authenticated ReST request.")
 
 	a.cache.SetWithExpiration(token, identity, a.cacheValidity)
 
