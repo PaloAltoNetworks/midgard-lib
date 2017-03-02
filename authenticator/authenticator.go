@@ -1,3 +1,11 @@
+// Package authenticator provides a ready to use Midgard-backed authenticator for
+// any Bahamut Server.
+//
+// It also provide a way to hijack the authentication process by passing CustomAuthRequestFunc
+// for API calls, and CustomAuthSessionFunc for authenticating WebSocket sessions.
+// Those function return CustomAuthResultOK to assume the authentication is a success,
+// CustomAuthResultNOK to fail the authentication, or CustomAuthResultContinue to continue
+// standard authentication process.
 package authenticator
 
 import (
@@ -7,38 +15,38 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/aporeto-inc/addedeffect/cache"
-	"github.com/aporeto-inc/bahamut"
+	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/squall/log"
 
 	midgardclient "github.com/aporeto-inc/midgard-lib/client"
 )
 
-// CustomAuthResult represents the result of the custom auth function.
+// CustomAuthResult represents the result of a CustomAuthRequestFunc or CustomAuthSessionFunc.
 type CustomAuthResult int
 
 const (
-	// CustomAuthResultOK represents a successful custom authentication.
+	// CustomAuthResultOK indicates a successful custom authentication.
 	CustomAuthResultOK CustomAuthResult = iota
 
-	// CustomAuthResultNOK represents a unsuccessful custom authentication.
+	// CustomAuthResultNOK indicates a failed custom authentication.
 	CustomAuthResultNOK
 
-	// CustomAuthResultContinue represents that the custom auth function
+	// CustomAuthResultContinue indicates that the custom auth function
 	// doesn't apply. The authentication will continue as usual.
 	CustomAuthResultContinue
 )
 
-// CustomAuthRequestFunc is the type of a function that can be ran to
+// CustomAuthRequestFunc is the type of functions that can be used to
 // decide custom authentication operations for requests. It returns a CustomAuthResult.
-type CustomAuthRequestFunc func(*bahamut.Context) (CustomAuthResult, error)
+type CustomAuthRequestFunc func(*elemental.Request) (CustomAuthResult, error)
 
-// CustomAuthSessionFunc is the type of a function that can be ran to
+// CustomAuthSessionFunc is the type of functions that can be used to
 // decide custom authentication operations sessions. It returns a CustomAuthResult.
-type CustomAuthSessionFunc func(*bahamut.PushSession) (CustomAuthResult, error)
+type CustomAuthSessionFunc func(elemental.SessionHolder) (CustomAuthResult, error)
 
-// An MidgardAuthenticator is the enforcer of the authorizations of all API calls.
-//
-// It implements the bahamut.MidgardAuthenticator interface.
+// A MidgardAuthenticator is a bahamut.Authenticator compliant structure to authentify
+// requests using a Midgard token. It supports custom authentication hijacking, a caching mechanism
+// and safe guard to not overload midgard in case of a lot of concurrent authentication requests.
 type MidgardAuthenticator struct {
 	cache                 cache.Cacher
 	cacheValidity         time.Duration
@@ -48,7 +56,7 @@ type MidgardAuthenticator struct {
 	pendingCache          cache.Cacher
 }
 
-// NewMidgardAuthenticator creates a new MidgardAuthenticator to use with Bahamut.
+// NewMidgardAuthenticator returns a new *MidgardAuthenticator.
 func NewMidgardAuthenticator(
 	midgardURL string,
 	serverCAPool *x509.CertPool,
@@ -70,11 +78,13 @@ func NewMidgardAuthenticator(
 }
 
 // AuthenticateSession authenticates the given session.
-func (a *MidgardAuthenticator) AuthenticateSession(session *bahamut.PushSession) (bool, error) {
+// It will return true if the authentication is a success, false in case of failure
+// and an eventual error in case of error.
+func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.SessionHolder) (bool, error) {
 
 	if a.customAuthSessionFunc != nil {
 
-		result, err := a.customAuthSessionFunc(session)
+		result, err := a.customAuthSessionFunc(sessionHolder)
 		if err != nil {
 			return false, err
 		}
@@ -87,18 +97,20 @@ func (a *MidgardAuthenticator) AuthenticateSession(session *bahamut.PushSession)
 		}
 	}
 
-	ok, identity, err := a.commonAuth(session.Parameters.Get("token"))
-	session.Identity = identity
+	ok, claims, err := a.commonAuth(sessionHolder.GetToken())
+	sessionHolder.SetClaims(claims)
 
 	return ok, err
 }
 
-// AuthenticateRequest authenticates the request from the given context.
-func (a *MidgardAuthenticator) AuthenticateRequest(ctx *bahamut.Context) (bool, error) {
+// AuthenticateRequest authenticates the request from the given bahamut.Context.
+// It will return true if the authentication is a success, false in case of failure
+// and an eventual error in case of error.
+func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claimsHolder elemental.ClaimsHolder) (bool, error) {
 
 	if a.customAuthRequestFunc != nil {
 
-		result, err := a.customAuthRequestFunc(ctx)
+		result, err := a.customAuthRequestFunc(req)
 		if err != nil {
 			return false, err
 		}
@@ -116,8 +128,8 @@ func (a *MidgardAuthenticator) AuthenticateRequest(ctx *bahamut.Context) (bool, 
 	//
 	// But I'm not sure ;)
 
-	ok, identity, err := a.commonAuth(ctx.Request.Password)
-	ctx.Identity = identity
+	ok, claims, err := a.commonAuth(req.Password)
+	claimsHolder.SetClaims(claims)
 
 	return ok, err
 }
