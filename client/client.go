@@ -93,11 +93,7 @@ func (a *Client) Authentify(token string) ([]string, error) {
 
 	auth := midgardmodels.NewAuth()
 
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			panic("Unable to close body reader.")
-		}
-	}()
+	defer resp.Body.Close() // nolint: errcheck
 
 	if err := json.NewDecoder(resp.Body).Decode(auth); err != nil {
 		log.WithFields(logrus.Fields{
@@ -256,11 +252,7 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
 	}
 
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			panic("Unable to close body reader.")
-		}
-	}()
+	defer resp.Body.Close() // nolint: errcheck
 
 	if err := json.NewDecoder(resp.Body).Decode(issueRequest); err != nil {
 		log.WithFields(logrus.Fields{
