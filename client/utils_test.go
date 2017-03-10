@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	midgardmodels "github.com/aporeto-inc/gaia/midgardmodels/golang"
+	midgardmodels "github.com/aporeto-inc/gaia/midgardmodels/current/golang"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
