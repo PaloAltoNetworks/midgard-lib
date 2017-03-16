@@ -216,6 +216,32 @@ func (a *Client) IssueFromVinceWithValidity(account string, password string, val
 	return a.sendRequest(client, issueRequest)
 }
 
+// IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document.
+func (a *Client) IssueFromAWSIdentityDocument(doc string) (string, error) {
+	return a.IssueFromAWSIdentityDocumentWithValidity(doc, 24*time.Hour)
+}
+
+// IssueFromAWSIdentityDocumentWithValidity issues a Midgard jwt from a signed AWS identity document for the given validity duration.
+func (a *Client) IssueFromAWSIdentityDocumentWithValidity(doc string, validity time.Duration) (string, error) {
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: a.skipVerify,
+				ClientCAs:          a.clientCAPool,
+				RootCAs:            a.rootCAPool,
+			},
+		},
+	}
+
+	issueRequest := midgardmodels.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{"doc": doc}
+	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
+	issueRequest.Validity = fmt.Sprintf("%s", validity)
+
+	return a.sendRequest(client, issueRequest)
+}
+
 func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
