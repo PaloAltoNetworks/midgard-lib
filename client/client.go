@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -271,14 +272,18 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 		return "", err
 	}
 
+	defer resp.Body.Close() // nolint: errcheck
+
 	if resp.StatusCode != 200 {
+		body, err := ioutil.ReadAll(resp.Body)
+
 		log.WithFields(logrus.Fields{
 			"realm": issueRequest.Realm,
+			"body":  string(body),
+			"error": err.Error(),
 		}).Debug("Midgard could not issue a token.")
 		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
 	}
-
-	defer resp.Body.Close() // nolint: errcheck
 
 	if err := json.NewDecoder(resp.Body).Decode(issueRequest); err != nil {
 		log.WithFields(logrus.Fields{
