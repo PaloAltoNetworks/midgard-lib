@@ -27,6 +27,7 @@ type Client struct {
 	clientCAPool *x509.CertPool
 	rootCAPool   *x509.CertPool
 	skipVerify   bool
+	httpClient   *http.Client
 }
 
 // NewClient returns a new Client.
@@ -52,22 +53,21 @@ func NewClientWithCAPool(url string, rootCAPool *x509.CertPool, clientCAPool *x5
 		rootCAPool:   rootCAPool,
 		clientCAPool: clientCAPool,
 		skipVerify:   skipVerify,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: skipVerify,
+					ClientCAs:          clientCAPool,
+					RootCAs:            rootCAPool,
+				},
+			},
+		},
 	}
 }
 
 // Authentify authentifies the information included in the given http.Header and
 // returns a list of tag string containing the claims.
 func (a *Client) Authentify(token string) ([]string, error) {
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: a.skipVerify,
-				ClientCAs:          a.clientCAPool,
-				RootCAs:            a.rootCAPool,
-			},
-		},
-	}
 
 	request, err := http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
 	if err != nil {
@@ -77,7 +77,7 @@ func (a *Client) Authentify(token string) ([]string, error) {
 		return nil, err
 	}
 
-	resp, err := client.Do(request)
+	resp, err := a.httpClient.Do(request)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err.Error(),
@@ -119,21 +119,12 @@ func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
 // IssueFromGoogleWithValidity issues a Midgard jwt from a Google JWT for the given validity duration.
 func (a *Client) IssueFromGoogleWithValidity(googleJWT string, validity time.Duration) (string, error) {
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: a.skipVerify,
-				RootCAs:            a.rootCAPool,
-			},
-		},
-	}
-
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmGoogle
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
-	return a.sendRequest(client, issueRequest)
+	return a.sendRequest(a.httpClient, issueRequest, false)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate.
@@ -144,6 +135,7 @@ func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, e
 // IssueFromCertificateWithValidity issues a Midgard jwt from a certificate for the given validity duration.
 func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate, validity time.Duration) (string, error) {
 
+	// Here we need a custom client per request so we can pass the client certificates.
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -159,7 +151,7 @@ func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate
 	issueRequest.Realm = midgardmodels.IssueRealmCertificate
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
-	return a.sendRequest(client, issueRequest)
+	return a.sendRequest(client, issueRequest, true)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
@@ -170,16 +162,6 @@ func (a *Client) IssueFromLDAP(info *ldaputils.LDAPInfo, vinceAccount string) (s
 // IssueFromLDAPWithValidity issues a Midgard jwt from a LDAP for the given validity duration.
 func (a *Client) IssueFromLDAPWithValidity(info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: a.skipVerify,
-				ClientCAs:          a.clientCAPool,
-				RootCAs:            a.rootCAPool,
-			},
-		},
-	}
-
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmLdap
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
@@ -188,7 +170,7 @@ func (a *Client) IssueFromLDAPWithValidity(info *ldaputils.LDAPInfo, vinceAccoun
 		issueRequest.Metadata["account"] = vinceAccount
 	}
 
-	return a.sendRequest(client, issueRequest)
+	return a.sendRequest(a.httpClient, issueRequest, false)
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince.
@@ -199,22 +181,12 @@ func (a *Client) IssueFromVince(account string, password string) (string, error)
 // IssueFromVinceWithValidity issues a Midgard jwt from a Vince for the given validity duration.
 func (a *Client) IssueFromVinceWithValidity(account string, password string, validity time.Duration) (string, error) {
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: a.skipVerify,
-				ClientCAs:          a.clientCAPool,
-				RootCAs:            a.rootCAPool,
-			},
-		},
-	}
-
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password}
 	issueRequest.Realm = midgardmodels.IssueRealmVince
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
-	return a.sendRequest(client, issueRequest)
+	return a.sendRequest(a.httpClient, issueRequest, false)
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document.
@@ -225,25 +197,15 @@ func (a *Client) IssueFromAWSIdentityDocument(doc string) (string, error) {
 // IssueFromAWSIdentityDocumentWithValidity issues a Midgard jwt from a signed AWS identity document for the given validity duration.
 func (a *Client) IssueFromAWSIdentityDocumentWithValidity(doc string, validity time.Duration) (string, error) {
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: a.skipVerify,
-				ClientCAs:          a.clientCAPool,
-				RootCAs:            a.rootCAPool,
-			},
-		},
-	}
-
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
 	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
 	issueRequest.Validity = fmt.Sprintf("%s", validity)
 
-	return a.sendRequest(client, issueRequest)
+	return a.sendRequest(a.httpClient, issueRequest, false)
 }
 
-func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Issue) (string, error) {
+func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Issue, closeConn bool) (string, error) {
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
@@ -261,6 +223,10 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 			"realm": issueRequest.Realm,
 		}).Error("Unable to create request.")
 		return "", err
+	}
+
+	if closeConn {
+		request.Close = true
 	}
 
 	resp, err := client.Do(request)
