@@ -247,7 +247,7 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 			"realm": issueRequest.Realm,
 			"body":  string(body),
 			"error": err.Error(),
-		}).Debug("Midgard could not issue a token.")
+		}).Error("Midgard could not issue a token.")
 		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
 	}
 
