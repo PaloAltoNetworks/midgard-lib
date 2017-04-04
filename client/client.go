@@ -241,12 +241,11 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 	defer resp.Body.Close() // nolint: errcheck
 
 	if resp.StatusCode != 200 {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body) // nolint: errcheck
 
 		log.WithFields(logrus.Fields{
 			"realm": issueRequest.Realm,
 			"body":  string(body),
-			"error": err.Error(),
 		}).Error("Midgard could not issue a token.")
 		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
 	}
