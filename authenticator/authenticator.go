@@ -15,6 +15,8 @@ import (
 
 	"github.com/aporeto-inc/addedeffect/cache"
 	"github.com/aporeto-inc/elemental"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 
 	midgardclient "github.com/aporeto-inc/midgard-lib/client"
 )
@@ -78,27 +80,41 @@ func NewMidgardAuthenticator(
 // AuthenticateSession authenticates the given session.
 // It will return true if the authentication is a success, false in case of failure
 // and an eventual error in case of error.
-func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.SessionHolder) (bool, error) {
+func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.SessionHolder, spanHolder elemental.SpanHolder) (bool, error) {
+
+	sp := spanHolder.NewChildSpan("midgardlib.authenticator.authenticate.session")
+	defer sp.Finish()
 
 	if a.customAuthSessionFunc != nil {
 
 		result, err := a.customAuthSessionFunc(sessionHolder)
 		if err != nil {
+			ext.Error.Set(sp, true)
+			sp.LogEventWithPayload("Error from custom auth function", err.Error())
 			return false, err
 		}
 
 		switch result {
 		case CustomAuthResultOK:
+			sp.LogEvent("Session authentication accepted from custom auth function")
 			return true, nil
 		case CustomAuthResultNOK:
+			sp.LogEvent("Session authentication rejected from custom auth function")
 			return false, nil
 		}
 	}
 
-	ok, claims, err := a.commonAuth(sessionHolder.GetToken())
-	sessionHolder.SetClaims(claims)
+	ok, claims, err := a.commonAuth(sessionHolder.GetToken(), sp)
+	if err != nil {
+		ext.Error.Set(sp, true)
+		sp.LogEventWithPayload("Unable to authenticate session", err.Error())
+		return false, nil
+	}
 
-	return ok, err
+	sessionHolder.SetClaims(claims)
+	sp.SetTag("claims", claims)
+
+	return ok, nil
 }
 
 // AuthenticateRequest authenticates the request from the given bahamut.Context.
@@ -106,17 +122,24 @@ func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.Sessi
 // and an eventual error in case of error.
 func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claimsHolder elemental.ClaimsHolder) (bool, error) {
 
+	sp := req.NewChildSpan("midgardlib.authenticator.authenticate.request")
+	defer sp.Finish()
+
 	if a.customAuthRequestFunc != nil {
 
 		result, err := a.customAuthRequestFunc(req)
 		if err != nil {
+			ext.Error.Set(sp, true)
+			sp.LogEventWithPayload("Error from custom auth function", err.Error())
 			return false, err
 		}
 
 		switch result {
 		case CustomAuthResultOK:
+			sp.LogEvent("Request authentication accepted from custom auth function")
 			return true, nil
 		case CustomAuthResultNOK:
+			sp.LogEvent("Request authentication rejected from custom auth function")
 			return false, nil
 		}
 	}
@@ -126,19 +149,28 @@ func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claim
 	//
 	// But I'm not sure ;)
 
-	ok, claims, err := a.commonAuth(req.Password)
-	claimsHolder.SetClaims(claims)
+	ok, claims, err := a.commonAuth(req.Password, sp)
 
-	return ok, err
+	if err != nil {
+		ext.Error.Set(sp, true)
+		sp.LogEventWithPayload("Unable to authenticate request", err.Error())
+		return false, err
+	}
+
+	claimsHolder.SetClaims(claims)
+	sp.SetTag("claims", claims)
+
+	return ok, nil
 }
 
-func (a *MidgardAuthenticator) commonAuth(token string) (bool, []string, error) {
+func (a *MidgardAuthenticator) commonAuth(token string, span opentracing.Span) (bool, []string, error) {
 
 	if wg := a.pendingCache.Get(token); wg != nil {
 		wg.(*sync.WaitGroup).Wait()
 	}
 
 	if i := a.cache.Get(token); i != nil {
+		span.LogEvent("Authenticated from cache")
 		return true, i.([]string), nil
 	}
 
@@ -150,12 +182,13 @@ func (a *MidgardAuthenticator) commonAuth(token string) (bool, []string, error) 
 		a.pendingCache.Del(token)
 	}()
 
-	identity, err := a.midgardClient.Authentify(token)
+	identity, err := a.midgardClient.AuthentifyWithTracking(token, span)
 	if err != nil {
-		return false, nil, nil
+		return false, nil, err
 	}
 
 	a.cache.SetWithExpiration(token, identity, a.cacheValidity)
 
+	span.LogEvent("Authenticated from Midgard")
 	return true, identity, nil
 }
