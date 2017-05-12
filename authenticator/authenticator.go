@@ -108,7 +108,7 @@ func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.Sessi
 	if err != nil {
 		ext.Error.Set(sp, true)
 		sp.LogEventWithPayload("Unable to authenticate session", err.Error())
-		return false, nil
+		return false, err
 	}
 
 	sessionHolder.SetClaims(claims)
