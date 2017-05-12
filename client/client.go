@@ -50,9 +50,9 @@ func NewClientWithCAPool(url string, rootCAPool *x509.CertPool, clientCAPool *x5
 		clientCAPool: clientCAPool,
 		skipVerify:   skipVerify,
 		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout: 60 * time.Second,
 			Transport: &http.Transport{
-				IdleConnTimeout:     30 * time.Second,
+				IdleConnTimeout:     120 * time.Second,
 				MaxIdleConnsPerHost: 100,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: skipVerify,
@@ -161,7 +161,7 @@ func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate
 
 	// Here we need a custom client per request so we can pass the client certificates.
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 60 * time.Second,
 		Transport: &http.Transport{
 			DisableKeepAlives:   true,
 			MaxIdleConnsPerHost: 100,
