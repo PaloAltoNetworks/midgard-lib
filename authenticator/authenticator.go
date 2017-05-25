@@ -10,6 +10,7 @@ package authenticator
 
 import (
 	"crypto/x509"
+	"net/http"
 	"sync"
 	"time"
 
@@ -44,6 +45,11 @@ type CustomAuthRequestFunc func(*elemental.Request) (CustomAuthResult, error)
 // decide custom authentication operations sessions. It returns a CustomAuthResult.
 type CustomAuthSessionFunc func(elemental.SessionHolder) (CustomAuthResult, error)
 
+// A RateLimiter a is the interface of a structure that can be used a rate limiter.
+type RateLimiter interface {
+	RateLimit(*http.Request) (bool, error)
+}
+
 // A MidgardAuthenticator is a bahamut.Authenticator compliant structure to authentify
 // requests using a Midgard token. It supports custom authentication hijacking, a caching mechanism
 // and safe guard to not overload midgard in case of a lot of concurrent authentication requests.
@@ -54,6 +60,7 @@ type MidgardAuthenticator struct {
 	customAuthSessionFunc CustomAuthSessionFunc
 	midgardClient         *midgardclient.Client
 	pendingCache          cache.Cacher
+	rateLimiter           RateLimiter
 }
 
 // NewMidgardAuthenticator returns a new *MidgardAuthenticator.
@@ -69,12 +76,18 @@ func NewMidgardAuthenticator(
 
 	return &MidgardAuthenticator{
 		cache:                 cache.NewMemoryCache(),
+		pendingCache:          cache.NewMemoryCache(),
 		cacheValidity:         cacheValidity,
 		customAuthSessionFunc: customAuthSessionFunc,
 		midgardClient:         midgardclient.NewClientWithCAPool(midgardURL, serverCAPool, clientCAPool, skipVerify),
-		pendingCache:          cache.NewMemoryCache(),
 		customAuthRequestFunc: customAuthRequestFunc,
 	}
+}
+
+// SetUnauthenticatedRateLimiter sets a rate limiter to use for unauthenticated calls.
+func (a *MidgardAuthenticator) SetUnauthenticatedRateLimiter(limiter RateLimiter) {
+
+	a.rateLimiter = limiter
 }
 
 // AuthenticateSession authenticates the given session.
@@ -191,4 +204,19 @@ func (a *MidgardAuthenticator) commonAuth(token string, span opentracing.Span) (
 
 	span.LogEvent("Authenticated from Midgard")
 	return true, identity, nil
+}
+
+// RateLimit is the implementation of the bahamut.RateLimiter interface.
+func (a *MidgardAuthenticator) RateLimit(req *http.Request) (bool, error) {
+
+	if a.rateLimiter == nil {
+		return false, nil
+	}
+
+	// If it's not empty and it is cached, we don't rate limit
+	if token := tokenFromRequest(req); token != "" && a.cache.Exists(token) {
+		return false, nil
+	}
+
+	return a.rateLimiter.RateLimit(req)
 }
