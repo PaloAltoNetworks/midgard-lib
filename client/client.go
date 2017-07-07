@@ -145,7 +145,7 @@ func (a *Client) IssueFromGoogleWithValidity(googleJWT string, validity time.Dur
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmGoogle
 	issueRequest.Data = googleJWT
-	issueRequest.Validity = fmt.Sprintf("%s", validity)
+	issueRequest.Validity = validity.String()
 
 	return a.sendRequest(a.httpClient, issueRequest, false, span)
 }
@@ -176,7 +176,7 @@ func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmCertificate
-	issueRequest.Validity = fmt.Sprintf("%s", validity)
+	issueRequest.Validity = validity.String()
 
 	return a.sendRequest(client, issueRequest, true, span)
 }
@@ -191,7 +191,7 @@ func (a *Client) IssueFromLDAPWithValidity(info *ldaputils.LDAPInfo, vinceAccoun
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmLdap
-	issueRequest.Validity = fmt.Sprintf("%s", validity)
+	issueRequest.Validity = validity.String()
 	issueRequest.Metadata = info.ToMap()
 	if vinceAccount != "" {
 		issueRequest.Metadata["account"] = vinceAccount
@@ -212,7 +212,7 @@ func (a *Client) IssueFromVinceWithValidity(account string, password string, val
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password}
 	issueRequest.Realm = midgardmodels.IssueRealmVince
-	issueRequest.Validity = fmt.Sprintf("%s", validity)
+	issueRequest.Validity = validity.String()
 
 	return a.sendRequest(a.httpClient, issueRequest, false, span)
 }
@@ -229,7 +229,7 @@ func (a *Client) IssueFromAWSIdentityDocumentWithValidity(doc string, validity t
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
 	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
-	issueRequest.Validity = fmt.Sprintf("%s", validity)
+	issueRequest.Validity = validity.String()
 
 	return a.sendRequest(a.httpClient, issueRequest, false, span)
 }
