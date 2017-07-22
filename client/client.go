@@ -9,12 +9,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aporeto-inc/gaia/midgardmodels/v1/golang"
 	"github.com/aporeto-inc/midgard-lib/ldaputils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
-
-	midgardmodels "github.com/aporeto-inc/gaia/midgardmodels/current/golang"
 )
 
 // A Client allows to interract with a midgard server.
