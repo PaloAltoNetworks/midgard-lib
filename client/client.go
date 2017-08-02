@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/gaia/midgardmodels/v1/golang"
 	"github.com/aporeto-inc/midgard-lib/ldaputils"
 	"github.com/opentracing/opentracing-go"
@@ -108,12 +109,17 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 
 		ext.Error.Set(sp, true)
 		sp.LogEvent("Midgard rejected the token")
 
-		return nil, fmt.Errorf("Unauthorized")
+		return nil, elemental.NewError(
+			"Unauthorized",
+			fmt.Sprintf("Authentication rejected with error: %s", resp.Status),
+			"midgard-lib",
+			http.StatusUnauthorized,
+		)
 	}
 
 	auth := midgardmodels.NewAuth()
