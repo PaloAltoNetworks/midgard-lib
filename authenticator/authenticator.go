@@ -61,7 +61,6 @@ type MidgardAuthenticator struct {
 	midgardClient         *midgardclient.Client
 	pendingCache          cache.Cacher
 	rateLimiter           RateLimiter
-	trackingType          string
 }
 
 // NewMidgardAuthenticator returns a new *MidgardAuthenticator.
