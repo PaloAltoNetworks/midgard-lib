@@ -19,6 +19,8 @@ import (
 
 // A Client allows to interract with a midgard server.
 type Client struct {
+	TrackingType string
+
 	url          string
 	clientCAPool *x509.CertPool
 	rootCAPool   *x509.CertPool
@@ -97,6 +99,10 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 		if err = sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
 			return nil, err
 		}
+	}
+
+	if a.TrackingType != "" {
+		request.Header.Set("X-External-Tracking-Type", a.TrackingType)
 	}
 
 	resp, err := a.httpClient.Do(request)

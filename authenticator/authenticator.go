@@ -61,6 +61,7 @@ type MidgardAuthenticator struct {
 	midgardClient         *midgardclient.Client
 	pendingCache          cache.Cacher
 	rateLimiter           RateLimiter
+	trackingType          string
 }
 
 // NewMidgardAuthenticator returns a new *MidgardAuthenticator.
@@ -88,6 +89,12 @@ func NewMidgardAuthenticator(
 func (a *MidgardAuthenticator) SetUnauthenticatedRateLimiter(limiter RateLimiter) {
 
 	a.rateLimiter = limiter
+}
+
+// SetTrackingType sets the tracking type to send to the client
+func (a *MidgardAuthenticator) SetTrackingType(trackingType string) {
+
+	a.midgardClient.TrackingType = trackingType
 }
 
 // AuthenticateSession authenticates the given session.
