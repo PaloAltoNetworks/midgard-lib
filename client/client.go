@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -280,11 +281,25 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 		return "", err
 	}
 
+	defer resp.Body.Close() // nolint: errcheck
+
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("Could not issue token. Response code %d", resp.StatusCode)
+
+		// Read the response body
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("Midgard did not issue a token and client could not read why: %s (statusCode: %d)", err, resp.StatusCode)
+		}
+
+		// Try to decode the errors
+		errs, err := elemental.DecodeErrors(data)
+		if err != nil {
+			return "", fmt.Errorf("Midgard did not issue a token and client could not decode why: %s (statusCode: %d)", err, resp.StatusCode)
+		}
+
+		return "", errs
 	}
 
-	defer resp.Body.Close() // nolint: errcheck
 	if err := json.NewDecoder(resp.Body).Decode(issueRequest); err != nil {
 		return "", err
 	}
