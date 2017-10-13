@@ -14,36 +14,24 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aporeto-inc/bahamut"
+
 	"github.com/aporeto-inc/addedeffect/cache"
 	"github.com/aporeto-inc/elemental"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/log"
 
 	midgardclient "github.com/aporeto-inc/midgard-lib/client"
 )
 
-// CustomAuthResult represents the result of a CustomAuthRequestFunc or CustomAuthSessionFunc.
-type CustomAuthResult int
-
-const (
-	// CustomAuthResultOK indicates a successful custom authentication.
-	CustomAuthResultOK CustomAuthResult = iota
-
-	// CustomAuthResultNOK indicates a failed custom authentication.
-	CustomAuthResultNOK
-
-	// CustomAuthResultContinue indicates that the custom auth function
-	// doesn't apply. The authentication will continue as usual.
-	CustomAuthResultContinue
-)
-
 // CustomAuthRequestFunc is the type of functions that can be used to
-// decide custom authentication operations for requests. It returns a CustomAuthResult.
-type CustomAuthRequestFunc func(*elemental.Request) (CustomAuthResult, error)
+// decide custom authentication operations for requests. It returns a bahamut.AuthAction.
+type CustomAuthRequestFunc func(*elemental.Request) (bahamut.AuthAction, error)
 
 // CustomAuthSessionFunc is the type of functions that can be used to
-// decide custom authentication operations sessions. It returns a CustomAuthResult.
-type CustomAuthSessionFunc func(elemental.SessionHolder) (CustomAuthResult, error)
+// decide custom authentication operations sessions. It returns a bahamut.AuthAction.
+type CustomAuthSessionFunc func(elemental.SessionHolder) (bahamut.AuthAction, error)
 
 // A RateLimiter a is the interface of a structure that can be used a rate limiter.
 type RateLimiter interface {
@@ -99,7 +87,7 @@ func (a *MidgardAuthenticator) SetTrackingType(trackingType string) {
 // AuthenticateSession authenticates the given session.
 // It will return true if the authentication is a success, false in case of failure
 // and an eventual error in case of error.
-func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.SessionHolder, spanHolder elemental.SpanHolder) (bool, error) {
+func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.SessionHolder, spanHolder elemental.SpanHolder) (bahamut.AuthAction, error) {
 
 	sp := spanHolder.NewChildSpan("midgardlib.authenticator.authenticate.session")
 	defer sp.Finish()
@@ -110,36 +98,33 @@ func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.Sessi
 		if err != nil {
 			ext.Error.Set(sp, true)
 			sp.LogEventWithPayload("Error from custom auth function", err.Error())
-			return false, err
+			return bahamut.AuthActionKO, err
 		}
 
-		switch result {
-		case CustomAuthResultOK:
-			sp.LogEvent("Session authentication accepted from custom auth function")
-			return true, nil
-		case CustomAuthResultNOK:
-			sp.LogEvent("Session authentication rejected from custom auth function")
-			return false, nil
+		if result != bahamut.AuthActionContinue {
+			sp.LogEvent("Session authentication handled from custom auth function")
+			sp.LogFields(log.Bool("granted", result == bahamut.AuthActionOK))
+			return result, nil
 		}
 	}
 
-	ok, claims, err := a.commonAuth(sessionHolder.GetToken(), sp)
+	action, claims, err := a.commonAuth(sessionHolder.GetToken(), sp)
 	if err != nil {
 		ext.Error.Set(sp, true)
 		sp.LogEventWithPayload("Unable to authenticate session", err.Error())
-		return false, err
+		return bahamut.AuthActionKO, err
 	}
 
 	sessionHolder.SetClaims(claims)
 	sp.SetTag("claims", claims)
 
-	return ok, nil
+	return action, nil
 }
 
 // AuthenticateRequest authenticates the request from the given bahamut.Context.
 // It will return true if the authentication is a success, false in case of failure
 // and an eventual error in case of error.
-func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claimsHolder elemental.ClaimsHolder) (bool, error) {
+func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claimsHolder elemental.ClaimsHolder) (bahamut.AuthAction, error) {
 
 	sp := req.NewChildSpan("midgardlib.authenticator.authenticate.request")
 	defer sp.Finish()
@@ -150,16 +135,13 @@ func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claim
 		if err != nil {
 			ext.Error.Set(sp, true)
 			sp.LogEventWithPayload("Error from custom auth function", err.Error())
-			return false, err
+			return bahamut.AuthActionKO, err
 		}
 
-		switch result {
-		case CustomAuthResultOK:
-			sp.LogEvent("Request authentication accepted from custom auth function")
-			return true, nil
-		case CustomAuthResultNOK:
-			sp.LogEvent("Request authentication rejected from custom auth function")
-			return false, nil
+		if result != bahamut.AuthActionContinue {
+			sp.LogEvent("request authentication handled from custom auth function")
+			sp.LogFields(log.Bool("granted", result == bahamut.AuthActionOK))
+			return result, nil
 		}
 	}
 
@@ -168,21 +150,21 @@ func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claim
 	//
 	// But I'm not sure ;)
 
-	ok, claims, err := a.commonAuth(req.Password, sp)
+	action, claims, err := a.commonAuth(req.Password, sp)
 
 	if err != nil {
 		ext.Error.Set(sp, true)
 		sp.LogEventWithPayload("Unable to authenticate request", err.Error())
-		return false, err
+		return bahamut.AuthActionKO, err
 	}
 
 	claimsHolder.SetClaims(claims)
 	sp.SetTag("claims", claims)
 
-	return ok, nil
+	return action, nil
 }
 
-func (a *MidgardAuthenticator) commonAuth(token string, span opentracing.Span) (bool, []string, error) {
+func (a *MidgardAuthenticator) commonAuth(token string, span opentracing.Span) (bahamut.AuthAction, []string, error) {
 
 	if wg := a.pendingCache.Get(token); wg != nil {
 		wg.(*sync.WaitGroup).Wait()
@@ -190,7 +172,7 @@ func (a *MidgardAuthenticator) commonAuth(token string, span opentracing.Span) (
 
 	if i := a.cache.Get(token); i != nil {
 		span.LogEvent("Authenticated from cache")
-		return true, i.([]string), nil
+		return bahamut.AuthActionContinue, i.([]string), nil
 	}
 
 	var wg sync.WaitGroup
@@ -203,13 +185,13 @@ func (a *MidgardAuthenticator) commonAuth(token string, span opentracing.Span) (
 
 	identity, err := a.midgardClient.AuthentifyWithTracking(token, span)
 	if err != nil {
-		return false, nil, err
+		return bahamut.AuthActionContinue, nil, err
 	}
 
 	a.cache.SetWithExpiration(token, identity, a.cacheValidity)
 
 	span.LogEvent("Authenticated from Midgard")
-	return true, identity, nil
+	return bahamut.AuthActionContinue, identity, nil
 }
 
 // RateLimit is the implementation of the bahamut.RateLimiter interface.
