@@ -191,7 +191,7 @@ func (a *MidgardAuthenticator) commonAuth(token string, span opentracing.Span) (
 	a.cache.SetWithExpiration(token, identity, a.cacheValidity)
 
 	span.LogEvent("Authenticated from Midgard")
-	return bahamut.AuthActionContinue, identity, nil
+	return bahamut.AuthActionOK, identity, nil
 }
 
 // RateLimit is the implementation of the bahamut.RateLimiter interface.
