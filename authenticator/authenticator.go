@@ -55,7 +55,6 @@ type MidgardAuthenticator struct {
 func NewMidgardAuthenticator(
 	midgardURL string,
 	serverCAPool *x509.CertPool,
-	clientCAPool *x509.CertPool,
 	skipVerify bool,
 	customAuthRequestFunc CustomAuthRequestFunc,
 	customAuthSessionFunc CustomAuthSessionFunc,
@@ -67,7 +66,7 @@ func NewMidgardAuthenticator(
 		pendingCache:          cache.NewMemoryCache(),
 		cacheValidity:         cacheValidity,
 		customAuthSessionFunc: customAuthSessionFunc,
-		midgardClient:         midgardclient.NewClientWithCAPool(midgardURL, serverCAPool, clientCAPool, skipVerify),
+		midgardClient:         midgardclient.NewClientWithCAPool(midgardURL, serverCAPool, skipVerify),
 		customAuthRequestFunc: customAuthRequestFunc,
 	}
 }

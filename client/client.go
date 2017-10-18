@@ -37,21 +37,20 @@ func NewClient(url string) *Client {
 		CAPool = x509.NewCertPool()
 	}
 
-	return NewClientWithCAPool(url, CAPool, nil, true)
+	return NewClientWithCAPool(url, CAPool, true)
 }
 
 // NewClientWithCAPool returns a new Client configured with the given x509.CAPool.
-func NewClientWithCAPool(url string, rootCAPool *x509.CertPool, clientCAPool *x509.CertPool, skipVerify bool) *Client {
+func NewClientWithCAPool(url string, rootCAPool *x509.CertPool, skipVerify bool) *Client {
 
 	if url == "" {
 		panic("Missing Midgard URL.")
 	}
 
 	return &Client{
-		url:          url,
-		rootCAPool:   rootCAPool,
-		clientCAPool: clientCAPool,
-		skipVerify:   skipVerify,
+		url:        url,
+		rootCAPool: rootCAPool,
+		skipVerify: skipVerify,
 		httpClient: &http.Client{
 			Timeout: 60 * time.Second,
 			Transport: &http.Transport{
@@ -59,7 +58,6 @@ func NewClientWithCAPool(url string, rootCAPool *x509.CertPool, clientCAPool *x5
 				MaxIdleConnsPerHost: 100,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: skipVerify,
-					ClientCAs:          clientCAPool,
 					RootCAs:            rootCAPool,
 				},
 			},
