@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aporeto-inc/addedeffect/tokensnip"
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/gaia/midgardmodels/v1/golang"
 	"github.com/aporeto-inc/midgard-lib/ldaputils"
@@ -106,12 +107,11 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 
 	resp, err := a.httpClient.Do(request)
 	if err != nil {
-
 		ext.Error.Set(sp, true)
 		sp.LogEvent("Midgard could not be reached")
 		sp.LogFields(log.Error(err))
 
-		return nil, err
+		return nil, tokensnip.Snip(err, token)
 	}
 
 	if resp.StatusCode != http.StatusOK {
