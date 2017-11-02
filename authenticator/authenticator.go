@@ -17,7 +17,6 @@ import (
 	"github.com/aporeto-inc/bahamut"
 
 	"github.com/aporeto-inc/addedeffect/cache"
-	"github.com/aporeto-inc/elemental"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -27,11 +26,11 @@ import (
 
 // CustomAuthRequestFunc is the type of functions that can be used to
 // decide custom authentication operations for requests. It returns a bahamut.AuthAction.
-type CustomAuthRequestFunc func(*elemental.Request) (bahamut.AuthAction, error)
+type CustomAuthRequestFunc func(*bahamut.Context) (bahamut.AuthAction, error)
 
 // CustomAuthSessionFunc is the type of functions that can be used to
 // decide custom authentication operations sessions. It returns a bahamut.AuthAction.
-type CustomAuthSessionFunc func(elemental.SessionHolder) (bahamut.AuthAction, error)
+type CustomAuthSessionFunc func(bahamut.Session) (bahamut.AuthAction, error)
 
 // A RateLimiter a is the interface of a structure that can be used a rate limiter.
 type RateLimiter interface {
@@ -86,14 +85,14 @@ func (a *MidgardAuthenticator) SetTrackingType(trackingType string) {
 // AuthenticateSession authenticates the given session.
 // It will return true if the authentication is a success, false in case of failure
 // and an eventual error in case of error.
-func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.SessionHolder, spanHolder elemental.SpanHolder) (bahamut.AuthAction, error) {
+func (a *MidgardAuthenticator) AuthenticateSession(session bahamut.Session) (bahamut.AuthAction, error) {
 
-	sp := spanHolder.NewChildSpan("midgardlib.authenticator.authenticate.session")
+	sp := session.NewChildSpan("midgardlib.authenticator.authenticate.session")
 	defer sp.Finish()
 
 	if a.customAuthSessionFunc != nil {
 
-		result, err := a.customAuthSessionFunc(sessionHolder)
+		result, err := a.customAuthSessionFunc(session)
 		if err != nil {
 			ext.Error.Set(sp, true)
 			sp.LogEventWithPayload("Error from custom auth function", err.Error())
@@ -107,14 +106,14 @@ func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.Sessi
 		}
 	}
 
-	action, claims, err := a.commonAuth(sessionHolder.GetToken(), sp)
+	action, claims, err := a.commonAuth(session.GetToken(), sp)
 	if err != nil {
 		ext.Error.Set(sp, true)
 		sp.LogEventWithPayload("Unable to authenticate session", err.Error())
 		return bahamut.AuthActionKO, err
 	}
 
-	sessionHolder.SetClaims(claims)
+	session.SetClaims(claims)
 	sp.SetTag("claims", claims)
 
 	return action, nil
@@ -123,14 +122,14 @@ func (a *MidgardAuthenticator) AuthenticateSession(sessionHolder elemental.Sessi
 // AuthenticateRequest authenticates the request from the given bahamut.Context.
 // It will return true if the authentication is a success, false in case of failure
 // and an eventual error in case of error.
-func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claimsHolder elemental.ClaimsHolder) (bahamut.AuthAction, error) {
+func (a *MidgardAuthenticator) AuthenticateRequest(ctx *bahamut.Context) (bahamut.AuthAction, error) {
 
-	sp := req.NewChildSpan("midgardlib.authenticator.authenticate.request")
+	sp := ctx.Request.NewChildSpan("midgardlib.authenticator.authenticate.request")
 	defer sp.Finish()
 
 	if a.customAuthRequestFunc != nil {
 
-		result, err := a.customAuthRequestFunc(req)
+		result, err := a.customAuthRequestFunc(ctx)
 		if err != nil {
 			ext.Error.Set(sp, true)
 			sp.LogEventWithPayload("Error from custom auth function", err.Error())
@@ -149,7 +148,7 @@ func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claim
 	//
 	// But I'm not sure ;)
 
-	action, claims, err := a.commonAuth(req.Password, sp)
+	action, claims, err := a.commonAuth(ctx.Request.Password, sp)
 
 	if err != nil {
 		ext.Error.Set(sp, true)
@@ -157,7 +156,7 @@ func (a *MidgardAuthenticator) AuthenticateRequest(req *elemental.Request, claim
 		return bahamut.AuthActionKO, err
 	}
 
-	claimsHolder.SetClaims(claims)
+	ctx.SetClaims(claims)
 	sp.SetTag("claims", claims)
 
 	return action, nil
