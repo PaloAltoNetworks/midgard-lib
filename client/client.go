@@ -219,8 +219,14 @@ func (a *Client) IssueFromVince(account string, password string) (string, error)
 // IssueFromVinceWithValidity issues a Midgard jwt from a Vince for the given validity duration.
 func (a *Client) IssueFromVinceWithValidity(account string, password string, validity time.Duration, span opentracing.Span) (string, error) {
 
+	return a.IssueFromVinceWithOTPAndValidity(account, password, "", validity, span)
+}
+
+// IssueFromVinceWithOTPAndValidity issues a Midgard jwt from a Vince for the given one time password and validity duration.
+func (a *Client) IssueFromVinceWithOTPAndValidity(account string, password string, otp string, validity time.Duration, span opentracing.Span) (string, error) {
+
 	issueRequest := midgardmodels.NewIssue()
-	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password}
+	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password, "vinceOTP": otp}
 	issueRequest.Realm = midgardmodels.IssueRealmVince
 	issueRequest.Validity = validity.String()
 
