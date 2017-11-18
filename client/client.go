@@ -89,7 +89,6 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 	if err != nil {
 
 		ext.Error.Set(sp, true)
-		sp.LogEvent("Unable to create request")
 		sp.LogFields(log.Error(err))
 
 		return nil, err
@@ -108,7 +107,6 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 	resp, err := a.httpClient.Do(request)
 	if err != nil {
 		ext.Error.Set(sp, true)
-		sp.LogEvent("Midgard could not be reached")
 		sp.LogFields(log.Error(err))
 
 		return nil, tokensnip.Snip(err, token)
@@ -117,7 +115,6 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 	if resp.StatusCode != http.StatusOK {
 
 		ext.Error.Set(sp, true)
-		sp.LogEvent("Midgard rejected the token")
 
 		return nil, elemental.NewError(
 			"Unauthorized",
@@ -134,7 +131,6 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 	if err := json.NewDecoder(resp.Body).Decode(auth); err != nil {
 
 		ext.Error.Set(sp, true)
-		sp.LogEvent("Could not decode json")
 		sp.LogFields(log.Error(err))
 
 		return nil, err
