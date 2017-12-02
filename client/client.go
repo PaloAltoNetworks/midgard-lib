@@ -288,13 +288,13 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 		// Read the response body
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return "", fmt.Errorf("Midgard did not issue a token and client could not read why: %s (statusCode: %d)", err, resp.StatusCode)
+			return "", fmt.Errorf("midgard did not issue a token and client could not read why: %s (statusCode: %d)", err, resp.StatusCode)
 		}
 
 		// Try to decode the errors
 		errs, err := elemental.DecodeErrors(data)
 		if err != nil {
-			return "", fmt.Errorf("Midgard did not issue a token and client could not decode why: %s (statusCode: %d)", err, resp.StatusCode)
+			return "", fmt.Errorf("midgard did not issue a token and client could not decode why: %s (statusCode: %d)", err, resp.StatusCode)
 		}
 
 		return "", errs
