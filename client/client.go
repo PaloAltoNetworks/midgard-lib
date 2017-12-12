@@ -104,7 +104,7 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 		request.Header.Set("X-External-Tracking-Type", a.TrackingType)
 	}
 
-	resp, err := a.httpClient.Do(request)
+	resp, err := sendRetry(a.httpClient, request, 10)
 	if err != nil {
 		ext.Error.Set(sp, true)
 		sp.LogFields(log.Error(err))
@@ -276,7 +276,7 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 		request.Close = true
 	}
 
-	resp, err := client.Do(request)
+	resp, err := sendRetry(client, request, 10)
 	if err != nil {
 		return "", err
 	}
@@ -305,4 +305,24 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 	}
 
 	return issueRequest.Token, nil
+}
+
+func sendRetry(client *http.Client, request *http.Request, max int) (*http.Response, error) {
+
+	var tryN int
+	for {
+		tryN++
+
+		resp, err := client.Do(request)
+		if err == nil {
+			return resp, nil
+		}
+
+		if tryN <= max {
+			<-time.After(1 * time.Second)
+			continue
+		}
+
+		return nil, err
+	}
 }
