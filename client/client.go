@@ -85,26 +85,30 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 	}
 	defer sp.Finish()
 
-	request, err := http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
-	if err != nil {
+	builder := func() (*http.Request, error) {
+		request, err := http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
+		if err != nil {
 
-		ext.Error.Set(sp, true)
-		sp.LogFields(log.Error(err))
+			ext.Error.Set(sp, true)
+			sp.LogFields(log.Error(err))
 
-		return nil, err
-	}
-
-	if sp.Tracer() != nil {
-		if err = sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
 			return nil, err
 		}
+
+		if sp.Tracer() != nil {
+			if err := sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
+				return nil, err
+			}
+		}
+
+		if a.TrackingType != "" {
+			request.Header.Set("X-External-Tracking-Type", a.TrackingType)
+		}
+
+		return request, nil
 	}
 
-	if a.TrackingType != "" {
-		request.Header.Set("X-External-Tracking-Type", a.TrackingType)
-	}
-
-	resp, err := sendRetry(a.httpClient, request, 10)
+	resp, err := sendRetry(a.httpClient, builder, 10)
 	if err != nil {
 		ext.Error.Set(sp, true)
 		sp.LogFields(log.Error(err))
@@ -256,27 +260,31 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 	}
 	defer sp.Finish()
 
-	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
-		return "", err
-	}
-
-	request, err := http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
-	if err != nil {
-		return "", err
-	}
-
-	if sp.Tracer() != nil {
-		if err = sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
-			return "", err
+	builder := func() (*http.Request, error) {
+		buffer := &bytes.Buffer{}
+		if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
+			return nil, err
 		}
+
+		request, err := http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
+		if err != nil {
+			return nil, err
+		}
+
+		if sp.Tracer() != nil {
+			if err = sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
+				return nil, err
+			}
+		}
+
+		if closeConn {
+			request.Close = true
+		}
+
+		return request, nil
 	}
 
-	if closeConn {
-		request.Close = true
-	}
-
-	resp, err := sendRetry(client, request, 10)
+	resp, err := sendRetry(client, builder, 10)
 	if err != nil {
 		return "", err
 	}
@@ -307,7 +315,12 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 	return issueRequest.Token, nil
 }
 
-func sendRetry(client *http.Client, request *http.Request, max int) (*http.Response, error) {
+func sendRetry(client *http.Client, requestBuilder func() (*http.Request, error), max int) (*http.Response, error) {
+
+	request, err := requestBuilder()
+	if err != nil {
+		return nil, err
+	}
 
 	var tryN int
 	for {
