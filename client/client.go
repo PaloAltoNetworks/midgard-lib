@@ -317,14 +317,14 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 
 func sendRetry(client *http.Client, requestBuilder func() (*http.Request, error), max int) (*http.Response, error) {
 
-	request, err := requestBuilder()
-	if err != nil {
-		return nil, err
-	}
-
 	var tryN int
 	for {
 		tryN++
+
+		request, err := requestBuilder()
+		if err != nil {
+			return nil, err
+		}
 
 		resp, err := client.Do(request)
 		if err == nil {
