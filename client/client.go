@@ -17,6 +17,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
+	"go.uber.org/zap"
 )
 
 // A Client allows to interract with a midgard server.
@@ -330,6 +331,7 @@ func sendRetry(client *http.Client, requestBuilder func() (*http.Request, error)
 		if err == nil {
 			return resp, nil
 		}
+		zap.L().Warn("Unable to send request to midgard. Retrying", zap.Error(err))
 
 		if tryN <= max {
 			<-time.After(1 * time.Second)
