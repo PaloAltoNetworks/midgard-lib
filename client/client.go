@@ -29,6 +29,7 @@ type Client struct {
 	rootCAPool   *x509.CertPool
 	skipVerify   bool
 	httpClient   *http.Client
+	closeConn    bool
 }
 
 // NewClient returns a new Client.
@@ -65,6 +66,11 @@ func NewClientWithCAPool(url string, rootCAPool *x509.CertPool, skipVerify bool)
 			},
 		},
 	}
+}
+
+// SetKeepAliveEnabled sets if the connection should be reused of not.
+func (a *Client) SetKeepAliveEnabled(e bool) {
+	a.closeConn = e
 }
 
 // Authentify authentifies the information included in the given token and
@@ -158,7 +164,7 @@ func (a *Client) IssueFromGoogleWithValidity(googleJWT string, validity time.Dur
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(a.httpClient, issueRequest, false, span)
+	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate.
@@ -189,7 +195,7 @@ func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate
 	issueRequest.Realm = midgardmodels.IssueRealmCertificate
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(client, issueRequest, true, span)
+	return a.sendRequest(client, issueRequest, a.closeConn, span)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
@@ -208,7 +214,7 @@ func (a *Client) IssueFromLDAPWithValidity(info *ldaputils.LDAPInfo, vinceAccoun
 		issueRequest.Metadata["account"] = vinceAccount
 	}
 
-	return a.sendRequest(a.httpClient, issueRequest, false, span)
+	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince.
@@ -231,7 +237,7 @@ func (a *Client) IssueFromVinceWithOTPAndValidity(account string, password strin
 	issueRequest.Realm = midgardmodels.IssueRealmVince
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(a.httpClient, issueRequest, false, span)
+	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document.
@@ -248,7 +254,7 @@ func (a *Client) IssueFromAWSIdentityDocumentWithValidity(doc string, validity t
 	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(a.httpClient, issueRequest, false, span)
+	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
 }
 
 func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Issue, closeConn bool, span opentracing.Span) (string, error) {
