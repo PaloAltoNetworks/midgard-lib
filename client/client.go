@@ -2,6 +2,7 @@ package midgardclient
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -24,12 +25,10 @@ import (
 type Client struct {
 	TrackingType string
 
-	url          string
-	clientCAPool *x509.CertPool
-	rootCAPool   *x509.CertPool
-	skipVerify   bool
-	httpClient   *http.Client
-	closeConn    bool
+	url        string
+	tlsConfig  *tls.Config
+	httpClient *http.Client
+	closeConn  bool
 }
 
 // NewClient returns a new Client.
@@ -40,29 +39,29 @@ func NewClient(url string) *Client {
 		CAPool = x509.NewCertPool()
 	}
 
-	return NewClientWithCAPool(url, CAPool, true)
+	return NewClientWithTLS(
+		url,
+		&tls.Config{
+			InsecureSkipVerify: true,
+			RootCAs:            CAPool,
+		},
+	)
 }
 
-// NewClientWithCAPool returns a new Client configured with the given x509.CAPool.
-func NewClientWithCAPool(url string, rootCAPool *x509.CertPool, skipVerify bool) *Client {
+// NewClientWithTLS returns a new Client configured with the given x509.CAPool.
+func NewClientWithTLS(url string, tlsConfig *tls.Config) *Client {
 
 	if url == "" {
 		panic("Missing Midgard URL.")
 	}
 
 	return &Client{
-		url:        url,
-		rootCAPool: rootCAPool,
-		skipVerify: skipVerify,
+		url:       url,
+		tlsConfig: tlsConfig,
 		httpClient: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
-				IdleConnTimeout:     120 * time.Second,
-				MaxIdleConnsPerHost: 100,
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: skipVerify,
-					RootCAs:            rootCAPool,
-				},
+				TLSClientConfig: tlsConfig,
 			},
 		},
 	}
@@ -77,12 +76,15 @@ func (a *Client) SetKeepAliveEnabled(e bool) {
 // returns a list of tag string containing the claims.
 func (a *Client) Authentify(token string) ([]string, error) {
 
-	return a.AuthentifyWithTracking(token, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return a.AuthentifyWithTracking(ctx, token, nil)
 }
 
 // AuthentifyWithTracking authentifies the information using the given token and
 // returns a list of tag string containing the claims.
-func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]string, error) {
+func (a *Client) AuthentifyWithTracking(ctx context.Context, token string, span opentracing.Span) ([]string, error) {
 
 	var sp opentracing.Span
 	if span != nil {
@@ -115,7 +117,7 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 		return request, nil
 	}
 
-	resp, err := sendRetry(a.httpClient, builder, 10)
+	resp, err := sendRetry(ctx, a.httpClient, builder)
 	if err != nil {
 		ext.Error.Set(sp, true)
 		sp.LogFields(log.Error(err))
@@ -153,58 +155,53 @@ func (a *Client) AuthentifyWithTracking(token string, span opentracing.Span) ([]
 // IssueFromGoogle issues a Midgard jwt from a Google JWT.
 func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
 
-	return a.IssueFromGoogleWithValidity(googleJWT, 24*time.Hour, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return a.IssueFromGoogleWithValidity(ctx, googleJWT, 24*time.Hour, nil)
 }
 
 // IssueFromGoogleWithValidity issues a Midgard jwt from a Google JWT for the given validity duration.
-func (a *Client) IssueFromGoogleWithValidity(googleJWT string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromGoogleWithValidity(ctx context.Context, googleJWT string, validity time.Duration, span opentracing.Span) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmGoogle
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
+	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate.
 func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, error) {
 
-	return a.IssueFromCertificateWithValidity(certificates, 24*time.Hour, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return a.IssueFromCertificateWithValidity(ctx, 24*time.Hour, nil)
 }
 
 // IssueFromCertificateWithValidity issues a Midgard jwt from a certificate for the given validity duration.
-func (a *Client) IssueFromCertificateWithValidity(certificates []tls.Certificate, validity time.Duration, span opentracing.Span) (string, error) {
-
-	// Here we need a custom client per request so we can pass the client certificates.
-	client := &http.Client{
-		Timeout: 60 * time.Second,
-		Transport: &http.Transport{
-			DisableKeepAlives:   true,
-			MaxIdleConnsPerHost: 100,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: a.skipVerify,
-				ClientCAs:          a.clientCAPool,
-				RootCAs:            a.rootCAPool,
-				Certificates:       certificates,
-			},
-		},
-	}
+func (a *Client) IssueFromCertificateWithValidity(ctx context.Context, validity time.Duration, span opentracing.Span) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmCertificate
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(client, issueRequest, a.closeConn, span)
+	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
 func (a *Client) IssueFromLDAP(info *ldaputils.LDAPInfo, vinceAccount string) (string, error) {
-	return a.IssueFromLDAPWithValidity(info, vinceAccount, 24*time.Hour, nil)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return a.IssueFromLDAPWithValidity(ctx, info, vinceAccount, 24*time.Hour, nil)
 }
 
 // IssueFromLDAPWithValidity issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAPWithValidity(info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration, span opentracing.Span) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmLdap
@@ -214,50 +211,56 @@ func (a *Client) IssueFromLDAPWithValidity(info *ldaputils.LDAPInfo, vinceAccoun
 		issueRequest.Metadata["account"] = vinceAccount
 	}
 
-	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
+	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince.
 func (a *Client) IssueFromVince(account string, password string) (string, error) {
 
-	return a.IssueFromVinceWithValidity(account, password, 24*time.Hour, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return a.IssueFromVinceWithValidity(ctx, account, password, 24*time.Hour, nil)
 }
 
 // IssueFromVinceWithValidity issues a Midgard jwt from a Vince for the given validity duration.
-func (a *Client) IssueFromVinceWithValidity(account string, password string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromVinceWithValidity(ctx context.Context, account string, password string, validity time.Duration, span opentracing.Span) (string, error) {
 
-	return a.IssueFromVinceWithOTPAndValidity(account, password, "", validity, span)
+	return a.IssueFromVinceWithOTPAndValidity(ctx, account, password, "", validity, span)
 }
 
 // IssueFromVinceWithOTPAndValidity issues a Midgard jwt from a Vince for the given one time password and validity duration.
-func (a *Client) IssueFromVinceWithOTPAndValidity(account string, password string, otp string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromVinceWithOTPAndValidity(ctx context.Context, account string, password string, otp string, validity time.Duration, span opentracing.Span) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password, "vinceOTP": otp}
 	issueRequest.Realm = midgardmodels.IssueRealmVince
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
+	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document.
 func (a *Client) IssueFromAWSIdentityDocument(doc string) (string, error) {
 
-	return a.IssueFromAWSIdentityDocumentWithValidity(doc, 24*time.Hour, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return a.IssueFromAWSIdentityDocumentWithValidity(ctx, doc, 24*time.Hour, nil)
 }
 
 // IssueFromAWSIdentityDocumentWithValidity issues a Midgard jwt from a signed AWS identity document for the given validity duration.
-func (a *Client) IssueFromAWSIdentityDocumentWithValidity(doc string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, doc string, validity time.Duration, span opentracing.Span) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
 	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(a.httpClient, issueRequest, a.closeConn, span)
+	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
 }
 
-func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Issue, closeConn bool, span opentracing.Span) (string, error) {
+func (a *Client) sendRequest(ctx context.Context, client *http.Client, issueRequest *midgardmodels.Issue, closeConn bool, span opentracing.Span) (string, error) {
 
 	var sp opentracing.Span
 	if span != nil {
@@ -291,7 +294,7 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 		return request, nil
 	}
 
-	resp, err := sendRetry(client, builder, 10)
+	resp, err := sendRetry(ctx, client, builder)
 	if err != nil {
 		return "", err
 	}
@@ -322,12 +325,9 @@ func (a *Client) sendRequest(client *http.Client, issueRequest *midgardmodels.Is
 	return issueRequest.Token, nil
 }
 
-func sendRetry(client *http.Client, requestBuilder func() (*http.Request, error), max int) (*http.Response, error) {
+func sendRetry(ctx context.Context, client *http.Client, requestBuilder func() (*http.Request, error)) (*http.Response, error) {
 
-	var tryN int
 	for {
-		tryN++
-
 		request, err := requestBuilder()
 		if err != nil {
 			return nil, err
@@ -339,11 +339,11 @@ func sendRetry(client *http.Client, requestBuilder func() (*http.Request, error)
 		}
 		zap.L().Warn("Unable to send request to midgard. Retrying", zap.Error(err))
 
-		if tryN <= max {
-			<-time.After(1 * time.Second)
+		select {
+		case <-time.After(1 * time.Second):
 			continue
+		case <-ctx.Done():
+			return nil, err
 		}
-
-		return nil, err
 	}
 }
