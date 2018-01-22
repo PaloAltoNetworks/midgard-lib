@@ -27,15 +27,15 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 }
 
 // normalizeAuth normalizes the response to a simple structure.
-func normalizeAuth(a *midgardmodels.Auth) []string {
+func normalizeAuth(a *midgardmodels.Auth) (claims []string) {
 
-	ret := []string{
-		"@auth:subject=" + a.Claims.Subject,
+	if a.Claims.Subject != "" {
+		claims = append(claims, "@auth:subject="+a.Claims.Subject)
 	}
 
 	for key, value := range a.Claims.Data {
-		ret = append(ret, "@auth:"+strings.ToLower(key)+"="+value)
+		claims = append(claims, "@auth:"+strings.ToLower(key)+"="+value)
 	}
 
-	return ret
+	return
 }
