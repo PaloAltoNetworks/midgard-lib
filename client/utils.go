@@ -34,7 +34,9 @@ func normalizeAuth(a *midgardmodels.Auth) (claims []string) {
 	}
 
 	for key, value := range a.Claims.Data {
-		claims = append(claims, "@auth:"+strings.ToLower(key)+"="+value)
+		if value != "" {
+			claims = append(claims, "@auth:"+strings.ToLower(key)+"="+value)
+		}
 	}
 
 	return
