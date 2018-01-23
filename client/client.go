@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"github.com/aporeto-inc/addedeffect/tokensnip"
+
+	"github.com/opentracing/opentracing-go/log"
+
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/gaia/midgardmodels/v1/golang"
 	"github.com/aporeto-inc/midgard-lib/ldaputils"
 	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-	"github.com/opentracing/opentracing-go/log"
-	"go.uber.org/zap"
 )
 
 // A Client allows to interract with a midgard server.
@@ -89,52 +89,20 @@ func (a *Client) AuthentifyWithTracking(ctx context.Context, token string, span 
 	var sp opentracing.Span
 	if span != nil {
 		sp = opentracing.StartSpan("midgardlib.client.authentify", opentracing.ChildOf(span.Context()))
-	} else {
-		sp = opentracing.StartSpan("midgardlib.client.authentify")
+		defer sp.Finish()
 	}
-	defer sp.Finish()
 
 	builder := func() (*http.Request, error) {
-		request, err := http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
-		if err != nil {
-
-			ext.Error.Set(sp, true)
-			sp.LogFields(log.Error(err))
-
-			return nil, err
-		}
-
-		if sp.Tracer() != nil {
-			if err := sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
-				return nil, err
-			}
-		}
-
-		if a.TrackingType != "" {
-			request.Header.Set("X-External-Tracking-Type", a.TrackingType)
-		}
-
-		return request, nil
+		return http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
 	}
 
-	resp, err := sendRetry(ctx, a.httpClient, builder)
+	resp, err := a.sendRetry(ctx, builder, token, sp)
 	if err != nil {
-		ext.Error.Set(sp, true)
-		sp.LogFields(log.Error(err))
-
-		return nil, tokensnip.Snip(err, token)
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-
-		ext.Error.Set(sp, true)
-
-		return nil, elemental.NewError(
-			"Unauthorized",
-			fmt.Sprintf("Authentication rejected with error: %s", resp.Status),
-			"midgard-lib",
-			http.StatusUnauthorized,
-		)
+		return nil, elemental.NewError("Unauthorized", fmt.Sprintf("Authentication rejected with error: %s", resp.Status), "midgard-lib", http.StatusUnauthorized)
 	}
 
 	auth := midgardmodels.NewAuth()
@@ -142,10 +110,6 @@ func (a *Client) AuthentifyWithTracking(ctx context.Context, token string, span 
 	defer resp.Body.Close() // nolint: errcheck
 
 	if err := json.NewDecoder(resp.Body).Decode(auth); err != nil {
-
-		ext.Error.Set(sp, true)
-		sp.LogFields(log.Error(err))
-
 		return nil, err
 	}
 
@@ -169,7 +133,13 @@ func (a *Client) IssueFromGoogleWithValidity(ctx context.Context, googleJWT stri
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("midgardlib.client.issue.google", opentracing.ChildOf(span.Context()))
+		defer sp.Finish()
+	}
+
+	return a.sendRequest(ctx, issueRequest, sp)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate.
@@ -188,7 +158,13 @@ func (a *Client) IssueFromCertificateWithValidity(ctx context.Context, validity 
 	issueRequest.Realm = midgardmodels.IssueRealmCertificate
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("midgardlib.client.issue.certificate", opentracing.ChildOf(span.Context()))
+		defer sp.Finish()
+	}
+
+	return a.sendRequest(ctx, issueRequest, sp)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
@@ -211,7 +187,13 @@ func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.
 		issueRequest.Metadata["account"] = vinceAccount
 	}
 
-	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("midgardlib.client.issue.ldap", opentracing.ChildOf(span.Context()))
+		defer sp.Finish()
+	}
+
+	return a.sendRequest(ctx, issueRequest, sp)
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince.
@@ -237,7 +219,13 @@ func (a *Client) IssueFromVinceWithOTPAndValidity(ctx context.Context, account s
 	issueRequest.Realm = midgardmodels.IssueRealmVince
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("midgardlib.client.issue.vince", opentracing.ChildOf(span.Context()))
+		defer sp.Finish()
+	}
+
+	return a.sendRequest(ctx, issueRequest, sp)
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document.
@@ -257,44 +245,27 @@ func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, d
 	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
 	issueRequest.Validity = validity.String()
 
-	return a.sendRequest(ctx, a.httpClient, issueRequest, a.closeConn, span)
-}
-
-func (a *Client) sendRequest(ctx context.Context, client *http.Client, issueRequest *midgardmodels.Issue, closeConn bool, span opentracing.Span) (string, error) {
-
 	var sp opentracing.Span
 	if span != nil {
-		sp = opentracing.StartSpan("midgardlib.client.issue", opentracing.ChildOf(span.Context()))
-	} else {
-		sp = opentracing.StartSpan("midgardlib.client.issue")
+		sp = opentracing.StartSpan("midgardlib.client.issue.aws", opentracing.ChildOf(span.Context()))
+		defer sp.Finish()
 	}
-	defer sp.Finish()
+
+	return a.sendRequest(ctx, issueRequest, sp)
+}
+
+func (a *Client) sendRequest(ctx context.Context, issueRequest *midgardmodels.Issue, span opentracing.Span) (string, error) {
+
+	buffer := &bytes.Buffer{}
+	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
+		return "", err
+	}
 
 	builder := func() (*http.Request, error) {
-		buffer := &bytes.Buffer{}
-		if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
-			return nil, err
-		}
-
-		request, err := http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
-		if err != nil {
-			return nil, err
-		}
-
-		if sp.Tracer() != nil {
-			if err = sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
-				return nil, err
-			}
-		}
-
-		if closeConn {
-			request.Close = true
-		}
-
-		return request, nil
+		return http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
 	}
 
-	resp, err := sendRetry(ctx, client, builder)
+	resp, err := a.sendRetry(ctx, builder, "", span)
 	if err != nil {
 		return "", err
 	}
@@ -325,22 +296,44 @@ func (a *Client) sendRequest(ctx context.Context, client *http.Client, issueRequ
 	return issueRequest.Token, nil
 }
 
-func sendRetry(ctx context.Context, client *http.Client, requestBuilder func() (*http.Request, error)) (*http.Response, error) {
+func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Request, error), token string, span opentracing.Span) (*http.Response, error) {
 
 	for {
+
 		request, err := requestBuilder()
 		if err != nil {
 			return nil, err
 		}
 
-		resp, err := client.Do(request)
+		if a.closeConn {
+			request.Close = true
+		}
+
+		if a.TrackingType != "" {
+			request.Header.Set("X-External-Tracking-Type", a.TrackingType)
+		}
+
+		if span != nil {
+			if t := span.Tracer(); t != nil {
+				if err = t.Inject(span.Context(), opentracing.TextMap, opentracing.HTTPHeadersCarrier(request.Header)); err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		resp, err := a.httpClient.Do(request)
 		if err == nil {
 			return resp, nil
 		}
-		zap.L().Warn("Unable to send request to midgard. Retrying", zap.Error(err))
+
+		err = tokensnip.Snip(err, token)
+		if span != nil {
+			span.SetTag("error", true)
+			span.LogFields(log.Error(err))
+		}
 
 		select {
-		case <-time.After(1 * time.Second):
+		case <-time.After(3 * time.Second):
 			continue
 		case <-ctx.Done():
 			return nil, err
