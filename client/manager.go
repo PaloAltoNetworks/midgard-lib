@@ -5,8 +5,9 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
+
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 // A TokenManager issues an renew tokens periodically.
@@ -27,9 +28,9 @@ func NewMidgardTokenManager(url string, validity time.Duration, tlsConfig *tls.C
 }
 
 // Issue issues a token.
-func (m *TokenManager) Issue(ctx context.Context, span opentracing.Span) (token string, err error) {
+func (m *TokenManager) Issue(ctx context.Context) (token string, err error) {
 
-	return m.client.IssueFromCertificateWithValidity(ctx, m.validity, span)
+	return m.client.IssueFromCertificateWithValidity(ctx, m.validity)
 }
 
 // Run runs the token renewal job.
@@ -39,6 +40,9 @@ func (m *TokenManager) Run(ctx context.Context, tokenCh chan string) {
 
 	for {
 
+		span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.tokenmanager.run")
+		defer span.Finish()
+
 		select {
 		case <-time.After(time.Minute):
 
@@ -47,7 +51,7 @@ func (m *TokenManager) Run(ctx context.Context, tokenCh chan string) {
 				break
 			}
 
-			token, err := m.Issue(ctx, nil)
+			token, err := m.Issue(subctx)
 			if err != nil {
 				zap.L().Error("Unable to renew Midgard token", zap.Error(err))
 				break
