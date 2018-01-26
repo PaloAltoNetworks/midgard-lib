@@ -280,9 +280,10 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *midgardmodels.Is
 
 func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Request, error), token string) (*http.Response, error) {
 
-	span := opentracing.SpanFromContext(ctx)
-
 	for {
+
+		span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.send")
+		defer span.Finish()
 
 		request, err := requestBuilder()
 		if err != nil {
@@ -319,7 +320,7 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 		select {
 		case <-time.After(3 * time.Second):
 			continue
-		case <-ctx.Done():
+		case <-subctx.Done():
 			return nil, err
 		}
 	}
