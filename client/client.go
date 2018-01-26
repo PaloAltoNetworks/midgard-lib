@@ -79,24 +79,21 @@ func (a *Client) Authentify(token string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return a.AuthentifyWithTracking(ctx, token, nil)
+	return a.AuthentifyWithTracking(ctx, token)
 }
 
 // AuthentifyWithTracking authentifies the information using the given token and
 // returns a list of tag string containing the claims.
-func (a *Client) AuthentifyWithTracking(ctx context.Context, token string, span opentracing.Span) ([]string, error) {
+func (a *Client) AuthentifyWithTracking(ctx context.Context, token string) ([]string, error) {
 
-	var sp opentracing.Span
-	if span != nil {
-		sp = opentracing.StartSpan("midgardlib.client.authentify", opentracing.ChildOf(span.Context()))
-		defer sp.Finish()
-	}
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.authentify")
+	defer span.Finish()
 
 	builder := func() (*http.Request, error) {
 		return http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
 	}
 
-	resp, err := a.sendRetry(ctx, builder, token, sp)
+	resp, err := a.sendRetry(subctx, builder, token)
 	if err != nil {
 		return nil, err
 	}
@@ -122,24 +119,21 @@ func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return a.IssueFromGoogleWithValidity(ctx, googleJWT, 24*time.Hour, nil)
+	return a.IssueFromGoogleWithValidity(ctx, googleJWT, 24*time.Hour)
 }
 
 // IssueFromGoogleWithValidity issues a Midgard jwt from a Google JWT for the given validity duration.
-func (a *Client) IssueFromGoogleWithValidity(ctx context.Context, googleJWT string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromGoogleWithValidity(ctx context.Context, googleJWT string, validity time.Duration) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmGoogle
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = validity.String()
 
-	var sp opentracing.Span
-	if span != nil {
-		sp = opentracing.StartSpan("midgardlib.client.issue.google", opentracing.ChildOf(span.Context()))
-		defer sp.Finish()
-	}
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.google")
+	defer span.Finish()
 
-	return a.sendRequest(ctx, issueRequest, sp)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate.
@@ -148,23 +142,20 @@ func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, e
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return a.IssueFromCertificateWithValidity(ctx, 24*time.Hour, nil)
+	return a.IssueFromCertificateWithValidity(ctx, 24*time.Hour)
 }
 
 // IssueFromCertificateWithValidity issues a Midgard jwt from a certificate for the given validity duration.
-func (a *Client) IssueFromCertificateWithValidity(ctx context.Context, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromCertificateWithValidity(ctx context.Context, validity time.Duration) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmCertificate
 	issueRequest.Validity = validity.String()
 
-	var sp opentracing.Span
-	if span != nil {
-		sp = opentracing.StartSpan("midgardlib.client.issue.certificate", opentracing.ChildOf(span.Context()))
-		defer sp.Finish()
-	}
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
+	defer span.Finish()
 
-	return a.sendRequest(ctx, issueRequest, sp)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP.
@@ -173,11 +164,11 @@ func (a *Client) IssueFromLDAP(info *ldaputils.LDAPInfo, vinceAccount string) (s
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return a.IssueFromLDAPWithValidity(ctx, info, vinceAccount, 24*time.Hour, nil)
+	return a.IssueFromLDAPWithValidity(ctx, info, vinceAccount, 24*time.Hour)
 }
 
 // IssueFromLDAPWithValidity issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Realm = midgardmodels.IssueRealmLdap
@@ -187,13 +178,10 @@ func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.
 		issueRequest.Metadata["account"] = vinceAccount
 	}
 
-	var sp opentracing.Span
-	if span != nil {
-		sp = opentracing.StartSpan("midgardlib.client.issue.ldap", opentracing.ChildOf(span.Context()))
-		defer sp.Finish()
-	}
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")
+	defer span.Finish()
 
-	return a.sendRequest(ctx, issueRequest, sp)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince.
@@ -202,30 +190,27 @@ func (a *Client) IssueFromVince(account string, password string) (string, error)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return a.IssueFromVinceWithValidity(ctx, account, password, 24*time.Hour, nil)
+	return a.IssueFromVinceWithValidity(ctx, account, password, 24*time.Hour)
 }
 
 // IssueFromVinceWithValidity issues a Midgard jwt from a Vince for the given validity duration.
-func (a *Client) IssueFromVinceWithValidity(ctx context.Context, account string, password string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromVinceWithValidity(ctx context.Context, account string, password string, validity time.Duration) (string, error) {
 
-	return a.IssueFromVinceWithOTPAndValidity(ctx, account, password, "", validity, span)
+	return a.IssueFromVinceWithOTPAndValidity(ctx, account, password, "", validity)
 }
 
 // IssueFromVinceWithOTPAndValidity issues a Midgard jwt from a Vince for the given one time password and validity duration.
-func (a *Client) IssueFromVinceWithOTPAndValidity(ctx context.Context, account string, password string, otp string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromVinceWithOTPAndValidity(ctx context.Context, account string, password string, otp string, validity time.Duration) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password, "vinceOTP": otp}
 	issueRequest.Realm = midgardmodels.IssueRealmVince
 	issueRequest.Validity = validity.String()
 
-	var sp opentracing.Span
-	if span != nil {
-		sp = opentracing.StartSpan("midgardlib.client.issue.vince", opentracing.ChildOf(span.Context()))
-		defer sp.Finish()
-	}
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.vince")
+	defer span.Finish()
 
-	return a.sendRequest(ctx, issueRequest, sp)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document.
@@ -234,27 +219,24 @@ func (a *Client) IssueFromAWSIdentityDocument(doc string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return a.IssueFromAWSIdentityDocumentWithValidity(ctx, doc, 24*time.Hour, nil)
+	return a.IssueFromAWSIdentityDocumentWithValidity(ctx, doc, 24*time.Hour)
 }
 
 // IssueFromAWSIdentityDocumentWithValidity issues a Midgard jwt from a signed AWS identity document for the given validity duration.
-func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, doc string, validity time.Duration, span opentracing.Span) (string, error) {
+func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, doc string, validity time.Duration) (string, error) {
 
 	issueRequest := midgardmodels.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
 	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
 	issueRequest.Validity = validity.String()
 
-	var sp opentracing.Span
-	if span != nil {
-		sp = opentracing.StartSpan("midgardlib.client.issue.aws", opentracing.ChildOf(span.Context()))
-		defer sp.Finish()
-	}
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
+	defer span.Finish()
 
-	return a.sendRequest(ctx, issueRequest, sp)
+	return a.sendRequest(subctx, issueRequest)
 }
 
-func (a *Client) sendRequest(ctx context.Context, issueRequest *midgardmodels.Issue, span opentracing.Span) (string, error) {
+func (a *Client) sendRequest(ctx context.Context, issueRequest *midgardmodels.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
@@ -265,7 +247,7 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *midgardmodels.Is
 		return http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
 	}
 
-	resp, err := a.sendRetry(ctx, builder, "", span)
+	resp, err := a.sendRetry(ctx, builder, "")
 	if err != nil {
 		return "", err
 	}
@@ -296,7 +278,9 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *midgardmodels.Is
 	return issueRequest.Token, nil
 }
 
-func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Request, error), token string, span opentracing.Span) (*http.Response, error) {
+func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Request, error), token string) (*http.Response, error) {
+
+	span := opentracing.SpanFromContext(ctx)
 
 	for {
 
