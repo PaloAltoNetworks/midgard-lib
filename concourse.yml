@@ -6,7 +6,7 @@ image_resource:
     repository: 926088932149.dkr.ecr.us-west-2.amazonaws.com/domingo
 
 inputs:
-- name: src
+- name: bash
   path: go/src/github.com/aporeto-inc/midgard-lib
 
 run:
@@ -23,3 +23,4 @@ run:
       cd go/src/github.com/aporeto-inc/midgard-lib
       mage init || exit 1
       mage test || exit 1
+      bash <(curl -s https://codecov.io/bash) || exit 0
