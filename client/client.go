@@ -16,7 +16,7 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 
 	"github.com/aporeto-inc/elemental"
-	"github.com/aporeto-inc/gaia/midgardmodels/v1/golang"
+	"github.com/aporeto-inc/gaia/v1/golang"
 	"github.com/aporeto-inc/midgard-lib/ldaputils"
 	"github.com/opentracing/opentracing-go"
 )
@@ -102,7 +102,7 @@ func (a *Client) AuthentifyWithTracking(ctx context.Context, token string) ([]st
 		return nil, elemental.NewError("Unauthorized", fmt.Sprintf("Authentication rejected with error: %s", resp.Status), "midgard-lib", http.StatusUnauthorized)
 	}
 
-	auth := midgardmodels.NewAuth()
+	auth := gaia.NewAuth()
 
 	defer resp.Body.Close() // nolint: errcheck
 
@@ -125,8 +125,8 @@ func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
 // IssueFromGoogleWithValidity issues a Midgard jwt from a Google JWT for the given validity duration.
 func (a *Client) IssueFromGoogleWithValidity(ctx context.Context, googleJWT string, validity time.Duration) (string, error) {
 
-	issueRequest := midgardmodels.NewIssue()
-	issueRequest.Realm = midgardmodels.IssueRealmGoogle
+	issueRequest := gaia.NewIssue()
+	issueRequest.Realm = gaia.IssueRealmGoogle
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = validity.String()
 
@@ -148,8 +148,8 @@ func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, e
 // IssueFromCertificateWithValidity issues a Midgard jwt from a certificate for the given validity duration.
 func (a *Client) IssueFromCertificateWithValidity(ctx context.Context, validity time.Duration) (string, error) {
 
-	issueRequest := midgardmodels.NewIssue()
-	issueRequest.Realm = midgardmodels.IssueRealmCertificate
+	issueRequest := gaia.NewIssue()
+	issueRequest.Realm = gaia.IssueRealmCertificate
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
@@ -170,8 +170,8 @@ func (a *Client) IssueFromLDAP(info *ldaputils.LDAPInfo, vinceAccount string) (s
 // IssueFromLDAPWithValidity issues a Midgard jwt from a LDAP for the given validity duration.
 func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
-	issueRequest := midgardmodels.NewIssue()
-	issueRequest.Realm = midgardmodels.IssueRealmLdap
+	issueRequest := gaia.NewIssue()
+	issueRequest.Realm = gaia.IssueRealmLdap
 	issueRequest.Validity = validity.String()
 	issueRequest.Metadata = info.ToMap()
 	if vinceAccount != "" {
@@ -202,9 +202,9 @@ func (a *Client) IssueFromVinceWithValidity(ctx context.Context, account string,
 // IssueFromVinceWithOTPAndValidity issues a Midgard jwt from a Vince for the given one time password and validity duration.
 func (a *Client) IssueFromVinceWithOTPAndValidity(ctx context.Context, account string, password string, otp string, validity time.Duration) (string, error) {
 
-	issueRequest := midgardmodels.NewIssue()
+	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password, "vinceOTP": otp}
-	issueRequest.Realm = midgardmodels.IssueRealmVince
+	issueRequest.Realm = gaia.IssueRealmVince
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.vince")
@@ -225,9 +225,9 @@ func (a *Client) IssueFromAWSIdentityDocument(doc string) (string, error) {
 // IssueFromAWSIdentityDocumentWithValidity issues a Midgard jwt from a signed AWS identity document for the given validity duration.
 func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, doc string, validity time.Duration) (string, error) {
 
-	issueRequest := midgardmodels.NewIssue()
+	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
-	issueRequest.Realm = midgardmodels.IssueRealmAwsidentitydocument
+	issueRequest.Realm = gaia.IssueRealmAwsidentitydocument
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
@@ -236,7 +236,7 @@ func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, d
 	return a.sendRequest(subctx, issueRequest)
 }
 
-func (a *Client) sendRequest(ctx context.Context, issueRequest *midgardmodels.Issue) (string, error) {
+func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
