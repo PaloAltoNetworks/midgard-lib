@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/aporeto-inc/gaia/midgardmodels/v1/golang"
+	"github.com/aporeto-inc/gaia/v1/golang"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -87,7 +87,7 @@ func TestUtils_normalizeAuth(t *testing.T) {
 
 	Convey("Given I have a Auth object", t, func() {
 
-		auth := midgardmodels.NewAuth()
+		auth := gaia.NewAuth()
 		auth.Claims.Realm = "realm"
 		auth.Claims.Subject = "subject"
 		auth.Claims.Data["d1"] = "v1"
