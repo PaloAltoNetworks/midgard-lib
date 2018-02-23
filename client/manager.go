@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"time"
 
+	"github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap"
 
 	opentracing "github.com/opentracing/opentracing-go"
@@ -40,9 +41,6 @@ func (m *TokenManager) Run(ctx context.Context, tokenCh chan string) {
 
 	for {
 
-		span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.tokenmanager.run")
-		defer span.Finish()
-
 		select {
 		case <-time.After(time.Minute):
 
@@ -51,8 +49,13 @@ func (m *TokenManager) Run(ctx context.Context, tokenCh chan string) {
 				break
 			}
 
+			span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.tokenmanager.renew")
+
 			token, err := m.Issue(subctx)
 			if err != nil {
+				span.SetTag("error", true)
+				span.LogFields(log.Error(err))
+				span.Finish()
 				zap.L().Error("Unable to renew Midgard token", zap.Error(err))
 				break
 			}
@@ -61,6 +64,7 @@ func (m *TokenManager) Run(ctx context.Context, tokenCh chan string) {
 
 			nextRefresh = now.Add(m.validity / 2)
 			zap.L().Info("Midgard token renewed")
+			span.Finish()
 
 		case <-ctx.Done():
 			return
