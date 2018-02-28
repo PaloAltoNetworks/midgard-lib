@@ -95,7 +95,7 @@ func TestUtils_normalizeAuth(t *testing.T) {
 
 		Convey("When I normalize it", func() {
 
-			v := normalizeAuth(auth)
+			v := normalizeAuth(auth.Claims)
 
 			Convey("Then the subject should be correct", func() {
 				So(v, ShouldContain, "@auth:subject=subject")

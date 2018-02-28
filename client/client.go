@@ -110,7 +110,7 @@ func (a *Client) AuthentifyWithTracking(ctx context.Context, token string) ([]st
 		return nil, err
 	}
 
-	return normalizeAuth(auth), nil
+	return normalizeAuth(auth.Claims), nil
 }
 
 // IssueFromGoogle issues a Midgard jwt from a Google JWT.

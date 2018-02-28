@@ -1,11 +1,15 @@
 package midgardclient
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/aporeto-inc/gaia/v1/golang"
+	"github.com/aporeto-inc/midgard-lib/claims"
+
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 // ExtractJWTFromHeader extracts the JWT from the given http.Header.
@@ -26,14 +30,37 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 	return parts[1], nil
 }
 
-// normalizeAuth normalizes the response to a simple structure.
-func normalizeAuth(a *gaia.Auth) (claims []string) {
+// VerifyTokenSignature verifies the jwt locally using the given certificate.
+func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string, error) {
 
-	if a.Claims.Subject != "" {
-		claims = append(claims, "@auth:subject="+a.Claims.Subject)
+	c := &claims.MidgardClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, c, func(token *jwt.Token) (interface{}, error) {
+
+		_, ok := token.Method.(*jwt.SigningMethodECDSA)
+		if !ok {
+			return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
+		}
+
+		return cert.PublicKey.(*ecdsa.PublicKey), nil
+
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse midgard jwt: %s", err)
 	}
 
-	for key, value := range a.Claims.Data {
+	return normalizeAuth(token.Claims.(*claims.MidgardClaims)), nil
+}
+
+// normalizeAuth normalizes the response to a simple structure.
+func normalizeAuth(c *claims.MidgardClaims) (claims []string) {
+
+	if c.Subject != "" {
+		claims = append(claims, "@auth:subject="+c.Subject)
+	}
+
+	for key, value := range c.Data {
 		if value != "" {
 			claims = append(claims, "@auth:"+strings.ToLower(key)+"="+value)
 		}
