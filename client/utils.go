@@ -47,7 +47,7 @@ func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string,
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse midgard jwt: %s", err)
+		return nil, err
 	}
 
 	return normalizeAuth(token.Claims.(*claims.MidgardClaims)), nil
