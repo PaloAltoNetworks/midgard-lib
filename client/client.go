@@ -171,7 +171,7 @@ func (a *Client) IssueFromLDAP(info *ldaputils.LDAPInfo, vinceAccount string) (s
 func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
-	issueRequest.Realm = gaia.IssueRealmLdap
+	issueRequest.Realm = gaia.IssueRealmLDAP
 	issueRequest.Validity = validity.String()
 	issueRequest.Metadata = info.ToMap()
 	if vinceAccount != "" {
@@ -227,7 +227,7 @@ func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, d
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
-	issueRequest.Realm = gaia.IssueRealmAwsidentitydocument
+	issueRequest.Realm = gaia.IssueRealmAWSIdentityDocument
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
