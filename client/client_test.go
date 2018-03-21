@@ -1,10 +1,18 @@
 package midgardclient
 
 import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
+
+	"github.com/aporeto-inc/gaia/v1/golang"
+	"github.com/aporeto-inc/midgard-lib/ldaputils"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -21,6 +29,15 @@ func TestClient_NewClient(t *testing.T) {
 
 		Convey("Then client url should be set", func() {
 			So(cl.url, ShouldEqual, "http://com.com")
+		})
+
+		Convey("When I call cl.SetKeepAliveEnabled(true)", func() {
+
+			cl.SetKeepAliveEnabled(false)
+
+			Convey("Then the close con should be true ", func() {
+				So(cl.closeConn, ShouldBeTrue)
+			})
 		})
 	})
 
@@ -59,7 +76,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify("thetoken")
+			n, err := cl.Authentify(context.TODO(), "thetoken")
 
 			Convey("Then I should get valid normalization", func() {
 				So(n, ShouldContain, "@auth:subject=10237207344299343489")
@@ -77,7 +94,10 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify("thetoken")
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			n, err := cl.Authentify(ctx, "thetoken")
 
 			Convey("Then normalization should be nil", func() {
 				So(n, ShouldBeNil)
@@ -103,7 +123,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify("thetoken")
+			n, err := cl.Authentify(context.TODO(), "thetoken")
 
 			Convey("Then normalization should be nil", func() {
 				So(n, ShouldBeNil)
@@ -128,7 +148,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify("thetoken")
+			n, err := cl.Authentify(context.TODO(), "thetoken")
 
 			Convey("Then normalization should be nil", func() {
 				So(n, ShouldBeNil)
@@ -145,6 +165,243 @@ func TestClient_IssueFromGoogle(t *testing.T) {
 
 	Convey("Given I have a client and a fake working server", t, func() {
 
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromVince", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromGoogle(ctx, "token", 1*time.Minute)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "Google")
+				So(expectedRequest.Data, ShouldEqual, "token")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "yeay!")
+			})
+		})
+	})
+}
+
+func TestClient_IssueFromCertificate(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+		var expectedCert *x509.Certificate
+
+		ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+
+			expectedCert = r.TLS.PeerCertificates[0]
+
+			fmt.Fprintln(w, `{
+                "data": "",
+                "realm": "google",
+                "token": "yeay!"
+            }`)
+		}))
+		defer ts.Close()
+
+		ts.TLS.ClientAuth = tls.RequireAnyClientCert
+
+		cert, _ := tls.LoadX509KeyPair("./fixtures/client-cert.pem", "./fixtures/client-key.pem")
+
+		cl := NewClientWithTLS(ts.URL, &tls.Config{
+			Certificates:       []tls.Certificate{cert},
+			InsecureSkipVerify: true,
+		})
+
+		Convey("When I call IssueFromCertificate", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromCertificate(ctx, 1*time.Minute)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the cert should have been sent", func() {
+				So(expectedCert.SerialNumber.String(), ShouldEqual, "135383296740973442198818964228093856486")
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "Certificate")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "yeay!")
+			})
+		})
+	})
+}
+
+func TestClient_IssueFromLDAP(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+
+			fmt.Fprintln(w, `{
+                "data": "",
+                "realm": "google",
+                "token": "yeay!"
+            }`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromCertificate", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			linfo := &ldaputils.LDAPInfo{
+				Address:      "Address",
+				BindDN:       "BindDN",
+				BindPassword: "BindPassword",
+				BaseDN:       "BaseDN",
+				Username:     "Username",
+				Password:     "Password",
+			}
+
+			token, err := cl.IssueFromLDAP(ctx, linfo, "account", 1*time.Minute)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "LDAP")
+				So(expectedRequest.Metadata["account"], ShouldEqual, "account")
+				So(expectedRequest.Metadata["LDAPAddress"], ShouldEqual, "Address")
+				So(expectedRequest.Metadata["LDAPBindDN"], ShouldEqual, "BindDN")
+				So(expectedRequest.Metadata["LDAPBindPassword"], ShouldEqual, "BindPassword")
+				So(expectedRequest.Metadata["LDAPBaseDN"], ShouldEqual, "BaseDN")
+				So(expectedRequest.Metadata["LDAPUsername"], ShouldEqual, "Username")
+				So(expectedRequest.Metadata["LDAPPassword"], ShouldEqual, "Password")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "yeay!")
+			})
+		})
+	})
+}
+
+func TestClient_IssueFromVince(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromVince", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromVince(ctx, "account", "password", "otp", 1*time.Minute)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "Vince")
+				So(expectedRequest.Metadata["vinceAccount"], ShouldEqual, "account")
+				So(expectedRequest.Metadata["vincePassword"], ShouldEqual, "password")
+				So(expectedRequest.Metadata["vinceOTP"], ShouldEqual, "otp")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "yeay!")
+			})
+		})
+	})
+}
+
+func TestClient_AWSIdentityDocument(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromAWSIdentityDocument", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromAWSIdentityDocument(ctx, "doc", 1*time.Minute)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "AWSIdentityDocument")
+				So(expectedRequest.Metadata["doc"], ShouldEqual, "doc")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "yeay!")
+			})
+		})
+	})
+}
+
+func TestClient_sendRequest(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, `{
                 "data": "",
@@ -152,12 +409,16 @@ func TestClient_IssueFromGoogle(t *testing.T) {
                 "token": "yeay!"
             }`)
 		}))
+		defer ts.Close()
 
 		cl := NewClient(ts.URL)
 
-		Convey("When I call IssueFromGoogle with a valid token", func() {
+		Convey("When I call sendRequest with a valid token", func() {
 
-			jwt, err := cl.IssueFromGoogle("eyJhbGciOiJSUzI1NiIsImtpZCI6IjQwZDg0OTU5YjY1ZGZmM2QwNTJkYjI1YmZhZTRmZTAyMmI4MzVjYTUifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXRfaGFzaCI6Ik91S0JGYmpjZjdYWjNkVjV0ZnZmLXciLCJhdWQiOiIzMzA5OTY3Nzc4NjUtaWo4cG1la2dldTVmMGVqb2hqMW9vMzNqaXAwc2xza2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTYzNjU0ODU0MTQ0NDgyODcwODgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMzMwOTk2Nzc3ODY1LWlqOHBtZWtnZXU1ZjBlam9oajFvbzMzamlwMHNsc2tpLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiZW1haWwiOiJhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbSIsImlhdCI6MTQ3NDk5ODQwMCwiZXhwIjoxNDc1MDAyMDAwLCJuYW1lIjoiQW50b2luZSBNZXJjYWRhbCIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vLWFLcU1yRERYTk1BL0FBQUFBQUFBQUFJL0FBQUFBQUFBRDcwL29QQU53NDE1U0xRL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJBbnRvaW5lIiwiZmFtaWx5X25hbWUiOiJNZXJjYWRhbCIsImxvY2FsZSI6ImVuIn0.LVh_3xr2qRdSQ-dfYHs9Zp6fkZUeBneURjKlTKujw_9FjY96BuoUxiPlMndAHZd-JEsQcJ01GueB3zt6xyYOkPeRbQ7tFGE8NhwbR5TYadR7FuEsNmCLc8oTnHrP_w7YVAdDhjdSFJd-y7XTIQxFuApjDQM0rBFknUoOC69n_VKG53wt7np0L2ZdGQgEw5a9s6wgBvdNZ9_lKPJZjapG_K8D7YsICrAdZ4vO8FR4hyqwBoCm8uUP6RaBzQWjt6D6DpWBsoLeMGDTONvK3-PZdfcERXe2qTelq29FfzS1eMGywIXkgo-DkWaTJH38wMyJ3x2Egq6A-TP7_asqKC7qew")
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -173,7 +434,10 @@ func TestClient_IssueFromGoogle(t *testing.T) {
 
 		cl := NewClient("http:/ssaffsdf")
 
-		jwt, err := cl.IssueFromGoogle("eyJhbGciOiJSUzI1NiIsImtpZCI6IjQwZDg0OTU5YjY1ZGZmM2QwNTJkYjI1YmZhZTRmZTAyMmI4MzVjYTUifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXRfaGFzaCI6Ik91S0JGYmpjZjdYWjNkVjV0ZnZmLXciLCJhdWQiOiIzMzA5OTY3Nzc4NjUtaWo4cG1la2dldTVmMGVqb2hqMW9vMzNqaXAwc2xza2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTYzNjU0ODU0MTQ0NDgyODcwODgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMzMwOTk2Nzc3ODY1LWlqOHBtZWtnZXU1ZjBlam9oajFvbzMzamlwMHNsc2tpLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiZW1haWwiOiJhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbSIsImlhdCI6MTQ3NDk5ODQwMCwiZXhwIjoxNDc1MDAyMDAwLCJuYW1lIjoiQW50b2luZSBNZXJjYWRhbCIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vLWFLcU1yRERYTk1BL0FBQUFBQUFBQUFJL0FBQUFBQUFBRDcwL29QQU53NDE1U0xRL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJBbnRvaW5lIiwiZmFtaWx5X25hbWUiOiJNZXJjYWRhbCIsImxvY2FsZSI6ImVuIn0.LVh_3xr2qRdSQ-dfYHs9Zp6fkZUeBneURjKlTKujw_9FjY96BuoUxiPlMndAHZd-JEsQcJ01GueB3zt6xyYOkPeRbQ7tFGE8NhwbR5TYadR7FuEsNmCLc8oTnHrP_w7YVAdDhjdSFJd-y7XTIQxFuApjDQM0rBFknUoOC69n_VKG53wt7np0L2ZdGQgEw5a9s6wgBvdNZ9_lKPJZjapG_K8D7YsICrAdZ4vO8FR4hyqwBoCm8uUP6RaBzQWjt6D6DpWBsoLeMGDTONvK3-PZdfcERXe2qTelq29FfzS1eMGywIXkgo-DkWaTJH38wMyJ3x2Egq6A-TP7_asqKC7qew")
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+
+		jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -194,12 +458,16 @@ func TestClient_IssueFromGoogle(t *testing.T) {
                 "token": "yeay!"
             }`)
 		}))
+		defer ts.Close()
 
 		cl := NewClient(ts.URL)
 
 		Convey("When I call IssueFromGoogle with an invalid token", func() {
 
-			jwt, err := cl.IssueFromGoogle("eyJhbGciOiJSUzI1NiIsImtpZCI6IjQwZDg0OTU5YjY1ZGZmM2QwNTJkYjI1YmZhZTRmZTAyMmI4MzVjYTUifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXRfaGFzaCI6Ik91S0JGYmpjZjdYWjNkVjV0ZnZmLXciLCJhdWQiOiIzMzA5OTY3Nzc4NjUtaWo4cG1la2dldTVmMGVqb2hqMW9vMzNqaXAwc2xza2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTYzNjU0ODU0MTQ0NDgyODcwODgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMzMwOTk2Nzc3ODY1LWlqOHBtZWtnZXU1ZjBlam9oajFvbzMzamlwMHNsc2tpLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiZW1haWwiOiJhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbSIsImlhdCI6MTQ3NDk5ODQwMCwiZXhwIjoxNDc1MDAyMDAwLCJuYW1lIjoiQW50b2luZSBNZXJjYWRhbCIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vLWFLcU1yRERYTk1BL0FBQUFBQUFBQUFJL0FBQUFBQUFBRDcwL29QQU53NDE1U0xRL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJBbnRvaW5lIiwiZmFtaWx5X25hbWUiOiJNZXJjYWRhbCIsImxvY2FsZSI6ImVuIn0.LVh_3xr2qRdSQ-dfYHs9Zp6fkZUeBneURjKlTKujw_9FjY96BuoUxiPlMndAHZd-JEsQcJ01GueB3zt6xyYOkPeRbQ7tFGE8NhwbR5TYadR7FuEsNmCLc8oTnHrP_w7YVAdDhjdSFJd-y7XTIQxFuApjDQM0rBFknUoOC69n_VKG53wt7np0L2ZdGQgEw5a9s6wgBvdNZ9_lKPJZjapG_K8D7YsICrAdZ4vO8FR4hyqwBoCm8uUP6RaBzQWjt6D6DpWBsoLeMGDTONvK3-PZdfcERXe2qTelq29FfzS1eMGywIXkgo-DkWaTJH38wMyJ3x2Egq6A-TP7_asqKC7qew")
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -218,12 +486,16 @@ func TestClient_IssueFromGoogle(t *testing.T) {
                 "data": "
             }`)
 		}))
+		defer ts.Close()
 
 		cl := NewClient(ts.URL)
 
 		Convey("When I call IssueFromGoogle with a valid token", func() {
 
-			jwt, err := cl.IssueFromGoogle("eyJhbGciOiJSUzI1NiIsImtpZCI6IjQwZDg0OTU5YjY1ZGZmM2QwNTJkYjI1YmZhZTRmZTAyMmI4MzVjYTUifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXRfaGFzaCI6Ik91S0JGYmpjZjdYWjNkVjV0ZnZmLXciLCJhdWQiOiIzMzA5OTY3Nzc4NjUtaWo4cG1la2dldTVmMGVqb2hqMW9vMzNqaXAwc2xza2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTYzNjU0ODU0MTQ0NDgyODcwODgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMzMwOTk2Nzc3ODY1LWlqOHBtZWtnZXU1ZjBlam9oajFvbzMzamlwMHNsc2tpLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiZW1haWwiOiJhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbSIsImlhdCI6MTQ3NDk5ODQwMCwiZXhwIjoxNDc1MDAyMDAwLCJuYW1lIjoiQW50b2luZSBNZXJjYWRhbCIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vLWFLcU1yRERYTk1BL0FBQUFBQUFBQUFJL0FBQUFBQUFBRDcwL29QQU53NDE1U0xRL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJBbnRvaW5lIiwiZmFtaWx5X25hbWUiOiJNZXJjYWRhbCIsImxvY2FsZSI6ImVuIn0.LVh_3xr2qRdSQ-dfYHs9Zp6fkZUeBneURjKlTKujw_9FjY96BuoUxiPlMndAHZd-JEsQcJ01GueB3zt6xyYOkPeRbQ7tFGE8NhwbR5TYadR7FuEsNmCLc8oTnHrP_w7YVAdDhjdSFJd-y7XTIQxFuApjDQM0rBFknUoOC69n_VKG53wt7np0L2ZdGQgEw5a9s6wgBvdNZ9_lKPJZjapG_K8D7YsICrAdZ4vO8FR4hyqwBoCm8uUP6RaBzQWjt6D6DpWBsoLeMGDTONvK3-PZdfcERXe2qTelq29FfzS1eMGywIXkgo-DkWaTJH38wMyJ3x2Egq6A-TP7_asqKC7qew")
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
