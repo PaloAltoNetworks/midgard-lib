@@ -12,13 +12,11 @@ import (
 	"time"
 
 	"github.com/aporeto-inc/addedeffect/tokensnip"
-
-	"github.com/opentracing/opentracing-go/log"
-
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/gaia/v1/golang"
 	"github.com/aporeto-inc/midgard-lib/ldaputils"
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 )
 
 // A Client allows to interract with a midgard server.
@@ -36,7 +34,7 @@ func NewClient(url string) *Client {
 
 	CAPool, err := x509.SystemCertPool()
 	if err != nil {
-		CAPool = x509.NewCertPool()
+		panic(fmt.Sprintf("Unable to load system cert pool: %s", err))
 	}
 
 	return NewClientWithTLS(
@@ -69,22 +67,12 @@ func NewClientWithTLS(url string, tlsConfig *tls.Config) *Client {
 
 // SetKeepAliveEnabled sets if the connection should be reused of not.
 func (a *Client) SetKeepAliveEnabled(e bool) {
-	a.closeConn = e
+	a.closeConn = !e
 }
 
 // Authentify authentifies the information included in the given token and
 // returns a list of tag string containing the claims.
-func (a *Client) Authentify(token string) ([]string, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return a.AuthentifyWithTracking(ctx, token)
-}
-
-// AuthentifyWithTracking authentifies the information using the given token and
-// returns a list of tag string containing the claims.
-func (a *Client) AuthentifyWithTracking(ctx context.Context, token string) ([]string, error) {
+func (a *Client) Authentify(ctx context.Context, token string) ([]string, error) {
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.authentify")
 	defer span.Finish()
@@ -113,17 +101,8 @@ func (a *Client) AuthentifyWithTracking(ctx context.Context, token string) ([]st
 	return normalizeAuth(auth.Claims), nil
 }
 
-// IssueFromGoogle issues a Midgard jwt from a Google JWT.
-func (a *Client) IssueFromGoogle(googleJWT string) (string, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return a.IssueFromGoogleWithValidity(ctx, googleJWT, 24*time.Hour)
-}
-
-// IssueFromGoogleWithValidity issues a Midgard jwt from a Google JWT for the given validity duration.
-func (a *Client) IssueFromGoogleWithValidity(ctx context.Context, googleJWT string, validity time.Duration) (string, error) {
+// IssueFromGoogle issues a Midgard jwt from a Google JWT for the given validity duration.
+func (a *Client) IssueFromGoogle(ctx context.Context, googleJWT string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmGoogle
@@ -136,17 +115,8 @@ func (a *Client) IssueFromGoogleWithValidity(ctx context.Context, googleJWT stri
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromCertificate issues a Midgard jwt from a certificate.
-func (a *Client) IssueFromCertificate(certificates []tls.Certificate) (string, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return a.IssueFromCertificateWithValidity(ctx, 24*time.Hour)
-}
-
-// IssueFromCertificateWithValidity issues a Midgard jwt from a certificate for the given validity duration.
-func (a *Client) IssueFromCertificateWithValidity(ctx context.Context, validity time.Duration) (string, error) {
+// IssueFromCertificate issues a Midgard jwt from a certificate for the given validity duration.
+func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmCertificate
@@ -158,20 +128,11 @@ func (a *Client) IssueFromCertificateWithValidity(ctx context.Context, validity 
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromLDAP issues a Midgard jwt from a LDAP.
-func (a *Client) IssueFromLDAP(info *ldaputils.LDAPInfo, vinceAccount string) (string, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return a.IssueFromLDAPWithValidity(ctx, info, vinceAccount, 24*time.Hour)
-}
-
-// IssueFromLDAPWithValidity issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
+// IssueFromLDAP issues a Midgard jwt from a LDAP for the given validity duration.
+func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
-	issueRequest.Realm = gaia.IssueRealmLdap
+	issueRequest.Realm = gaia.IssueRealmLDAP
 	issueRequest.Validity = validity.String()
 	issueRequest.Metadata = info.ToMap()
 	if vinceAccount != "" {
@@ -184,23 +145,8 @@ func (a *Client) IssueFromLDAPWithValidity(ctx context.Context, info *ldaputils.
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromVince issues a Midgard jwt from a Vince.
-func (a *Client) IssueFromVince(account string, password string) (string, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return a.IssueFromVinceWithValidity(ctx, account, password, 24*time.Hour)
-}
-
-// IssueFromVinceWithValidity issues a Midgard jwt from a Vince for the given validity duration.
-func (a *Client) IssueFromVinceWithValidity(ctx context.Context, account string, password string, validity time.Duration) (string, error) {
-
-	return a.IssueFromVinceWithOTPAndValidity(ctx, account, password, "", validity)
-}
-
-// IssueFromVinceWithOTPAndValidity issues a Midgard jwt from a Vince for the given one time password and validity duration.
-func (a *Client) IssueFromVinceWithOTPAndValidity(ctx context.Context, account string, password string, otp string, validity time.Duration) (string, error) {
+// IssueFromVince issues a Midgard jwt from a Vince for the given one time password and validity duration.
+func (a *Client) IssueFromVince(ctx context.Context, account string, password string, otp string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password, "vinceOTP": otp}
@@ -213,21 +159,12 @@ func (a *Client) IssueFromVinceWithOTPAndValidity(ctx context.Context, account s
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document.
-func (a *Client) IssueFromAWSIdentityDocument(doc string) (string, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return a.IssueFromAWSIdentityDocumentWithValidity(ctx, doc, 24*time.Hour)
-}
-
-// IssueFromAWSIdentityDocumentWithValidity issues a Midgard jwt from a signed AWS identity document for the given validity duration.
-func (a *Client) IssueFromAWSIdentityDocumentWithValidity(ctx context.Context, doc string, validity time.Duration) (string, error) {
+// IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document for the given validity duration.
+func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
-	issueRequest.Realm = gaia.IssueRealmAwsidentitydocument
+	issueRequest.Realm = gaia.IssueRealmAWSIdentityDocument
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")

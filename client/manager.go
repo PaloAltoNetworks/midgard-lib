@@ -31,7 +31,7 @@ func NewMidgardTokenManager(url string, validity time.Duration, tlsConfig *tls.C
 // Issue issues a token.
 func (m *TokenManager) Issue(ctx context.Context) (token string, err error) {
 
-	return m.client.IssueFromCertificateWithValidity(ctx, m.validity)
+	return m.client.IssueFromCertificate(ctx, m.validity)
 }
 
 // Run runs the token renewal job.
