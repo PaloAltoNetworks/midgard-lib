@@ -1,15 +1,24 @@
 package ldaputils
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
+
+const (
+	userQueryString = "{USERNAME}"
+)
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
-	Address      string `json:"LDAPAddress"`
-	BindDN       string `json:"LDAPBindDN"`
-	BindPassword string `json:"LDAPBindPassword"`
-	BaseDN       string `json:"LDAPBaseDN"`
-	Username     string `json:"LDAPUsername"`
-	Password     string `json:"LDAPPassword"`
+	Address              string `json:"LDAPAddress"`
+	BindDN               string `json:"LDAPBindDN"`
+	BindPassword         string `json:"LDAPBindPassword"`
+	BindSearchFilter     string `json:"LDAPBindSearchFilter"`
+	BaseDN               string `json:"LDAPBaseDN"`
+	ConnSecurityProtocol string `json:"LDAPConnSecurityProtocol"`
+	Username             string `json:"LDAPUsername"`
+	Password             string `json:"LDAPPassword"`
 }
 
 // NewLDAPInfo returns a new LDAPInfo, or an error
@@ -19,40 +28,46 @@ func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 		return nil, fmt.Errorf("You must provide at least metadata or defaultMetdata")
 	}
 
-	if metadata == nil {
-		metadata = map[string]interface{}{}
-	}
-
 	info := &LDAPInfo{}
 
 	var err error
 
-	info.Address, err = findLDAPKey(ldapAddressKey, metadata)
+	info.Address, err = findLDAPKey(LDAPAddressKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.BindDN, err = findLDAPKey(ldapBindDNKey, metadata)
+	info.BindDN, err = findLDAPKey(LDAPBindDNKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.BindPassword, err = findLDAPKey(ldapBindPasswordKey, metadata)
+	info.BindPassword, err = findLDAPKey(LDAPBindPasswordKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.Username, err = findLDAPKey(ldapUsernameKey, metadata)
+	info.BindSearchFilter, err = findLDAPKey(LDAPBindSearchFilterKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.Password, err = findLDAPKey(ldapPasswordKey, metadata)
+	info.ConnSecurityProtocol, err = findLDAPKey(LDAPConnSecurityProtocolKey, metadata)
 	if err != nil {
 		return nil, err
 	}
 
-	info.BaseDN, err = findLDAPKey(ldapBaseDNKey, metadata)
+	info.Username, err = findLDAPKey(LDAPUsernameKey, metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	info.Password, err = findLDAPKey(LDAPPasswordKey, metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	info.BaseDN, err = findLDAPKey(LDAPBaseDNKey, metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -64,11 +79,19 @@ func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 func (i *LDAPInfo) ToMap() map[string]interface{} {
 
 	return map[string]interface{}{
-		ldapAddressKey:      i.Address,
-		ldapBindDNKey:       i.BindDN,
-		ldapBindPasswordKey: i.BindPassword,
-		ldapUsernameKey:     i.Username,
-		ldapPasswordKey:     i.Password,
-		ldapBaseDNKey:       i.BaseDN,
+		LDAPAddressKey:              i.Address,
+		LDAPBindDNKey:               i.BindDN,
+		LDAPBindPasswordKey:         i.BindPassword,
+		LDAPBindSearchFilterKey:     i.BindSearchFilter,
+		LDAPUsernameKey:             i.Username,
+		LDAPPasswordKey:             i.Password,
+		LDAPBaseDNKey:               i.BaseDN,
+		LDAPConnSecurityProtocolKey: i.ConnSecurityProtocol,
 	}
+}
+
+// GetUserQueryString returns the query string based on the filter and username provided.
+func (i *LDAPInfo) GetUserQueryString() string {
+
+	return strings.Replace(i.BindSearchFilter, userQueryString, i.Username, -1)
 }
