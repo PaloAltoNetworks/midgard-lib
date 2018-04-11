@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aporeto-inc/addedeffect/tokensnip"
+	"github.com/aporeto-inc/addedeffect/tokenutils"
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/gaia/v1/golang"
 	"github.com/aporeto-inc/midgard-lib/ldaputils"
@@ -248,7 +248,7 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 			return resp, nil
 		}
 
-		err = tokensnip.Snip(err, token)
+		err = tokenutils.Snip(err, token)
 		if span != nil {
 			span.SetTag("error", true)
 			span.LogFields(log.Error(err))
