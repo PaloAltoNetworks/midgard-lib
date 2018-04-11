@@ -11,14 +11,14 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with valid metadata", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":              "123:123",
-			"LDAPBindDN":               "cn=admin,dc=toto,dc=com",
-			"LDAPBindPassword":         "toto",
-			"LDAPBindSearchFilter":     "uid",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPUsername":             "lskywalker",
-			"LDAPPassword":             "secret",
-			"LDAPBaseDN":               "ou=zoupla,dc=toto,dc=com",
+			LDAPAddressKey:              "123:123",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should be nil", func() {
@@ -44,13 +44,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing LDAPAddress", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPBindDN":               "cn=admin,dc=toto,dc=com",
-			"LDAPBindPassword":         "toto",
-			"LDAPBindSearchFilter":     "uid",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPUsername":             "lskywalker",
-			"LDAPPassword":             "secret",
-			"LDAPBaseDN":               "ou=zoupla,dc=toto,dc=com",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -66,14 +66,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing bindDN", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":              "123:123",
-			"LDAPBindPassword":         "toto",
-			"LDAPBindSearchFilter":     "uid",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPUsername":             "lskywalker",
-			"LDAPPassword":             "secret",
-			"LDAPBaseDN":               "ou=zoupla,dc=toto,dc=com",
-			"LDAPBindDN":               "",
+			LDAPAddressKey:              "123:123",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -89,13 +88,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing bindPassword", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":              "123:123",
-			"LDAPBindDN":               "cn=admin,dc=toto,dc=com",
-			"LDAPBindSearchFilter":     "uid",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPUsername":             "lskywalker",
-			"LDAPPassword":             "secret",
-			"LDAPBaseDN":               "ou=zoupla,dc=toto,dc=com",
+			LDAPAddressKey:              "123:123",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindSearchFilterKey:     "uid",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -111,13 +110,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing bindSearchFilter", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":              "123:123",
-			"LDAPBindPassword":         "toto",
-			"LDAPBindDN":               "cn=admin,dc=toto,dc=com",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPUsername":             "lskywalker",
-			"LDAPPassword":             "secret",
-			"LDAPBaseDN":               "ou=zoupla,dc=toto,dc=com",
+			LDAPAddressKey:              "123:123",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -133,13 +132,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing connSecurityProtocol", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":          "123:123",
-			"LDAPBindPassword":     "toto",
-			"LDAPBindDN":           "cn=admin,dc=toto,dc=com",
-			"LDAPBindSearchFilter": "uid",
-			"LDAPUsername":         "lskywalker",
-			"LDAPPassword":         "secret",
-			"LDAPBaseDN":           "ou=zoupla,dc=toto,dc=com",
+			LDAPAddressKey:          "123:123",
+			LDAPBindPasswordKey:     "toto",
+			LDAPBindDNKey:           "cn=admin,dc=toto,dc=com",
+			LDAPBindSearchFilterKey: "uid",
+			LDAPUsernameKey:         "lskywalker",
+			LDAPPasswordKey:         "secret",
+			LDAPBaseDNKey:           "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -155,13 +154,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing username", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":              "123:123",
-			"LDAPBindDN":               "cn=admin,dc=toto,dc=com",
-			"LDAPBindPassword":         "toto",
-			"LDAPBindSearchFilter":     "uid",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPPassword":             "secret",
-			"LDAPBaseDN":               "ou=zoupla,dc=toto,dc=com",
+			LDAPAddressKey:              "123:123",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -177,13 +176,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing password", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":              "123:123",
-			"LDAPBindDN":               "cn=admin,dc=toto,dc=com",
-			"LDAPBindPassword":         "toto",
-			"LDAPBindSearchFilter":     "uid",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPUsername":             "lskywalker",
-			"LDAPBaseDN":               "ou=zoupla,dc=toto,dc=com",
+			LDAPAddressKey:              "123:123",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -199,13 +198,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing baseDN", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			"LDAPAddress":              "123:123",
-			"LDAPBindDN":               "cn=admin,dc=toto,dc=com",
-			"LDAPBindPassword":         "toto",
-			"LDAPBindSearchFilter":     "uid",
-			"LDAPConnSecurityProtocol": "TLS",
-			"LDAPUsername":             "lskywalker",
-			"LDAPPassword":             "secret",
+			LDAPAddressKey:              "123:123",
+			LDAPBaseDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
 		})
 
 		Convey("Then err should not be nil", func() {
