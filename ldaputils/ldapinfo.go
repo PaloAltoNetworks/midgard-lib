@@ -1,6 +1,13 @@
 package ldaputils
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
+
+const (
+	userQueryString = "{USERNAME}"
+)
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
@@ -85,4 +92,10 @@ func (i *LDAPInfo) ToMap() map[string]interface{} {
 		LDAPBaseDNKey:               i.BaseDN,
 		LDAPConnSecurityProtocolKey: i.ConnSecurityProtocol,
 	}
+}
+
+// GetUserQueryString returns the query string based on the filter and username provided.
+func (i *LDAPInfo) GetUserQueryString() string {
+
+	return strings.Replace(i.BindSearchFilter, userQueryString, i.Username, -1)
 }

@@ -230,3 +230,58 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 		})
 	})
 }
+
+func TestLDAPUtils_GetUserQueryString(t *testing.T) {
+
+	Convey("Given I create a new LDAPInfo with valid metadata", t, func() {
+
+		i, err := NewLDAPInfo(map[string]interface{}{
+			LDAPAddressKey:              "123:123",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
+		})
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Then info should not be nil", func() {
+			So(i, ShouldNotBeNil)
+		})
+
+		Convey("Then info should be correct", func() {
+			So(i.GetUserQueryString(), ShouldEqual, "uid=lskywalker")
+		})
+	})
+
+	Convey("Given I create a new LDAPInfo with valid metadata", t, func() {
+
+		i, err := NewLDAPInfo(map[string]interface{}{
+			LDAPAddressKey:              "123:123",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid={USERNAME},khg={USERNAME}",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
+		})
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Then info should not be nil", func() {
+			So(i, ShouldNotBeNil)
+		})
+
+		Convey("Then info should be correct", func() {
+			So(i.GetUserQueryString(), ShouldEqual, "uid=lskywalker,khg=lskywalker")
+		})
+	})
+}
