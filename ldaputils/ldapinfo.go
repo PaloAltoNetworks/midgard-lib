@@ -28,10 +28,6 @@ func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 		return nil, fmt.Errorf("You must provide at least metadata or defaultMetdata")
 	}
 
-	if metadata == nil {
-		metadata = map[string]interface{}{}
-	}
-
 	info := &LDAPInfo{}
 
 	var err error

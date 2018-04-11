@@ -8,6 +8,19 @@ import (
 
 func TestLDAPUtils_LDAPInfo(t *testing.T) {
 
+	Convey("Given I create a new LDAPInfo with invalid metadata", t, func() {
+
+		i, err := NewLDAPInfo(nil)
+
+		Convey("Then err should not be nil", func() {
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Then info should be nil", func() {
+			So(i, ShouldBeNil)
+		})
+	})
+
 	Convey("Given I create a new LDAPInfo with valid metadata", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
@@ -227,6 +240,64 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 
 		Convey("Then LDAPInfo should be nil", func() {
 			So(i, ShouldBeNil)
+		})
+	})
+}
+
+func TestLDAPUtils_ToMap(t *testing.T) {
+
+	Convey("Given I create a new LDAPInfo with valid metadata", t, func() {
+
+		i, err := NewLDAPInfo(map[string]interface{}{
+			LDAPAddressKey:              "123:123",
+			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
+			LDAPBindPasswordKey:         "toto",
+			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPConnSecurityProtocolKey: "TLS",
+			LDAPUsernameKey:             "lskywalker",
+			LDAPPasswordKey:             "secret",
+			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
+		})
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Then info should not be nil", func() {
+			So(i, ShouldNotBeNil)
+		})
+
+		m := i.ToMap()
+
+		Convey("Then map should not be nil", func() {
+			So(m, ShouldNotBeNil)
+		})
+
+		Convey("Then map should have all keys", func() {
+			temp, ok := m[LDAPAddressKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "123:123")
+			temp, ok = m[LDAPBindDNKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "cn=admin,dc=toto,dc=com")
+			temp, ok = m[LDAPBindPasswordKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "toto")
+			temp, ok = m[LDAPBindSearchFilterKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "uid={USERNAME}")
+			temp, ok = m[LDAPConnSecurityProtocolKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "TLS")
+			temp, ok = m[LDAPUsernameKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "lskywalker")
+			temp, ok = m[LDAPPasswordKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "secret")
+			temp, ok = m[LDAPBaseDNKey].(string)
+			So(ok, ShouldEqual, true)
+			So(string(temp), ShouldEqual, "ou=zoupla,dc=toto,dc=com")
 		})
 	})
 }
