@@ -5,7 +5,7 @@ const (
 	LDAPAddressKey              = "LDAPAddress"
 	LDAPBindDNKey               = "LDAPBindDN"
 	LDAPBindPasswordKey         = "LDAPBindPassword"
-	LDAPBindSearchFilterKey     = "LDAPBindSearchFilter"
+	LDAPBindUserKeyKey          = "LDAPBindUserKey"
 	LDAPConnSecurityProtocolKey = "LDAPConnSecurityProtocol"
 	LDAPUsernameKey             = "LDAPUsername"
 	LDAPPasswordKey             = "LDAPPassword"

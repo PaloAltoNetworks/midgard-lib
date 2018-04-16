@@ -2,11 +2,6 @@ package ldaputils
 
 import (
 	"fmt"
-	"strings"
-)
-
-const (
-	userQueryString = "{USERNAME}"
 )
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
@@ -14,7 +9,7 @@ type LDAPInfo struct {
 	Address              string `json:"LDAPAddress"`
 	BindDN               string `json:"LDAPBindDN"`
 	BindPassword         string `json:"LDAPBindPassword"`
-	BindSearchFilter     string `json:"LDAPBindSearchFilter"`
+	BindUserKey          string `json:"LDAPBindUserKey"`
 	BaseDN               string `json:"LDAPBaseDN"`
 	ConnSecurityProtocol string `json:"LDAPConnSecurityProtocol"`
 	Username             string `json:"LDAPUsername"`
@@ -47,7 +42,7 @@ func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 		return nil, err
 	}
 
-	info.BindSearchFilter, err = findLDAPKey(LDAPBindSearchFilterKey, metadata)
+	info.BindUserKey, err = findLDAPKey(LDAPBindUserKeyKey, metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +77,7 @@ func (i *LDAPInfo) ToMap() map[string]interface{} {
 		LDAPAddressKey:              i.Address,
 		LDAPBindDNKey:               i.BindDN,
 		LDAPBindPasswordKey:         i.BindPassword,
-		LDAPBindSearchFilterKey:     i.BindSearchFilter,
+		LDAPBindUserKeyKey:          i.BindUserKey,
 		LDAPUsernameKey:             i.Username,
 		LDAPPasswordKey:             i.Password,
 		LDAPBaseDNKey:               i.BaseDN,
@@ -93,5 +88,5 @@ func (i *LDAPInfo) ToMap() map[string]interface{} {
 // GetUserQueryString returns the query string based on the filter and username provided.
 func (i *LDAPInfo) GetUserQueryString() string {
 
-	return strings.Replace(i.BindSearchFilter, userQueryString, i.Username, -1)
+	return fmt.Sprintf("%s=%s", i.BindUserKey, i.Username)
 }

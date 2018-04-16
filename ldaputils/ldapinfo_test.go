@@ -27,7 +27,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -46,7 +46,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 			So(i.Address, ShouldEqual, "123:123")
 			So(i.BindDN, ShouldEqual, "cn=admin,dc=toto,dc=com")
 			So(i.BindPassword, ShouldEqual, "toto")
-			So(i.BindSearchFilter, ShouldEqual, "uid={USERNAME}")
+			So(i.BindUserKey, ShouldEqual, "uid")
 			So(i.ConnSecurityProtocol, ShouldEqual, "TLS")
 			So(i.Username, ShouldEqual, "lskywalker")
 			So(i.Password, ShouldEqual, "secret")
@@ -59,7 +59,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 		i, err := NewLDAPInfo(map[string]interface{}{
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -81,7 +81,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 		i, err := NewLDAPInfo(map[string]interface{}{
 			LDAPAddressKey:              "123:123",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -103,7 +103,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 		i, err := NewLDAPInfo(map[string]interface{}{
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -120,7 +120,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 		})
 	})
 
-	Convey("Given I create a new LDAPInfo with metadata and missing bindSearchFilter", t, func() {
+	Convey("Given I create a new LDAPInfo with metadata and missing BindUserKey", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
 			LDAPAddressKey:              "123:123",
@@ -134,7 +134,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPBindSearchFilter'")
+			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPBindUserKey'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -145,13 +145,13 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 	Convey("Given I create a new LDAPInfo with metadata and missing connSecurityProtocol", t, func() {
 
 		i, err := NewLDAPInfo(map[string]interface{}{
-			LDAPAddressKey:          "123:123",
-			LDAPBindPasswordKey:     "toto",
-			LDAPBindDNKey:           "cn=admin,dc=toto,dc=com",
-			LDAPBindSearchFilterKey: "uid={USERNAME}",
-			LDAPUsernameKey:         "lskywalker",
-			LDAPPasswordKey:         "secret",
-			LDAPBaseDNKey:           "ou=zoupla,dc=toto,dc=com",
+			LDAPAddressKey:      "123:123",
+			LDAPBindPasswordKey: "toto",
+			LDAPBindDNKey:       "cn=admin,dc=toto,dc=com",
+			LDAPBindUserKeyKey:  "uid",
+			LDAPUsernameKey:     "lskywalker",
+			LDAPPasswordKey:     "secret",
+			LDAPBaseDNKey:       "ou=zoupla,dc=toto,dc=com",
 		})
 
 		Convey("Then err should not be nil", func() {
@@ -170,7 +170,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPPasswordKey:             "secret",
 			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
@@ -192,7 +192,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
@@ -214,7 +214,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -252,7 +252,7 @@ func TestLDAPUtils_ToMap(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -283,9 +283,9 @@ func TestLDAPUtils_ToMap(t *testing.T) {
 			temp, ok = m[LDAPBindPasswordKey].(string)
 			So(ok, ShouldEqual, true)
 			So(string(temp), ShouldEqual, "toto")
-			temp, ok = m[LDAPBindSearchFilterKey].(string)
+			temp, ok = m[LDAPBindUserKeyKey].(string)
 			So(ok, ShouldEqual, true)
-			So(string(temp), ShouldEqual, "uid={USERNAME}")
+			So(string(temp), ShouldEqual, "uid")
 			temp, ok = m[LDAPConnSecurityProtocolKey].(string)
 			So(ok, ShouldEqual, true)
 			So(string(temp), ShouldEqual, "TLS")
@@ -310,7 +310,7 @@ func TestLDAPUtils_GetUserQueryString(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME}",
+			LDAPBindUserKeyKey:          "uid",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -336,7 +336,7 @@ func TestLDAPUtils_GetUserQueryString(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindPasswordKey:         "toto",
-			LDAPBindSearchFilterKey:     "uid={USERNAME},khg={USERNAME}",
+			LDAPBindUserKeyKey:          "uid,khg",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
