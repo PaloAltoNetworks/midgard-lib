@@ -11,15 +11,16 @@ const (
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
-	Address              string `json:"LDAPAddress"`
-	BindDN               string `json:"LDAPBindDN"`
-	BindPassword         string `json:"LDAPBindPassword"`
-	BindSearchFilter     string `json:"LDAPBindSearchFilter"`
-	SubjectKey           string `json:"LDAPSubjectKey"`
-	BaseDN               string `json:"LDAPBaseDN"`
-	ConnSecurityProtocol string `json:"LDAPConnSecurityProtocol"`
-	Username             string `json:"LDAPUsername"`
-	Password             string `json:"LDAPPassword"`
+	Address              string                 `json:"LDAPAddress"`
+	BindDN               string                 `json:"LDAPBindDN"`
+	BindPassword         string                 `json:"LDAPBindPassword"`
+	BindSearchFilter     string                 `json:"LDAPBindSearchFilter"`
+	SubjectKey           string                 `json:"LDAPSubjectKey"`
+	IgnoreKeys           map[string]interface{} `json:"LDAPIgnoredKeys"`
+	BaseDN               string                 `json:"LDAPBaseDN"`
+	ConnSecurityProtocol string                 `json:"LDAPConnSecurityProtocol"`
+	Username             string                 `json:"LDAPUsername"`
+	Password             string                 `json:"LDAPPassword"`
 }
 
 // NewLDAPInfo returns a new LDAPInfo, or an error
@@ -58,6 +59,11 @@ func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 		return nil, err
 	}
 
+	info.IgnoreKeys, err = findLDAPKeyMap(LDAPIgnoredKeys, metadata)
+	if err != nil {
+		return nil, err
+	}
+
 	info.ConnSecurityProtocol, err = findLDAPKey(LDAPConnSecurityProtocolKey, metadata)
 	if err != nil {
 		return nil, err
@@ -90,6 +96,7 @@ func (i *LDAPInfo) ToMap() map[string]interface{} {
 		LDAPBindPasswordKey:         i.BindPassword,
 		LDAPBindSearchFilterKey:     i.BindSearchFilter,
 		LDAPSubjectKey:              i.SubjectKey,
+		LDAPIgnoredKeys:             i.IgnoreKeys,
 		LDAPUsernameKey:             i.Username,
 		LDAPPasswordKey:             i.Password,
 		LDAPBaseDNKey:               i.BaseDN,

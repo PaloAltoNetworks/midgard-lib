@@ -4,9 +4,33 @@ import "fmt"
 
 func findLDAPKey(k string, metadata map[string]interface{}) (string, error) {
 
-	if v, ok := metadata[k]; ok && v.(string) != "" {
-		return v.(string), nil
+	v, ok := metadata[k]
+	if !ok {
+		return "", fmt.Errorf("Metadata must contain the key '%s'", k)
 	}
 
-	return "", fmt.Errorf("Metadata must contain the key '%s'", k)
+	if s, ok := v.(string); ok && s != "" {
+		return s, nil
+	}
+
+	return "", fmt.Errorf("Metadata must be a string for key '%s'", k)
+}
+
+func findLDAPKeyMap(k string, metadata map[string]interface{}) (m map[string]interface{}, e error) {
+
+	v, ok := metadata[k]
+	if !ok {
+		return nil, fmt.Errorf("Metadata must contain the key '%s'", k)
+	}
+
+	l, ok := v.([]string)
+	if !ok {
+		return nil, fmt.Errorf("Metadata must be a list of strings for key '%s'", k)
+	}
+
+	m = make(map[string]interface{})
+	for _, key := range l {
+		m[key] = nil
+	}
+	return m, nil
 }
