@@ -7,7 +7,7 @@ const (
 	LDAPBindPasswordKey         = "LDAPBindPassword"
 	LDAPBindSearchFilterKey     = "LDAPBindSearchFilter"
 	LDAPSubjectKey              = "LDAPSubjectKey"
-	LDAPIgnoreKeys              = "LDAPIgnoreKeys"
+	LDAPIgnoredKeys             = "LDAPIgnoredKeys"
 	LDAPConnSecurityProtocolKey = "LDAPConnSecurityProtocol"
 	LDAPUsernameKey             = "LDAPUsername"
 	LDAPPasswordKey             = "LDAPPassword"

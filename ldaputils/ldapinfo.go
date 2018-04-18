@@ -16,7 +16,7 @@ type LDAPInfo struct {
 	BindPassword         string                 `json:"LDAPBindPassword"`
 	BindSearchFilter     string                 `json:"LDAPBindSearchFilter"`
 	SubjectKey           string                 `json:"LDAPSubjectKey"`
-	IgnoreKeys           map[string]interface{} `json:"LDAPIgnoreKeys"`
+	IgnoreKeys           map[string]interface{} `json:"LDAPIgnoredKeys"`
 	BaseDN               string                 `json:"LDAPBaseDN"`
 	ConnSecurityProtocol string                 `json:"LDAPConnSecurityProtocol"`
 	Username             string                 `json:"LDAPUsername"`
@@ -59,7 +59,7 @@ func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 		return nil, err
 	}
 
-	info.IgnoreKeys, err = findLDAPKeyMap(LDAPIgnoreKeys, metadata)
+	info.IgnoreKeys, err = findLDAPKeyMap(LDAPIgnoredKeys, metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (i *LDAPInfo) ToMap() map[string]interface{} {
 		LDAPBindPasswordKey:         i.BindPassword,
 		LDAPBindSearchFilterKey:     i.BindSearchFilter,
 		LDAPSubjectKey:              i.SubjectKey,
-		LDAPIgnoreKeys:              i.IgnoreKeys,
+		LDAPIgnoredKeys:             i.IgnoreKeys,
 		LDAPUsernameKey:             i.Username,
 		LDAPPasswordKey:             i.Password,
 		LDAPBaseDNKey:               i.BaseDN,

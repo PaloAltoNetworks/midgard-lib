@@ -29,7 +29,7 @@ func TestLDAPUtils_LDAPInfo(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -67,7 +67,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -90,7 +90,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPAddressKey:              "123:123",
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -114,7 +114,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -138,7 +138,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPConnSecurityProtocolKey: "TLS",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
 			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
@@ -161,7 +161,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -194,7 +194,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPIgnoreKeys'")
+			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPIgnoredKeys'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -210,7 +210,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindDNKey:           "cn=admin,dc=toto,dc=com",
 			LDAPBindSearchFilterKey: "uid={USERNAME}",
 			LDAPSubjectKey:          "uid",
-			LDAPIgnoreKeys:          []string{"comment"},
+			LDAPIgnoredKeys:         []string{"comment"},
 			LDAPUsernameKey:         "lskywalker",
 			LDAPPasswordKey:         "secret",
 			LDAPBaseDNKey:           "ou=zoupla,dc=toto,dc=com",
@@ -234,7 +234,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPPasswordKey:             "secret",
 			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
@@ -258,7 +258,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPBaseDNKey:               "ou=zoupla,dc=toto,dc=com",
@@ -282,7 +282,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -321,7 +321,7 @@ func TestLDAPUtils_LDAPInfoBadValues(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
-			LDAPIgnoreKeys:              []string{},
+			LDAPIgnoredKeys:             []string{},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPSubjectKey:              "uid",
 			LDAPUsernameKey:             "lskywalker",
@@ -346,7 +346,7 @@ func TestLDAPUtils_LDAPInfoBadValues(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindDNKey:               "cn=admin,dc=toto,dc=com",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
-			LDAPIgnoreKeys:              "",
+			LDAPIgnoredKeys:             "",
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPSubjectKey:              "uid",
 			LDAPUsernameKey:             "lskywalker",
@@ -356,7 +356,7 @@ func TestLDAPUtils_LDAPInfoBadValues(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must be a list of strings for key 'LDAPIgnoreKeys'")
+			So(err.Error(), ShouldEqual, "Metadata must be a list of strings for key 'LDAPIgnoredKeys'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -375,7 +375,7 @@ func TestLDAPUtils_ToMap(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -409,7 +409,7 @@ func TestLDAPUtils_ToMap(t *testing.T) {
 			temp, ok = m[LDAPBindSearchFilterKey].(string)
 			So(ok, ShouldEqual, true)
 			So(string(temp), ShouldEqual, "uid={USERNAME}")
-			tempMap, ok := m[LDAPIgnoreKeys].(map[string]interface{})
+			tempMap, ok := m[LDAPIgnoredKeys].(map[string]interface{})
 			So(ok, ShouldEqual, true)
 			So(tempMap, ShouldContainKey, "comment")
 			temp, ok = m[LDAPConnSecurityProtocolKey].(string)
@@ -438,7 +438,7 @@ func TestLDAPUtils_GetUserQueryString(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
@@ -466,7 +466,7 @@ func TestLDAPUtils_GetUserQueryString(t *testing.T) {
 			LDAPBindPasswordKey:         "toto",
 			LDAPBindSearchFilterKey:     "uid={USERNAME},khg={USERNAME}",
 			LDAPSubjectKey:              "uid",
-			LDAPIgnoreKeys:              []string{"comment"},
+			LDAPIgnoredKeys:             []string{"comment"},
 			LDAPConnSecurityProtocolKey: "TLS",
 			LDAPUsernameKey:             "lskywalker",
 			LDAPPasswordKey:             "secret",
