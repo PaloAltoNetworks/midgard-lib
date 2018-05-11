@@ -14,6 +14,7 @@ import (
 	"github.com/aporeto-inc/addedeffect/tokenutils"
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/gaia/v1/golang"
+	"github.com/aporeto-inc/midgard-lib/ldaputils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 )
@@ -128,15 +129,14 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAP(ctx context.Context, vinceAccount string, ldapAccount string, ldapPassword string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmLDAP
 	issueRequest.Validity = validity.String()
-	issueRequest.Metadata = map[string]interface{}{
-		"account":      vinceAccount,
-		"LDAPUsername": ldapAccount,
-		"LDAPPassword": ldapPassword,
+	issueRequest.Metadata = info.ToMap()
+	if vinceAccount != "" {
+		issueRequest.Metadata["account"] = vinceAccount
 	}
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")

@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/aporeto-inc/gaia/v1/golang"
+	"github.com/aporeto-inc/midgard-lib/ldaputils"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -283,7 +285,16 @@ func TestClient_IssueFromLDAP(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromLDAP(ctx, "account", "ldapaccount", "ldappassword", 1*time.Minute)
+			linfo := &ldaputils.LDAPInfo{
+				Address:      "Address",
+				BindDN:       "BindDN",
+				BindPassword: "BindPassword",
+				BaseDN:       "BaseDN",
+				Username:     "Username",
+				Password:     "Password",
+			}
+
+			token, err := cl.IssueFromLDAP(ctx, linfo, "account", 1*time.Minute)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -292,8 +303,12 @@ func TestClient_IssueFromLDAP(t *testing.T) {
 			Convey("Then the issue request should be correct", func() {
 				So(expectedRequest.Realm, ShouldEqual, "LDAP")
 				So(expectedRequest.Metadata["account"], ShouldEqual, "account")
-				So(expectedRequest.Metadata["LDAPUsername"], ShouldEqual, "ldapaccount")
-				So(expectedRequest.Metadata["LDAPPassword"], ShouldEqual, "ldappassword")
+				So(expectedRequest.Metadata["LDAPAddress"], ShouldEqual, "Address")
+				So(expectedRequest.Metadata["LDAPBindDN"], ShouldEqual, "BindDN")
+				So(expectedRequest.Metadata["LDAPBindPassword"], ShouldEqual, "BindPassword")
+				So(expectedRequest.Metadata["LDAPBaseDN"], ShouldEqual, "BaseDN")
+				So(expectedRequest.Metadata["LDAPUsername"], ShouldEqual, "Username")
+				So(expectedRequest.Metadata["LDAPPassword"], ShouldEqual, "Password")
 			})
 
 			Convey("Then token should be correct", func() {
