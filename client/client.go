@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/aporeto-inc/addedeffect/tokenutils"
@@ -246,6 +247,13 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 		resp, err := a.httpClient.Do(request)
 		if err == nil {
 			return resp, nil
+		}
+
+		if uerr, ok := err.(*url.Error); ok {
+			switch uerr.Err.(type) {
+			case x509.UnknownAuthorityError, x509.CertificateInvalidError, x509.HostnameError:
+				return nil, err
+			}
 		}
 
 		err = tokenutils.Snip(err, token)
