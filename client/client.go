@@ -41,8 +41,7 @@ func NewClient(url string) *Client {
 	return NewClientWithTLS(
 		url,
 		&tls.Config{
-			InsecureSkipVerify: true,
-			RootCAs:            CAPool,
+			RootCAs: CAPool,
 		},
 	)
 }
