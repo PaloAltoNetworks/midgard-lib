@@ -7,7 +7,7 @@ image_resource:
 
 inputs:
 - name: src
-  path: go/src/github.com/aporeto-inc/midgard-lib
+  path: go/src/go.aporeto.io/midgard-lib
 
 run:
   path: bash
@@ -17,7 +17,7 @@ run:
       export PATH=$PATH:$GOPATH/bin:$PWD/go/bin
       export GOPATH=$PWD/go:$GOPATH
 
-      cd go/src/github.com/aporeto-inc/midgard-lib
+      cd go/src/go.aporeto.io/midgard-lib
       dep ensure -v
       ./.test.sh
       bash <(curl -s https://codecov.io/bash)

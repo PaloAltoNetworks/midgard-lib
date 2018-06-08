@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aporeto-inc/midgard-lib/claims"
+	"go.aporeto.io/midgard-lib/claims"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )

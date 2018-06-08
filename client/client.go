@@ -12,12 +12,12 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/aporeto-inc/addedeffect/tokenutils"
-	"github.com/aporeto-inc/elemental"
-	"github.com/aporeto-inc/gaia/v1/golang"
-	"github.com/aporeto-inc/midgard-lib/ldaputils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
+	"go.aporeto.io/addedeffect/tokenutils"
+	"go.aporeto.io/elemental"
+	"go.aporeto.io/gaia/v1/golang"
+	"go.aporeto.io/midgard-lib/ldaputils"
 )
 
 // A Client allows to interract with a midgard server.

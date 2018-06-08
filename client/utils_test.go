@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/aporeto-inc/gaia/v1/golang"
+	"go.aporeto.io/gaia/v1/golang"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
