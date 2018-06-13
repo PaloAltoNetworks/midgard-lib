@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"go.aporeto.io/gaia/v1/golang"
+	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/ldaputils"
 
 	. "github.com/smartystreets/goconvey/convey"

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"go.aporeto.io/gaia/v1/golang"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.aporeto.io/gaia"
 )
 
 func TestUtils_extractJWT(t *testing.T) {
