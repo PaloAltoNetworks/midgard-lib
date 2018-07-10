@@ -93,6 +93,4 @@ func (m *SimpleTokenManager) Issue(ctx context.Context) (token string, err error
 
 // Run runs the token renewal job.
 func (m *SimpleTokenManager) Run(ctx context.Context, tokenCh chan string) {
-
-	return
 }
