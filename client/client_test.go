@@ -55,6 +55,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			_, err := fmt.Fprintln(w, `{
+				So(err, ShouldBeNil)
                 "claims": {
                    "aud": "aporeto.com",
                    "data": {
@@ -115,6 +116,7 @@ func TestClient_Authentify(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(403)
 			_, err := fmt.Fprintln(w, `{
+Nil)
                 "claims": null
             }`)
 			So(err, ShouldBeNil)
@@ -141,6 +143,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			_, err := fmt.Fprintln(w, `{
+Nil)
                 "claims
 			}`)
 			So(err, ShouldBeNil)
@@ -220,6 +223,7 @@ func TestClient_IssueFromCertificate(t *testing.T) {
 			expectedCert = r.TLS.PeerCertificates[0]
 
 			_, err := fmt.Fprintln(w, `{
+				So(err, ShouldBeNil)
                 "data": "",
                 "realm": "google",
                 "token": "yeay!"
@@ -276,6 +280,7 @@ func TestClient_IssueFromLDAP(t *testing.T) {
 			}
 
 			_, err := fmt.Fprintln(w, `{
+				So(err, ShouldBeNil)
                 "data": "",
                 "realm": "google",
                 "token": "yeay!"
@@ -334,7 +339,8 @@ func TestClient_IssueFromVince(t *testing.T) {
 			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
 				panic(err)
 			}
-			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			_, err := fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
