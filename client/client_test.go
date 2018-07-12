@@ -54,7 +54,7 @@ func TestClient_Authentify(t *testing.T) {
 	Convey("Given I have a Client and some valid http header", t, func() {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "claims": {
                    "aud": "aporeto.com",
                    "data": {
@@ -68,7 +68,8 @@ func TestClient_Authentify(t *testing.T) {
                    "realm": "certificate",
                    "sub": "10237207344299343489"
                }
-            }`)
+			}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -113,9 +114,10 @@ func TestClient_Authentify(t *testing.T) {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(403)
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "claims": null
             }`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -138,9 +140,10 @@ func TestClient_Authentify(t *testing.T) {
 	Convey("Given I have a Client and some valid http header but Midgard return garbage json", t, func() {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "claims
-            }`)
+			}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -171,7 +174,8 @@ func TestClient_IssueFromGoogle(t *testing.T) {
 			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
 				panic(err)
 			}
-			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			_, err := fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -215,11 +219,12 @@ func TestClient_IssueFromCertificate(t *testing.T) {
 
 			expectedCert = r.TLS.PeerCertificates[0]
 
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "data": "",
                 "realm": "google",
                 "token": "yeay!"
-            }`)
+			}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -270,11 +275,12 @@ func TestClient_IssueFromLDAP(t *testing.T) {
 				panic(err)
 			}
 
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "data": "",
                 "realm": "google",
                 "token": "yeay!"
-            }`)
+			}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -328,7 +334,8 @@ func TestClient_IssueFromVince(t *testing.T) {
 			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
 				panic(err)
 			}
-			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			_, err := fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -369,7 +376,8 @@ func TestClient_AWSIdentityDocument(t *testing.T) {
 			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
 				panic(err)
 			}
-			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			_, err := fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -403,11 +411,12 @@ func TestClient_sendRequest(t *testing.T) {
 	Convey("Given I have a client and a fake working server", t, func() {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "data": "",
                 "realm": "google",
                 "token": "yeay!"
-            }`)
+			}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -452,11 +461,12 @@ func TestClient_sendRequest(t *testing.T) {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(403)
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "data": "",
                 "realm": "google",
                 "token": "yeay!"
-            }`)
+			}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
@@ -482,9 +492,10 @@ func TestClient_sendRequest(t *testing.T) {
 	Convey("Given I have a client and a fake server that returns garbage", t, func() {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, `{
+			_, err := fmt.Fprintln(w, `{
                 "data": "
-            }`)
+			}`)
+			So(err, ShouldBeNil)
 		}))
 		defer ts.Close()
 
