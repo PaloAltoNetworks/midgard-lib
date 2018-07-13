@@ -71,3 +71,26 @@ func (m *TokenManager) Run(ctx context.Context, tokenCh chan string) {
 		}
 	}
 }
+
+// SimpleTokenManager is a simple implementation of a token Manager that simply returns the token that was setup initially
+type SimpleTokenManager struct {
+	token string
+}
+
+// NewSimpleTokenManager returns a new SimpleTokenManager backed by midgard.
+func NewSimpleTokenManager(token string) *SimpleTokenManager {
+
+	return &SimpleTokenManager{
+		token: token,
+	}
+}
+
+// Issue issues a token.
+func (m *SimpleTokenManager) Issue(ctx context.Context) (token string, err error) {
+
+	return m.token, nil
+}
+
+// Run runs the token renewal job.
+func (m *SimpleTokenManager) Run(ctx context.Context, tokenCh chan string) {
+}
