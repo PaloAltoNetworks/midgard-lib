@@ -187,6 +187,20 @@ func (a *Client) IssueFromGCPIdentityDocument(ctx context.Context, token string,
 	return a.sendRequest(subctx, issueRequest)
 }
 
+// IssueFromAzureIdentityDocument issues a Midgard jwt from a signed Azure identity document for the given validity duration.
+func (a *Client) IssueFromAzureIdentityDocument(ctx context.Context, token string, validity time.Duration) (string, error) {
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{"doc": token}
+	issueRequest.Realm = gaia.IssueRealmAzureIdentityDocument
+	issueRequest.Validity = validity.String()
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.azure")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
 func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
