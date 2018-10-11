@@ -61,6 +61,9 @@ func NewClientWithTLS(url string, tlsConfig *tls.Config) *Client {
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
 			},
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		},
 	}
 }
@@ -187,6 +190,42 @@ func (a *Client) IssueFromGCPIdentityDocument(ctx context.Context, token string,
 	return a.sendRequest(subctx, issueRequest)
 }
 
+// IssueFromOIDCStep1 issues a Midgard jwt from a OICD provider. This is performing the first step to
+// validate the issue requests and OIDC provider. It will return the OIDC auth endpoint
+func (a *Client) IssueFromOIDCStep1(ctx context.Context, account string, providerName string, redirectURL string) (string, error) {
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{
+		"account":          account,
+		"OIDCProviderName": providerName,
+		"redirectURL":      redirectURL,
+	}
+	issueRequest.Realm = gaia.IssueRealmOIDC
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step1")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
+// IssueFromOIDCStep2 issues a Midgard jwt from a OICD provider. This is performing the second step to
+// to exchange the code for a Midgard HWT.
+func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state string, validity time.Duration) (string, error) {
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{
+		"code":  code,
+		"state": state,
+	}
+	issueRequest.Realm = gaia.IssueRealmOIDC
+	issueRequest.Validity = validity.String()
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step2")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
 // IssueFromAzureIdentityDocument issues a Midgard jwt from a signed Azure identity document for the given validity duration.
 func (a *Client) IssueFromAzureIdentityDocument(ctx context.Context, token string, validity time.Duration) (string, error) {
 
@@ -215,6 +254,10 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (str
 	resp, err := a.sendRetry(ctx, builder, "")
 	if err != nil {
 		return "", err
+	}
+
+	if resp.StatusCode == http.StatusFound {
+		return resp.Header.Get("Location"), nil
 	}
 
 	defer resp.Body.Close() // nolint: errcheck

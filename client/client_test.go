@@ -476,6 +476,89 @@ func TestClient_IssueFromAzureIdentityDocument(t *testing.T) {
 	})
 }
 
+func TestClient_IssueFromOIDCStep1(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+
+			fmt.Fprintln(w, `{"data": "","realm": "oidc","token": "token"}`)
+
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromOIDCStep2", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromOIDCStep2(ctx, "code", "state", 1*time.Minute)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "OIDC")
+				So(expectedRequest.Metadata["code"], ShouldEqual, "code")
+				So(expectedRequest.Metadata["state"], ShouldEqual, "state")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "token")
+			})
+		})
+	})
+}
+
+func TestClient_IssueFromOIDCStep2(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+
+			w.Header().Set("Location", "http://laba")
+			w.WriteHeader(http.StatusFound)
+
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromOIDCStep1(", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			url, err := cl.IssueFromOIDCStep1(ctx, "aporeto", "okta", "http://ici")
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "OIDC")
+			})
+
+			Convey("Then url should be correct", func() {
+				So(url, ShouldEqual, "http://laba")
+			})
+		})
+	})
+}
+
 func TestClient_sendRequest(t *testing.T) {
 
 	Convey("Given I have a client and a fake working server", t, func() {
