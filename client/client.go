@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,7 +18,6 @@ import (
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/ldaputils"
-	"go.aporeto.io/tg/tglib"
 )
 
 // A Client allows to interract with a midgard server.
@@ -136,8 +134,8 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 // IssueFromApplicationCredentials issues a Midgard jwt from a certificate for the given validity duration.
 func (a *Client) IssueFromApplicationCredentials(ctx context.Context, data []byte, validity time.Duration) (string, error) {
 
-	creds := &gaia.Credential{}
-	if err := json.Unmarshal(data, creds); err != nil {
+	tlsConfig, err := AppCredToTLSConfig(data)
+	if err != nil {
 		return "", err
 	}
 
@@ -148,44 +146,10 @@ func (a *Client) IssueFromApplicationCredentials(ctx context.Context, data []byt
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
 	defer span.Finish()
 
-	caData, err := base64.StdEncoding.DecodeString(creds.CertificateAuthority)
-	if err != nil {
-		return "", fmt.Errorf("unable to decode ca: %s", err)
-	}
-
-	certData, err := base64.StdEncoding.DecodeString(creds.Certificate)
-	if err != nil {
-		return "", fmt.Errorf("unable to decode certificate: %s", err)
-	}
-
-	keyData, err := base64.StdEncoding.DecodeString(creds.CertificateKey)
-	if err != nil {
-		return "", fmt.Errorf("unable to decode key: %s", err)
-	}
-
-	capool := x509.NewCertPool()
-	capool.AppendCertsFromPEM(caData)
-
-	cert, key, err := tglib.ReadCertificate(certData, keyData, "")
-	if err != nil {
-		return "", fmt.Errorf("unable to parse certificate: %s", err)
-	}
-
-	clientCert, err := tglib.ToTLSCertificate(cert, key)
-	if err != nil {
-		return "", fmt.Errorf("unable to convert certificate: %s", err)
-	}
-
 	cl := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:      capool,
-				Certificates: []tls.Certificate{clientCert},
-			},
-		},
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
+			TLSClientConfig: tlsConfig,
 		},
 	}
 
