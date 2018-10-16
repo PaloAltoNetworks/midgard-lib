@@ -84,7 +84,7 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 		return http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
 	}
 
-	resp, err := a.sendRetry(subctx, a.httpClient, builder, token)
+	resp, err := a.sendRetry(subctx, builder, token)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (a *Client) IssueFromGoogle(ctx context.Context, googleJWT string, validity
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.google")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate for the given validity duration.
@@ -128,32 +128,7 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
-}
-
-// IssueFromApplicationCredentials issues a Midgard jwt from a certificate for the given validity duration.
-func (a *Client) IssueFromApplicationCredentials(ctx context.Context, data []byte, validity time.Duration) (string, error) {
-
-	tlsConfig, err := AppCredToTLSConfig(data)
-	if err != nil {
-		return "", err
-	}
-
-	issueRequest := gaia.NewIssue()
-	issueRequest.Realm = gaia.IssueRealmCertificate
-	issueRequest.Validity = validity.String()
-
-	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
-	defer span.Finish()
-
-	cl := &http.Client{
-		Timeout: 10 * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
-		},
-	}
-
-	return a.sendRequest(subctx, cl, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP for the given validity duration.
@@ -170,7 +145,7 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vi
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince for the given one time password and validity duration.
@@ -184,7 +159,7 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.vince")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document for the given validity duration.
@@ -198,7 +173,7 @@ func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, v
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromGCPIdentityDocument issues a Midgard jwt from a signed GCP identity document for the given validity duration.
@@ -212,7 +187,7 @@ func (a *Client) IssueFromGCPIdentityDocument(ctx context.Context, token string,
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.gcp")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromOIDCStep1 issues a Midgard jwt from a OICD provider. This is performing the first step to
@@ -230,7 +205,7 @@ func (a *Client) IssueFromOIDCStep1(ctx context.Context, account string, provide
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step1")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromOIDCStep2 issues a Midgard jwt from a OICD provider. This is performing the second step to
@@ -248,7 +223,7 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step2")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
 // IssueFromAzureIdentityDocument issues a Midgard jwt from a signed Azure identity document for the given validity duration.
@@ -262,10 +237,10 @@ func (a *Client) IssueFromAzureIdentityDocument(ctx context.Context, token strin
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.azure")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, a.httpClient, issueRequest)
+	return a.sendRequest(subctx, issueRequest)
 }
 
-func (a *Client) sendRequest(ctx context.Context, client *http.Client, issueRequest *gaia.Issue) (string, error) {
+func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
@@ -276,7 +251,7 @@ func (a *Client) sendRequest(ctx context.Context, client *http.Client, issueRequ
 		return http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
 	}
 
-	resp, err := a.sendRetry(ctx, client, builder, "")
+	resp, err := a.sendRetry(ctx, builder, "")
 	if err != nil {
 		return "", err
 	}
@@ -311,7 +286,7 @@ func (a *Client) sendRequest(ctx context.Context, client *http.Client, issueRequ
 	return issueRequest.Token, nil
 }
 
-func (a *Client) sendRetry(ctx context.Context, client *http.Client, requestBuilder func() (*http.Request, error), token string) (*http.Response, error) {
+func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Request, error), token string) (*http.Response, error) {
 
 	for {
 
@@ -339,7 +314,7 @@ func (a *Client) sendRetry(ctx context.Context, client *http.Client, requestBuil
 			}
 		}
 
-		resp, err := client.Do(request)
+		resp, err := a.httpClient.Do(request)
 		if err == nil {
 			return resp, nil
 		}

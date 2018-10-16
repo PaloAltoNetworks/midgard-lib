@@ -579,7 +579,7 @@ func TestClient_sendRequest(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			jwt, err := cl.sendRequest(ctx, cl.httpClient, &gaia.Issue{Realm: "test"})
+			jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -598,7 +598,7 @@ func TestClient_sendRequest(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
-		jwt, err := cl.sendRequest(ctx, cl.httpClient, &gaia.Issue{Realm: "test"})
+		jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
@@ -628,7 +628,7 @@ func TestClient_sendRequest(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			jwt, err := cl.sendRequest(ctx, cl.httpClient, &gaia.Issue{Realm: "test"})
+			jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -656,7 +656,7 @@ func TestClient_sendRequest(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			jwt, err := cl.sendRequest(ctx, cl.httpClient, &gaia.Issue{Realm: "test"})
+			jwt, err := cl.sendRequest(ctx, &gaia.Issue{Realm: "test"})
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
