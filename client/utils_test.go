@@ -259,7 +259,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 			})
 
 			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to parse certificate: Multiple private keys found. This is not supported")
+				So(err.Error(), ShouldEqual, "unable to parse certificate: Could not read key data")
 			})
 		})
 	})
