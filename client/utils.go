@@ -23,7 +23,7 @@ func AppCredToTLSConfig(data []byte) (*tls.Config, error) {
 
 	creds := &gaia.Credential{}
 	if err := json.Unmarshal(data, creds); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to decode app credential: %s", err)
 	}
 
 	caData, err := base64.StdEncoding.DecodeString(creds.CertificateAuthority)
@@ -46,7 +46,9 @@ func AppCredToTLSConfig(data []byte) (*tls.Config, error) {
 		return nil, fmt.Errorf("unable to read system cert pool: %s", err)
 	}
 
-	capool.AppendCertsFromPEM(caData)
+	if !capool.AppendCertsFromPEM(caData) {
+		return nil, fmt.Errorf("unable to add ca to cert pool")
+	}
 
 	cert, key, err := tglib.ReadCertificate(certData, keyData, "")
 	if err != nil {
