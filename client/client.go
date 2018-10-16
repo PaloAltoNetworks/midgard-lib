@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,7 @@ import (
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/ldaputils"
+	"go.aporeto.io/tg/tglib"
 )
 
 // A Client allows to interract with a midgard server.
@@ -84,7 +86,7 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 		return http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
 	}
 
-	resp, err := a.sendRetry(subctx, builder, token)
+	resp, err := a.sendRetry(subctx, a.httpClient, builder, token)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +117,7 @@ func (a *Client) IssueFromGoogle(ctx context.Context, googleJWT string, validity
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.google")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate for the given validity duration.
@@ -128,7 +130,66 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
+}
+
+// IssueFromApplicationCredentials issues a Midgard jwt from a certificate for the given validity duration.
+func (a *Client) IssueFromApplicationCredentials(ctx context.Context, data []byte, validity time.Duration) (string, error) {
+
+	creds := &gaia.Credential{}
+	if err := json.Unmarshal(data, creds); err != nil {
+		return "", err
+	}
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Realm = gaia.IssueRealmCertificate
+	issueRequest.Validity = validity.String()
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
+	defer span.Finish()
+
+	caData, err := base64.StdEncoding.DecodeString(creds.CertificateAuthority)
+	if err != nil {
+		return "", fmt.Errorf("unable to decode ca: %s", err)
+	}
+
+	certData, err := base64.StdEncoding.DecodeString(creds.Certificate)
+	if err != nil {
+		return "", fmt.Errorf("unable to decode certificate: %s", err)
+	}
+
+	keyData, err := base64.StdEncoding.DecodeString(creds.CertificateKey)
+	if err != nil {
+		return "", fmt.Errorf("unable to decode key: %s", err)
+	}
+
+	capool := x509.NewCertPool()
+	capool.AppendCertsFromPEM(caData)
+
+	cert, key, err := tglib.ReadCertificate(certData, keyData, "")
+	if err != nil {
+		return "", fmt.Errorf("unable to parse certificate: %s", err)
+	}
+
+	clientCert, err := tglib.ToTLSCertificate(cert, key)
+	if err != nil {
+		return "", fmt.Errorf("unable to convert certificate: %s", err)
+	}
+
+	cl := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:      capool,
+				Certificates: []tls.Certificate{clientCert},
+			},
+		},
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	return a.sendRequest(subctx, cl, issueRequest)
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP for the given validity duration.
@@ -145,7 +206,7 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vi
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince for the given one time password and validity duration.
@@ -159,7 +220,7 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.vince")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document for the given validity duration.
@@ -173,7 +234,7 @@ func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, v
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
 // IssueFromGCPIdentityDocument issues a Midgard jwt from a signed GCP identity document for the given validity duration.
@@ -187,7 +248,7 @@ func (a *Client) IssueFromGCPIdentityDocument(ctx context.Context, token string,
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.gcp")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
 // IssueFromOIDCStep1 issues a Midgard jwt from a OICD provider. This is performing the first step to
@@ -205,7 +266,7 @@ func (a *Client) IssueFromOIDCStep1(ctx context.Context, account string, provide
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step1")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
 // IssueFromOIDCStep2 issues a Midgard jwt from a OICD provider. This is performing the second step to
@@ -223,7 +284,7 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step2")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
 // IssueFromAzureIdentityDocument issues a Midgard jwt from a signed Azure identity document for the given validity duration.
@@ -237,10 +298,10 @@ func (a *Client) IssueFromAzureIdentityDocument(ctx context.Context, token strin
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.azure")
 	defer span.Finish()
 
-	return a.sendRequest(subctx, issueRequest)
+	return a.sendRequest(subctx, a.httpClient, issueRequest)
 }
 
-func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (string, error) {
+func (a *Client) sendRequest(ctx context.Context, client *http.Client, issueRequest *gaia.Issue) (string, error) {
 
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
@@ -251,7 +312,7 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (str
 		return http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
 	}
 
-	resp, err := a.sendRetry(ctx, builder, "")
+	resp, err := a.sendRetry(ctx, client, builder, "")
 	if err != nil {
 		return "", err
 	}
@@ -286,7 +347,7 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (str
 	return issueRequest.Token, nil
 }
 
-func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Request, error), token string) (*http.Response, error) {
+func (a *Client) sendRetry(ctx context.Context, client *http.Client, requestBuilder func() (*http.Request, error), token string) (*http.Response, error) {
 
 	for {
 
@@ -314,7 +375,7 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 			}
 		}
 
-		resp, err := a.httpClient.Do(request)
+		resp, err := client.Do(request)
 		if err == nil {
 			return resp, nil
 		}
