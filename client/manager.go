@@ -5,10 +5,9 @@ import (
 	"crypto/tls"
 	"time"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap"
-
-	opentracing "github.com/opentracing/opentracing-go"
 )
 
 // A TokenManager issues an renew tokens periodically.
