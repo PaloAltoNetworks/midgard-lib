@@ -11,10 +11,9 @@ import (
 	"testing"
 	"time"
 
+	. "github.com/smartystreets/goconvey/convey"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/ldaputils"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestClient_NewClient(t *testing.T) {

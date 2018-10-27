@@ -10,11 +10,10 @@ import (
 	"net/http"
 	"strings"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/claims"
 	"go.aporeto.io/tg/tglib"
-
-	jwt "github.com/dgrijalva/jwt-go"
 )
 
 // AppCredToTLSConfig converts the data of an application credential
