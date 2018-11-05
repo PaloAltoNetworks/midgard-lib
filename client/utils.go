@@ -16,53 +16,65 @@ import (
 	"go.aporeto.io/tg/tglib"
 )
 
-// AppCredToTLSConfig converts the data of an application credential
-// to *tls.Config.
-func AppCredToTLSConfig(data []byte) (*tls.Config, error) {
+// ParseCredentials parses the credential data.
+func ParseCredentials(data []byte) (creds *gaia.Credential, tlsConfig *tls.Config, err error) {
 
-	creds := &gaia.Credential{}
-	if err := json.Unmarshal(data, creds); err != nil {
-		return nil, fmt.Errorf("unable to decode app credential: %s", err)
+	creds = &gaia.Credential{}
+	if err = json.Unmarshal(data, creds); err != nil {
+		return nil, nil, fmt.Errorf("unable to decode app credential: %s", err)
 	}
 
 	caData, err := base64.StdEncoding.DecodeString(creds.CertificateAuthority)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode ca: %s", err)
+		return nil, nil, fmt.Errorf("unable to decode ca: %s", err)
 	}
 
 	certData, err := base64.StdEncoding.DecodeString(creds.Certificate)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode certificate: %s", err)
+		return nil, nil, fmt.Errorf("unable to decode certificate: %s", err)
 	}
 
 	keyData, err := base64.StdEncoding.DecodeString(creds.CertificateKey)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode key: %s", err)
+		return nil, nil, fmt.Errorf("unable to decode key: %s", err)
 	}
 
 	capool, err := x509.SystemCertPool()
 	if err != nil {
-		return nil, fmt.Errorf("unable to read system cert pool: %s", err)
+		return nil, nil, fmt.Errorf("unable to read system cert pool: %s", err)
 	}
 
 	if !capool.AppendCertsFromPEM(caData) {
-		return nil, fmt.Errorf("unable to add ca to cert pool")
+		return nil, nil, fmt.Errorf("unable to add ca to cert pool")
 	}
 
 	cert, key, err := tglib.ReadCertificate(certData, keyData, "")
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse certificate: %s", err)
+		return nil, nil, fmt.Errorf("unable to parse certificate: %s", err)
 	}
 
 	clientCert, err := tglib.ToTLSCertificate(cert, key)
 	if err != nil {
-		return nil, fmt.Errorf("unable to convert certificate: %s", err)
+		return nil, nil, fmt.Errorf("unable to convert certificate: %s", err)
 	}
 
-	return &tls.Config{
+	return creds, &tls.Config{
 		RootCAs:      capool,
 		Certificates: []tls.Certificate{clientCert},
 	}, nil
+
+}
+
+// AppCredToTLSConfig converts the data of an application credential
+// to *tls.Config. This is deprecated in favor of ParseCredentials.
+func AppCredToTLSConfig(data []byte) (*tls.Config, error) {
+
+	_, tlsConfig, err := ParseCredentials(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return tlsConfig, nil
 }
 
 // ExtractJWTFromHeader extracts the JWT from the given http.Header.
