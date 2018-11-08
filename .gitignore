@@ -1,3 +1,7 @@
 codegen
 midgardctl/midgardctl
 testresults.xml
+vendor
+*.lock
+*.cov
+artifacts
