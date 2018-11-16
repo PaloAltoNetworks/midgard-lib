@@ -558,6 +558,152 @@ func TestClient_IssueFromOIDCStep2(t *testing.T) {
 	})
 }
 
+func TestClient_IssueFromAWSSecurityToken(t *testing.T) {
+
+	Convey("Given I have a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+
+			fmt.Fprintln(w, `{
+                "data": "",
+                "realm": "sts",
+                "token": "yeay!"
+            }`)
+		}))
+		defer ts.Close()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromAWSSecurityToken with info", func() {
+
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "a", "b", "c", 1*time.Second)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, gaia.IssueRealmAWSSecurityToken)
+				So(expectedRequest.Metadata["accessKeyID"], ShouldEqual, "a")
+				So(expectedRequest.Metadata["secretAccessKey"], ShouldEqual, "b")
+				So(expectedRequest.Metadata["token"], ShouldEqual, "c")
+			})
+		})
+
+		Convey("When I call IssueFromAWSSecurityToken without info (calling aws)", func() {
+
+			ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.URL.Path {
+				case "/latest/meta-data/iam/security-credentials/":
+					fmt.Fprintln(w, `the-role`)
+				default:
+					fmt.Fprintln(w, `{
+                        "AccessKeyId": "x",
+                        "SecretAccessKey": "y",
+                        "Token": "z"
+                    }`)
+				}
+			}))
+			defer ts2.Close()
+
+			awsMagicURL = ts2.URL
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "", "", "", 1*time.Second)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, gaia.IssueRealmAWSSecurityToken)
+				So(expectedRequest.Metadata["accessKeyID"], ShouldEqual, "x")
+				So(expectedRequest.Metadata["secretAccessKey"], ShouldEqual, "y")
+				So(expectedRequest.Metadata["token"], ShouldEqual, "z")
+			})
+		})
+
+		Convey("When I call IssueFromAWSSecurityToken without info (calling aws) but can't retrieve role (comm error)", func() {
+
+			ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, "nope", http.StatusForbidden)
+			}))
+			defer ts2.Close()
+
+			awsMagicURL = "nope"
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "", "", "", 1*time.Second)
+
+			Convey("Then err should not be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, `unable to retrieve role from magic url: Get nope/latest/meta-data/iam/security-credentials/: unsupported protocol scheme ""`)
+			})
+		})
+
+		Convey("When I call IssueFromAWSSecurityToken without info (calling aws) but can't retrieve role (http error)", func() {
+
+			ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, "nope", http.StatusForbidden)
+			}))
+			defer ts2.Close()
+
+			awsMagicURL = ts2.URL
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "", "", "", 1*time.Second)
+
+			Convey("Then err should not be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, `unable to retrieve role from magic url: 403 Forbidden`)
+			})
+		})
+
+		Convey("When I call IssueFromAWSSecurityToken without info (calling aws) but can't retrieve token (comm error)", func() {
+
+			ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.URL.Path {
+				case "/latest/meta-data/iam/security-credentials/":
+					fmt.Fprintln(w, `the-role`)
+				}
+			}))
+			defer ts2.Close()
+
+			awsMagicURL = ts2.URL
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "", "", "", 1*time.Second)
+
+			Convey("Then err should not be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, `EOF`)
+			})
+		})
+
+		Convey("When I call IssueFromAWSSecurityToken without info (calling aws) but can't retrieve token (http error)", func() {
+
+			ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.URL.Path {
+				case "/latest/meta-data/iam/security-credentials/":
+					fmt.Fprintln(w, `the-role`)
+				default:
+					http.Error(w, "nope", http.StatusForbidden)
+				}
+			}))
+			defer ts2.Close()
+
+			awsMagicURL = ts2.URL
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "", "", "", 1*time.Second)
+
+			Convey("Then err should not be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, `unable to retrieve token from magic url: 403 Forbidden`)
+			})
+		})
+	})
+}
+
 func TestClient_sendRequest(t *testing.T) {
 
 	Convey("Given I have a client and a fake working server", t, func() {

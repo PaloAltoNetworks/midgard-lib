@@ -20,6 +20,8 @@ import (
 	"go.aporeto.io/midgard-lib/ldaputils"
 )
 
+var awsMagicURL = "http://169.254.169.254"
+
 // A Client allows to interract with a midgard server.
 type Client struct {
 	TrackingType string
@@ -168,6 +170,70 @@ func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, v
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
 	issueRequest.Realm = gaia.IssueRealmAWSIdentityDocument
+	issueRequest.Validity = validity.String()
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
+// IssueFromAWSSecurityToken issues a Midgard jwt from a security token from amazon.
+// If you don't pass anything, this function will try to retrieve the token using aws magic ip.
+func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID string, secretAccessKey string, token string, validity time.Duration) (string, error) {
+
+	issueRequest := gaia.NewIssue()
+
+	if accessKeyID == "" && secretAccessKey == "" && token == "" {
+
+		resp1, err := http.Get(fmt.Sprintf("%s/latest/meta-data/iam/security-credentials/", awsMagicURL))
+		if err != nil {
+			return "", fmt.Errorf("unable to retrieve role from magic url: %s", err)
+		}
+		if resp1.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("unable to retrieve role from magic url: %s", resp1.Status)
+		}
+
+		defer resp1.Body.Close() // nolint: errcheck
+		role, err := ioutil.ReadAll(resp1.Body)
+		if err != nil {
+			return "", fmt.Errorf("unable to read role from aws magic ip: %s", err)
+		}
+
+		resp2, err := http.Get(fmt.Sprintf("%s/latest/meta-data/iam/security-credentials/%s", awsMagicURL, role))
+		if err != nil {
+			return "", fmt.Errorf("unable to retrieve token from magic url: %s", err)
+		}
+		if resp2.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("unable to retrieve token from magic url: %s", resp2.Status)
+		}
+
+		s := struct {
+			AccessKeyID     string `json:"AccessKeyId"`
+			SecretAccessKey string
+			Token           string
+		}{}
+
+		defer resp2.Body.Close() // nolint: errcheck
+		if err := json.NewDecoder(resp2.Body).Decode(&s); err != nil {
+			return "", err
+		}
+
+		issueRequest.Metadata = map[string]interface{}{
+			"accessKeyID":     s.AccessKeyID,
+			"secretAccessKey": s.SecretAccessKey,
+			"token":           s.Token,
+		}
+
+	} else {
+		issueRequest.Metadata = map[string]interface{}{
+			"accessKeyID":     accessKeyID,
+			"secretAccessKey": secretAccessKey,
+			"token":           token,
+		}
+	}
+
+	issueRequest.Realm = gaia.IssueRealmAWSSecurityToken
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
