@@ -3,6 +3,8 @@ package midgardclient
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
+	"os"
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
@@ -12,18 +14,18 @@ import (
 
 // A TokenManager issues an renew tokens periodically.
 type TokenManager struct {
-	client    *Client
-	validity  time.Duration
-	tlsConfig *tls.Config
+	client   *Client
+	validity time.Duration
 }
 
 // NewMidgardTokenManager returns a new TokenManager backed by midgard.
 func NewMidgardTokenManager(url string, validity time.Duration, tlsConfig *tls.Config) *TokenManager {
 
+	fmt.Fprintln(os.Stderr, "DEPRECATED: NewMidgardTokenManager() is deprecated in favor or go.aporeto.io/midgardlib/tokenmanager.NewX509TokenManager()")
+
 	return &TokenManager{
-		client:    NewClientWithTLS(url, tlsConfig),
-		validity:  validity,
-		tlsConfig: tlsConfig,
+		client:   NewClientWithTLS(url, tlsConfig),
+		validity: validity,
 	}
 }
 
