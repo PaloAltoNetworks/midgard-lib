@@ -397,7 +397,7 @@ func TestClient_AWSIdentityDocument(t *testing.T) {
 	})
 }
 
-func TestClient_IssueFromGCPIdentityDocument(t *testing.T) {
+func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 
 	Convey("Given I have a client and a fake working server", t, func() {
 
@@ -413,20 +413,20 @@ func TestClient_IssueFromGCPIdentityDocument(t *testing.T) {
 
 		cl := NewClient(ts.URL)
 
-		Convey("When I call IssueFromGCPIdentityDocument", func() {
+		Convey("When I call IssueFromGCPIdentityToken", func() {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromGCPIdentityDocument(ctx, "doc", 1*time.Minute)
+			token, err := cl.IssueFromGCPIdentityToken(ctx, "doc", 1*time.Minute)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			Convey("Then the issue request should be correct", func() {
-				So(expectedRequest.Realm, ShouldEqual, "GCPIdentityDocument")
-				So(expectedRequest.Metadata["doc"], ShouldEqual, "doc")
+				So(expectedRequest.Realm, ShouldEqual, "GCPIdentityToken")
+				So(expectedRequest.Metadata["token"], ShouldEqual, "doc")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -436,7 +436,7 @@ func TestClient_IssueFromGCPIdentityDocument(t *testing.T) {
 	})
 }
 
-func TestClient_IssueFromAzureIdentityDocument(t *testing.T) {
+func TestClient_IssueFromAzureIdentityToken(t *testing.T) {
 
 	Convey("Given I have a client and a fake working server", t, func() {
 
@@ -452,20 +452,20 @@ func TestClient_IssueFromAzureIdentityDocument(t *testing.T) {
 
 		cl := NewClient(ts.URL)
 
-		Convey("When I call IssueFromGCPIdentityDocument", func() {
+		Convey("When I call IssueFromGCPIdentityToken", func() {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromAzureIdentityDocument(ctx, "doc", 1*time.Minute)
+			token, err := cl.IssueFromAzureIdentityToken(ctx, "doc", 1*time.Minute)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			Convey("Then the issue request should be correct", func() {
-				So(expectedRequest.Realm, ShouldEqual, "AzureIdentityDocument")
-				So(expectedRequest.Metadata["doc"], ShouldEqual, "doc")
+				So(expectedRequest.Realm, ShouldEqual, "AzureIdentityToken")
+				So(expectedRequest.Metadata["token"], ShouldEqual, "doc")
 			})
 
 			Convey("Then token should be correct", func() {

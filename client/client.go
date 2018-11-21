@@ -242,12 +242,12 @@ func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID stri
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromGCPIdentityDocument issues a Midgard jwt from a signed GCP identity document for the given validity duration.
-func (a *Client) IssueFromGCPIdentityDocument(ctx context.Context, token string, validity time.Duration) (string, error) {
+// IssueFromGCPIdentityToken issues a Midgard jwt from a signed GCP identity document for the given validity duration.
+func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
-	issueRequest.Metadata = map[string]interface{}{"doc": token}
-	issueRequest.Realm = gaia.IssueRealmGCPIdentityDocument
+	issueRequest.Metadata = map[string]interface{}{"token": token}
+	issueRequest.Realm = gaia.IssueRealmGCPIdentityToken
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.gcp")
@@ -292,12 +292,12 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromAzureIdentityDocument issues a Midgard jwt from a signed Azure identity document for the given validity duration.
-func (a *Client) IssueFromAzureIdentityDocument(ctx context.Context, token string, validity time.Duration) (string, error) {
+// IssueFromAzureIdentityToken issues a Midgard jwt from a signed Azure identity document for the given validity duration.
+func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, validity time.Duration) (string, error) {
 
 	issueRequest := gaia.NewIssue()
-	issueRequest.Metadata = map[string]interface{}{"doc": token}
-	issueRequest.Realm = gaia.IssueRealmAzureIdentityDocument
+	issueRequest.Metadata = map[string]interface{}{"token": token}
+	issueRequest.Realm = gaia.IssueRealmAzureIdentityToken
 	issueRequest.Validity = validity.String()
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.azure")
