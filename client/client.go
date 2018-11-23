@@ -21,8 +21,6 @@ import (
 	"go.aporeto.io/midgard-lib/tokenmanager/providers"
 )
 
-var awsMagicURL = "http://169.254.169.254"
-
 // A Client allows to interract with a midgard server.
 type Client struct {
 	TrackingType string
@@ -183,17 +181,14 @@ func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, v
 // If you don't pass anything, this function will try to retrieve the token using aws magic ip.
 func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, secretAccessKey, token string, validity time.Duration) (string, error) {
 
-	var err error
-
 	s := &struct {
 		AccessKeyID     string `json:"AccessKeyId"`
 		SecretAccessKey string
 		Token           string
 	}{}
 
-	awsToken := token
 	if accessKeyID == "" && secretAccessKey == "" && token == "" {
-		awsToken, err = providers.AWSServiceRoleToken()
+		awsToken, err := providers.AWSServiceRoleToken()
 		if err != nil {
 			return "", err
 		}
