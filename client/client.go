@@ -18,9 +18,8 @@ import (
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/ldaputils"
+	"go.aporeto.io/midgard-lib/tokenmanager/providers"
 )
-
-var awsMagicURL = "http://169.254.169.254"
 
 // A Client allows to interract with a midgard server.
 type Client struct {
@@ -180,57 +179,33 @@ func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, v
 
 // IssueFromAWSSecurityToken issues a Midgard jwt from a security token from amazon.
 // If you don't pass anything, this function will try to retrieve the token using aws magic ip.
-func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID string, secretAccessKey string, token string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, secretAccessKey, token string, validity time.Duration) (string, error) {
 
-	issueRequest := gaia.NewIssue()
+	s := &struct {
+		AccessKeyID     string `json:"AccessKeyId"`
+		SecretAccessKey string
+		Token           string
+	}{}
 
 	if accessKeyID == "" && secretAccessKey == "" && token == "" {
-
-		resp1, err := http.Get(fmt.Sprintf("%s/latest/meta-data/iam/security-credentials/", awsMagicURL))
+		awsToken, err := providers.AWSServiceRoleToken()
 		if err != nil {
-			return "", fmt.Errorf("unable to retrieve role from magic url: %s", err)
-		}
-		if resp1.StatusCode != http.StatusOK {
-			return "", fmt.Errorf("unable to retrieve role from magic url: %s", resp1.Status)
-		}
-
-		defer resp1.Body.Close() // nolint: errcheck
-		role, err := ioutil.ReadAll(resp1.Body)
-		if err != nil {
-			return "", fmt.Errorf("unable to read role from aws magic ip: %s", err)
-		}
-
-		resp2, err := http.Get(fmt.Sprintf("%s/latest/meta-data/iam/security-credentials/%s", awsMagicURL, role))
-		if err != nil {
-			return "", fmt.Errorf("unable to retrieve token from magic url: %s", err)
-		}
-		if resp2.StatusCode != http.StatusOK {
-			return "", fmt.Errorf("unable to retrieve token from magic url: %s", resp2.Status)
-		}
-
-		s := struct {
-			AccessKeyID     string `json:"AccessKeyId"`
-			SecretAccessKey string
-			Token           string
-		}{}
-
-		defer resp2.Body.Close() // nolint: errcheck
-		if err := json.NewDecoder(resp2.Body).Decode(&s); err != nil {
 			return "", err
 		}
-
-		issueRequest.Metadata = map[string]interface{}{
-			"accessKeyID":     s.AccessKeyID,
-			"secretAccessKey": s.SecretAccessKey,
-			"token":           s.Token,
+		if err := json.Unmarshal([]byte(awsToken), &s); err != nil {
+			return "", err
 		}
-
 	} else {
-		issueRequest.Metadata = map[string]interface{}{
-			"accessKeyID":     accessKeyID,
-			"secretAccessKey": secretAccessKey,
-			"token":           token,
-		}
+		s.AccessKeyID = accessKeyID
+		s.SecretAccessKey = secretAccessKey
+		s.Token = token
+	}
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{
+		"accessKeyID":     s.AccessKeyID,
+		"secretAccessKey": s.SecretAccessKey,
+		"token":           s.Token,
 	}
 
 	issueRequest.Realm = gaia.IssueRealmAWSSecurityToken
@@ -244,6 +219,15 @@ func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID stri
 
 // IssueFromGCPIdentityToken issues a Midgard jwt from a signed GCP identity document for the given validity duration.
 func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, validity time.Duration) (string, error) {
+
+	var err error
+
+	if token == "" {
+		token, err = providers.GCPServiceAccountToken(ctx, validity)
+		if err != nil {
+			return "", err
+		}
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"token": token}
@@ -294,6 +278,15 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 
 // IssueFromAzureIdentityToken issues a Midgard jwt from a signed Azure identity document for the given validity duration.
 func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, validity time.Duration) (string, error) {
+
+	var err error
+
+	if token == "" {
+		token, err = providers.AzureServiceIdentityToken()
+		if err != nil {
+			return "", err
+		}
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"token": token}
