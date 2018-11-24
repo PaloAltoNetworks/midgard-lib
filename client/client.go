@@ -222,16 +222,15 @@ func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, va
 
 	var err error
 
-	gcpToken := token
-	if gcpToken == "" {
-		gcpToken, err = providers.GCPServiceAccountToken(ctx, validity)
+	if token == "" {
+		token, err = providers.GCPServiceAccountToken(ctx, validity)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	issueRequest := gaia.NewIssue()
-	issueRequest.Metadata = map[string]interface{}{"token": gcpToken}
+	issueRequest.Metadata = map[string]interface{}{"token": token}
 	issueRequest.Realm = gaia.IssueRealmGCPIdentityToken
 	issueRequest.Validity = validity.String()
 
@@ -282,16 +281,15 @@ func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, 
 
 	var err error
 
-	azureToken := token
-	if azureToken == "" {
-		azureToken, err = providers.AzureServiceIdentityToken()
+	if token == "" {
+		token, err = providers.AzureServiceIdentityToken()
 		if err != nil {
 			return "", err
 		}
 	}
 
 	issueRequest := gaia.NewIssue()
-	issueRequest.Metadata = map[string]interface{}{"token": azureToken}
+	issueRequest.Metadata = map[string]interface{}{"token": token}
 	issueRequest.Realm = gaia.IssueRealmAzureIdentityToken
 	issueRequest.Validity = validity.String()
 
