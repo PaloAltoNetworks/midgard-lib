@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	"go.aporeto.io/addedeffect/tokenutils"
 	"go.aporeto.io/elemental"
@@ -106,12 +106,18 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 }
 
 // IssueFromGoogle issues a Midgard jwt from a Google JWT for the given validity duration.
-func (a *Client) IssueFromGoogle(ctx context.Context, googleJWT string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromGoogle(ctx context.Context, googleJWT string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmGoogle
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.google")
 	defer span.Finish()
@@ -120,11 +126,17 @@ func (a *Client) IssueFromGoogle(ctx context.Context, googleJWT string, validity
 }
 
 // IssueFromCertificate issues a Midgard jwt from a certificate for the given validity duration.
-func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duration) (string, error) {
+func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmCertificate
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
 	defer span.Finish()
@@ -133,12 +145,19 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 }
 
 // IssueFromLDAP issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmLDAP
 	issueRequest.Validity = validity.String()
 	issueRequest.Metadata = info.ToMap()
+	issueRequest.Quota = opts.quota
+
 	if vinceAccount != "" {
 		issueRequest.Metadata["account"] = vinceAccount
 	}
@@ -150,12 +169,18 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vi
 }
 
 // IssueFromVince issues a Midgard jwt from a Vince for the given one time password and validity duration.
-func (a *Client) IssueFromVince(ctx context.Context, account string, password string, otp string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromVince(ctx context.Context, account string, password string, otp string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password, "vinceOTP": otp}
 	issueRequest.Realm = gaia.IssueRealmVince
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.vince")
 	defer span.Finish()
@@ -164,12 +189,18 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 }
 
 // IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document for the given validity duration.
-func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"doc": doc}
 	issueRequest.Realm = gaia.IssueRealmAWSIdentityDocument
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
 	defer span.Finish()
@@ -179,7 +210,12 @@ func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, v
 
 // IssueFromAWSSecurityToken issues a Midgard jwt from a security token from amazon.
 // If you don't pass anything, this function will try to retrieve the token using aws magic ip.
-func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, secretAccessKey, token string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, secretAccessKey, token string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
 
 	s := &struct {
 		AccessKeyID     string `json:"AccessKeyId"`
@@ -210,6 +246,7 @@ func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, sec
 
 	issueRequest.Realm = gaia.IssueRealmAWSSecurityToken
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
 	defer span.Finish()
@@ -218,7 +255,7 @@ func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, sec
 }
 
 // IssueFromGCPIdentityToken issues a Midgard jwt from a signed GCP identity document for the given validity duration.
-func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, validity time.Duration, options ...Option) (string, error) {
 
 	var err error
 
@@ -229,10 +266,16 @@ func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, va
 		}
 	}
 
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"token": token}
 	issueRequest.Realm = gaia.IssueRealmGCPIdentityToken
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.gcp")
 	defer span.Finish()
@@ -260,7 +303,12 @@ func (a *Client) IssueFromOIDCStep1(ctx context.Context, account string, provide
 
 // IssueFromOIDCStep2 issues a Midgard jwt from a OICD provider. This is performing the second step to
 // to exchange the code for a Midgard HWT.
-func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{
@@ -269,6 +317,7 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 	}
 	issueRequest.Realm = gaia.IssueRealmOIDC
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step2")
 	defer span.Finish()
@@ -277,7 +326,7 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 }
 
 // IssueFromAzureIdentityToken issues a Midgard jwt from a signed Azure identity document for the given validity duration.
-func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, validity time.Duration) (string, error) {
+func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, validity time.Duration, options ...Option) (string, error) {
 
 	var err error
 
@@ -288,10 +337,16 @@ func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, 
 		}
 	}
 
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{"token": token}
 	issueRequest.Realm = gaia.IssueRealmAzureIdentityToken
 	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.azure")
 	defer span.Finish()

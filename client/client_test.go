@@ -181,7 +181,7 @@ func TestClient_IssueFromGoogle(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromGoogle(ctx, "token", 1*time.Minute)
+			token, err := cl.IssueFromGoogle(ctx, "token", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -236,7 +236,7 @@ func TestClient_IssueFromCertificate(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromCertificate(ctx, 1*time.Minute)
+			token, err := cl.IssueFromCertificate(ctx, 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -293,7 +293,7 @@ func TestClient_IssueFromLDAP(t *testing.T) {
 				Password:     "Password",
 			}
 
-			token, err := cl.IssueFromLDAP(ctx, linfo, "account", 1*time.Minute)
+			token, err := cl.IssueFromLDAP(ctx, linfo, "account", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -338,7 +338,7 @@ func TestClient_IssueFromVince(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromVince(ctx, "account", "password", "otp", 1*time.Minute)
+			token, err := cl.IssueFromVince(ctx, "account", "password", "otp", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -379,7 +379,7 @@ func TestClient_AWSIdentityDocument(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromAWSIdentityDocument(ctx, "doc", 1*time.Minute)
+			token, err := cl.IssueFromAWSIdentityDocument(ctx, "doc", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -418,7 +418,7 @@ func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromGCPIdentityToken(ctx, "doc", 1*time.Minute)
+			token, err := cl.IssueFromGCPIdentityToken(ctx, "doc", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -457,7 +457,7 @@ func TestClient_IssueFromAzureIdentityToken(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromAzureIdentityToken(ctx, "doc", 1*time.Minute)
+			token, err := cl.IssueFromAzureIdentityToken(ctx, "doc", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -498,7 +498,7 @@ func TestClient_IssueFromOIDCStep1(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromOIDCStep2(ctx, "code", "state", 1*time.Minute)
+			token, err := cl.IssueFromOIDCStep2(ctx, "code", "state", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -585,7 +585,7 @@ func TestClient_IssueFromAWSSecurityToken(t *testing.T) {
 
 		Convey("When I call IssueFromAWSSecurityToken with valid info", func() {
 
-			_, err := cl.IssueFromAWSSecurityToken(ctx, "x", "y", "z", 1*time.Second)
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "x", "y", "z", 1*time.Second, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
