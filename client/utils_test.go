@@ -264,25 +264,25 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have some incorrect ca in appcred", t, func() {
+	// Convey("Given I have some incorrect ca in appcred", t, func() {
 
-		credsData := `{"certificate":"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJ2ekNDQVdXZ0F3SUJBZ0lRRGhjK0E2elNqUGlLbjQxZm82Z045REFLQmdncWhrak9QUVFEQWpCR01SQXcKRGdZRFZRUUtFd2RCY0c5eVpYUnZNUTh3RFFZRFZRUUxFd1poY0c5dGRYZ3hJVEFmQmdOVkJBTVRHRUZ3YjIxMQplQ0JRZFdKc2FXTWdVMmxuYm1sdVp5QkRRVEFlRncweE9ERXdNVFl4T1RVMk1qWmFGdzB4T1RFd01UWXlNRFUyCk1qWmFNRVl4Q2pBSUJnTlZCQW9UQVM4eE9EQTJCZ05WQkFNVEwyRndjRHBqY21Wa1pXNTBhV0ZzT2pWaVl6WTEKTURaaU4yUmtaakZtTnpVNE0yWmpZek5pTVRwMFpYTjBZWEJ3TUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowRApBUWNEUWdBRXBuZ0g2K2hIcXBpQ1ZHb1h0N2dWWXp6ZlJCSE92YVBtcU5LNHhNWHRUVjlzTUl4S0lwZDNBdlBOCko1amVlUkJGOFNOaTRzSHhSSDlCSjMzYjdMVnp6YU0xTURNd0RnWURWUjBQQVFIL0JBUURBZ1dnTUJNR0ExVWQKSlFRTU1Bb0dDQ3NHQVFVRkJ3TUNNQXdHQTFVZEV3RUIvd1FDTUFBd0NnWUlLb1pJemowRUF3SURTQUF3UlFJZwpPNDRQSS9TaG01bGxQUHRKbGllak0rdkN6WmowMk9QNEhWQTZEVllCdmpvQ0lRQ2pnUEw0WXZKYmRyTENUOE9hCmlLSGFGOWk2RjNPTjQ3dzRUMGtYV0ZLcUZ3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=","certificateAuthority":"d29vcHM=","certificateKey":"LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUxuMkFMN3FuMVRrK0VYNWNBU0gxdTljS1JzQ0tndnFmaVlFL3RDaGZYbm1vQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFcG5nSDYraEhxcGlDVkdvWHQ3Z1ZZenpmUkJIT3ZhUG1xTks0eE1YdFRWOXNNSXhLSXBkMwpBdlBOSjVqZWVSQkY4U05pNHNIeFJIOUJKMzNiN0xWenpRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="}`
+	// 	credsData := `{"certificate":"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJ2ekNDQVdXZ0F3SUJBZ0lRRGhjK0E2elNqUGlLbjQxZm82Z045REFLQmdncWhrak9QUVFEQWpCR01SQXcKRGdZRFZRUUtFd2RCY0c5eVpYUnZNUTh3RFFZRFZRUUxFd1poY0c5dGRYZ3hJVEFmQmdOVkJBTVRHRUZ3YjIxMQplQ0JRZFdKc2FXTWdVMmxuYm1sdVp5QkRRVEFlRncweE9ERXdNVFl4T1RVMk1qWmFGdzB4T1RFd01UWXlNRFUyCk1qWmFNRVl4Q2pBSUJnTlZCQW9UQVM4eE9EQTJCZ05WQkFNVEwyRndjRHBqY21Wa1pXNTBhV0ZzT2pWaVl6WTEKTURaaU4yUmtaakZtTnpVNE0yWmpZek5pTVRwMFpYTjBZWEJ3TUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowRApBUWNEUWdBRXBuZ0g2K2hIcXBpQ1ZHb1h0N2dWWXp6ZlJCSE92YVBtcU5LNHhNWHRUVjlzTUl4S0lwZDNBdlBOCko1amVlUkJGOFNOaTRzSHhSSDlCSjMzYjdMVnp6YU0xTURNd0RnWURWUjBQQVFIL0JBUURBZ1dnTUJNR0ExVWQKSlFRTU1Bb0dDQ3NHQVFVRkJ3TUNNQXdHQTFVZEV3RUIvd1FDTUFBd0NnWUlLb1pJemowRUF3SURTQUF3UlFJZwpPNDRQSS9TaG01bGxQUHRKbGllak0rdkN6WmowMk9QNEhWQTZEVllCdmpvQ0lRQ2pnUEw0WXZKYmRyTENUOE9hCmlLSGFGOWk2RjNPTjQ3dzRUMGtYV0ZLcUZ3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=","certificateAuthority":"d29vcHM=","certificateKey":"LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUxuMkFMN3FuMVRrK0VYNWNBU0gxdTljS1JzQ0tndnFmaVlFL3RDaGZYbm1vQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFcG5nSDYraEhxcGlDVkdvWHQ3Z1ZZenpmUkJIT3ZhUG1xTks0eE1YdFRWOXNNSXhLSXBkMwpBdlBOSjVqZWVSQkY4U05pNHNIeFJIOUJKMzNiN0xWenpRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="}`
 
-		Convey("When I call AppCredsToTLSConfig", func() {
+	// 	Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+	// 		tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
 
-			Convey("Then the err should not be nil", func() {
-				So(err, ShouldNotBeNil)
-			})
+	// 		Convey("Then the err should not be nil", func() {
+	// 			So(err, ShouldNotBeNil)
+	// 		})
 
-			Convey("Then the tlsConfig should be nil", func() {
-				So(tlsConfig, ShouldBeNil)
-			})
+	// 		Convey("Then the tlsConfig should be nil", func() {
+	// 			So(tlsConfig, ShouldBeNil)
+	// 		})
 
-			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to add ca to cert pool")
-			})
-		})
-	})
+	// 		Convey("Then the err should be correct", func() {
+	// 			So(err.Error(), ShouldEqual, "unable to add ca to cert pool")
+	// 		})
+	// 	})
+	// })
 }
