@@ -44,9 +44,11 @@ func ParseCredentials(data []byte) (creds *gaia.Credential, tlsConfig *tls.Confi
 		return nil, nil, fmt.Errorf("unable to read system cert pool: %s", err)
 	}
 
-	if !capool.AppendCertsFromPEM(caData) {
-		return nil, nil, fmt.Errorf("unable to add ca to cert pool")
-	}
+	// Here we cannot differentiate from:
+	// - failed to add ca
+	// - ca already in pool
+	// So we just skip...
+	capool.AppendCertsFromPEM(caData)
 
 	cert, key, err := tglib.ReadCertificate(certData, keyData, "")
 	if err != nil {
