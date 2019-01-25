@@ -24,24 +24,35 @@ func ParseCredentials(data []byte) (creds *gaia.Credential, tlsConfig *tls.Confi
 		return nil, nil, fmt.Errorf("unable to decode app credential: %s", err)
 	}
 
+	tlsConfig, err = CredsToTLSConfig(creds)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to derive tls config from creds:%s", err)
+	}
+
+	return creds, tlsConfig, nil
+}
+
+// CredsToTLSConfig converts Crendential to *tlsConfig
+func CredsToTLSConfig(creds *gaia.Credential) (tlsConfig *tls.Config, err error) {
+
 	caData, err := base64.StdEncoding.DecodeString(creds.CertificateAuthority)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to decode ca: %s", err)
+		return nil, fmt.Errorf("unable to decode ca: %s", err)
 	}
 
 	certData, err := base64.StdEncoding.DecodeString(creds.Certificate)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to decode certificate: %s", err)
+		return nil, fmt.Errorf("unable to decode certificate: %s", err)
 	}
 
 	keyData, err := base64.StdEncoding.DecodeString(creds.CertificateKey)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to decode key: %s", err)
+		return nil, fmt.Errorf("unable to decode key: %s", err)
 	}
 
 	capool, err := x509.SystemCertPool()
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to read system cert pool: %s", err)
+		return nil, fmt.Errorf("unable to read system cert pool: %s", err)
 	}
 
 	// Here we cannot differentiate from:
@@ -52,15 +63,15 @@ func ParseCredentials(data []byte) (creds *gaia.Credential, tlsConfig *tls.Confi
 
 	cert, key, err := tglib.ReadCertificate(certData, keyData, "")
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse certificate: %s", err)
+		return nil, fmt.Errorf("unable to parse certificate: %s", err)
 	}
 
 	clientCert, err := tglib.ToTLSCertificate(cert, key)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to convert certificate: %s", err)
+		return nil, fmt.Errorf("unable to convert certificate: %s", err)
 	}
 
-	return creds, &tls.Config{
+	return &tls.Config{
 		RootCAs:      capool,
 		Certificates: []tls.Certificate{clientCert},
 	}, nil
