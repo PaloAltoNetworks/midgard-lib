@@ -171,7 +171,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 			})
 
 			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to decode certificate: illegal base64 data at input byte 0")
+				So(err.Error(), ShouldEqual, "unable to derive tls config from creds: unable to decode certificate: illegal base64 data at input byte 0")
 			})
 		})
 	})
@@ -193,7 +193,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 			})
 
 			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to decode key: illegal base64 data at input byte 0")
+				So(err.Error(), ShouldEqual, "unable to derive tls config from creds: unable to decode key: illegal base64 data at input byte 0")
 			})
 		})
 	})
@@ -215,7 +215,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 			})
 
 			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to decode ca: illegal base64 data at input byte 0")
+				So(err.Error(), ShouldEqual, "unable to derive tls config from creds: unable to decode ca: illegal base64 data at input byte 0")
 			})
 		})
 	})
@@ -237,7 +237,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 			})
 
 			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to parse certificate: tls: failed to find any PEM data in certificate input")
+				So(err.Error(), ShouldEqual, "unable to derive tls config from creds: unable to parse certificate: tls: failed to find any PEM data in certificate input")
 			})
 		})
 	})
@@ -259,7 +259,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 			})
 
 			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to parse certificate: Could not read key data from bytes: woops")
+				So(err.Error(), ShouldEqual, "unable to derive tls config from creds: unable to parse certificate: Could not read key data from bytes: woops")
 			})
 		})
 	})

@@ -26,7 +26,7 @@ func ParseCredentials(data []byte) (creds *gaia.Credential, tlsConfig *tls.Confi
 
 	tlsConfig, err = CredsToTLSConfig(creds)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to derive tls config from creds:%s", err)
+		return nil, nil, fmt.Errorf("unable to derive tls config from creds: %s", err)
 	}
 
 	return creds, tlsConfig, nil
