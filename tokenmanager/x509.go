@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"go.aporeto.io/manipulate"
-	"go.aporeto.io/midgard-lib/client"
+	midgardclient "go.aporeto.io/midgard-lib/client"
 )
 
 // NewX509TokenManager returns a new X509TokenManager.
