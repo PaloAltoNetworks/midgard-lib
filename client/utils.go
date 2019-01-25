@@ -67,18 +67,6 @@ func ParseCredentials(data []byte) (creds *gaia.Credential, tlsConfig *tls.Confi
 
 }
 
-// AppCredToTLSConfig converts the data of an application credential
-// to *tls.Config. This is deprecated in favor of ParseCredentials.
-func AppCredToTLSConfig(data []byte) (*tls.Config, error) {
-
-	_, tlsConfig, err := ParseCredentials(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return tlsConfig, nil
-}
-
 // ExtractJWTFromHeader extracts the JWT from the given http.Header.
 func ExtractJWTFromHeader(header http.Header) (string, error) {
 

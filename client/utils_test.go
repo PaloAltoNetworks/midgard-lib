@@ -120,7 +120,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 		Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+			_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 			Convey("Then the err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -138,7 +138,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 		Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+			_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 			Convey("Then the err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -160,7 +160,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 		Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+			_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 			Convey("Then the err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -182,7 +182,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 		Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+			_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 			Convey("Then the err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -204,7 +204,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 		Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+			_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 			Convey("Then the err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -226,7 +226,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 		Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+			_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 			Convey("Then the err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -248,7 +248,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 		Convey("When I call AppCredsToTLSConfig", func() {
 
-			tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+			_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 			Convey("Then the err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -270,7 +270,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 
 	// 	Convey("When I call AppCredsToTLSConfig", func() {
 
-	// 		tlsConfig, err := AppCredToTLSConfig([]byte(credsData))
+	// 		_, tlsConfig, err := ParseCredentials([]byte(credsData))
 
 	// 		Convey("Then the err should not be nil", func() {
 	// 			So(err, ShouldNotBeNil)
