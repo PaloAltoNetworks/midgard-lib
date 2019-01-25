@@ -23,4 +23,9 @@ func TestBahamut_Options(t *testing.T) {
 	Convey("Calling OptQuota with a negative value should panic", t, func() {
 		So(func() { OptQuota(-1)(&c) }, ShouldPanicWith, "quota must be a positive number")
 	})
+
+	Convey("Calling OptOpaque should work", t, func() {
+		OptOpaque(map[string]string{"a": "b"})(&c)
+		So(c.opaque, ShouldResemble, map[string]string{"a": "b"})
+	})
 }

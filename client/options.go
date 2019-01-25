@@ -1,7 +1,8 @@
 package midgardclient
 
 type issueOpts struct {
-	quota int
+	quota  int
+	opaque map[string]string
 }
 
 // An Option is the type of various options
@@ -18,5 +19,14 @@ var OptQuota = func(quota int) Option {
 
 	return func(opts *issueOpts) {
 		opts.quota = quota
+	}
+}
+
+// OptOpaque passes opaque data that will be
+// included in the JWT.
+var OptOpaque = func(opaque map[string]string) Option {
+
+	return func(opts *issueOpts) {
+		opts.opaque = opaque
 	}
 }
