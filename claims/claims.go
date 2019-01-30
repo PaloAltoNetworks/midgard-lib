@@ -8,7 +8,6 @@ type MidgardClaims struct {
 	Quota  int               `json:"quota,omitempty"`
 	Data   map[string]string `json:"data"`
 	Opaque map[string]string `json:"opaque,omitempty"`
-	API    string            `json:"api,omitempty"`
 
 	jwt.StandardClaims
 }
