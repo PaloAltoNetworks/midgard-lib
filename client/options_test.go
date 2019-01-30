@@ -28,4 +28,9 @@ func TestBahamut_Options(t *testing.T) {
 		OptOpaque(map[string]string{"a": "b"})(&c)
 		So(c.opaque, ShouldResemble, map[string]string{"a": "b"})
 	})
+
+	Convey("Calling OptAudience should work", t, func() {
+		OptAudience("audience")(&c)
+		So(c.audience, ShouldResemble, "audience")
+	})
 }

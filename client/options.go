@@ -1,8 +1,9 @@
 package midgardclient
 
 type issueOpts struct {
-	quota  int
-	opaque map[string]string
+	quota    int
+	opaque   map[string]string
+	audience string
 }
 
 // An Option is the type of various options
@@ -28,5 +29,13 @@ var OptOpaque = func(opaque map[string]string) Option {
 
 	return func(opts *issueOpts) {
 		opts.opaque = opaque
+	}
+}
+
+// OptAudience passes the requested audience for the token.
+var OptAudience = func(audience string) Option {
+
+	return func(opts *issueOpts) {
+		opts.audience = audience
 	}
 }
