@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -119,6 +120,22 @@ func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string,
 	return normalizeAuth(token.Claims.(*claims.MidgardClaims)), nil
 }
 
+// UnsecureClaimsFromToken gets a token and returns the Aporeto
+// claims contained inside. It is Unsecure in the sense that
+// It doesn't verify the token signature, so the token must be
+// first verified in order to use this function securely.
+func UnsecureClaimsFromToken(token string) ([]string, error) {
+
+	c := &claims.MidgardClaims{}
+	p := jwt.Parser{}
+
+	if _, _, err := p.ParseUnverified(token, c); err != nil {
+		return nil, err
+	}
+
+	return normalizeAuth(c), nil
+}
+
 // normalizeAuth normalizes the response to a simple structure.
 func normalizeAuth(c *claims.MidgardClaims) (claims []string) {
 
@@ -131,6 +148,8 @@ func normalizeAuth(c *claims.MidgardClaims) (claims []string) {
 			claims = append(claims, "@auth:"+strings.ToLower(key)+"="+value)
 		}
 	}
+
+	sort.Strings(claims)
 
 	return
 }

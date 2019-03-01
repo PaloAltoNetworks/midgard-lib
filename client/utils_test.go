@@ -2,6 +2,7 @@ package midgardclient
 
 import (
 	"net/http"
+	"reflect"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -285,4 +286,55 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 	// 		})
 	// 	})
 	// })
+}
+
+func TestUnsecureClaimsFromToken(t *testing.T) {
+
+	validToken := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YTZhNTUxMTdkZGYxZjIxMmY4ZWIwY2UiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTIwNjQ5MTAyLCJpYXQiOjE1MTgwNTcxMDIsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4`
+
+	type args struct {
+		token string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			"simple",
+			args{
+				validToken,
+			},
+			[]string{
+				"@auth:account=apomux",
+				"@auth:email=admin@apomux.com",
+				"@auth:id=5a6a55117ddf1f212f8eb0ce",
+				"@auth:organization=apomux",
+				"@auth:realm=vince",
+				"@auth:subject=apomux",
+			},
+			false,
+		},
+		{
+			"invalid token",
+			args{
+				`nope`,
+			},
+			nil,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := UnsecureClaimsFromToken(tt.args.token)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UnsecureClaimsFromToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UnsecureClaimsFromToken() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
