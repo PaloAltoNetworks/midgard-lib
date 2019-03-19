@@ -59,7 +59,7 @@ func TestClient_AWSServiceRoleToken(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
 			case "/iam/security-credentials/":
-				fmt.Fprintln(w, `role`)
+				fmt.Fprint(w, `role`)
 			default:
 				http.Error(w, "nope", http.StatusForbidden)
 			}
