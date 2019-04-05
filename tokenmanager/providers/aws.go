@@ -38,7 +38,7 @@ func AWSServiceRoleToken() (roleData string, err error) {
 
 	token, err := ioutil.ReadAll(resp2.Body)
 	if err != nil {
-		return "", fmt.Errorf("Failed to read service token information: %s", err)
+		return "", fmt.Errorf("unable to read service token information: %s", err)
 	}
 
 	return string(token), nil

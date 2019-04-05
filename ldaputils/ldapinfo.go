@@ -27,7 +27,7 @@ type LDAPInfo struct {
 func NewLDAPInfo(metadata map[string]interface{}) (*LDAPInfo, error) {
 
 	if metadata == nil {
-		return nil, fmt.Errorf("You must provide at least metadata or defaultMetdata")
+		return nil, fmt.Errorf("you must provide at least metadata or defaultMetadata")
 	}
 
 	info := &LDAPInfo{}

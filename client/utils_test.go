@@ -38,7 +38,7 @@ func TestUtils_extractJWT(t *testing.T) {
 			})
 
 			Convey("Then err.Error should be correct", func() {
-				So(err.Error(), ShouldEqual, "Missing Authorization Header")
+				So(err.Error(), ShouldEqual, "missing authorization header")
 			})
 
 			Convey("Then token should be empty", func() {
@@ -56,7 +56,7 @@ func TestUtils_extractJWT(t *testing.T) {
 			})
 
 			Convey("Then err.Error should be correct", func() {
-				So(err.Error(), ShouldEqual, "Invalid Authorization Header")
+				So(err.Error(), ShouldEqual, "invalid authorization header")
 			})
 
 			Convey("Then token should be empty", func() {
@@ -74,7 +74,7 @@ func TestUtils_extractJWT(t *testing.T) {
 			})
 
 			Convey("Then err.Error should be correct", func() {
-				So(err.Error(), ShouldEqual, "Invalid Authorization Header")
+				So(err.Error(), ShouldEqual, "invalid authorization header")
 			})
 
 			Convey("Then token should be empty", func() {
@@ -260,7 +260,7 @@ func TestUtils_AppCredsToTLSConfig(t *testing.T) {
 			})
 
 			Convey("Then the err should be correct", func() {
-				So(err.Error(), ShouldEqual, "unable to derive tls config from creds: unable to parse certificate: Could not read key data from bytes: woops")
+				So(err.Error(), ShouldEqual, "unable to derive tls config from creds: unable to parse certificate: could not read key data from bytes: 'woops'")
 			})
 		})
 	})

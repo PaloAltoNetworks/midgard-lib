@@ -23,7 +23,7 @@ func TestClient_AWSServiceRoleToken(t *testing.T) {
 			case "/iam/security-credentials/":
 				fmt.Fprintf(w, `role`)
 			case "/iam/security-credentials/role":
-				fmt.Fprintf(w, tokenResponse)
+				fmt.Fprint(w, tokenResponse)
 			default:
 				fmt.Fprintln(w, "bad response")
 			}

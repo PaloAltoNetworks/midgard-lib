@@ -8,11 +8,13 @@ PROJECT_RELEASE ?= dev
 ci: init lint test codecov
 
 init:
+	go get -u github.com/aporeto-inc/go-bindata/...
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 	dep ensure
 	dep status
 
 lint:
-	#--enable=unparam
+	# --enable=unparam
 	golangci-lint run \
 		--disable-all \
 		--exclude-use-default=false \
@@ -22,6 +24,7 @@ lint:
 		--enable=golint \
 		--enable=unused \
 		--enable=structcheck \
+		--enable=staticcheck \
 		--enable=varcheck \
 		--enable=deadcode \
 		--enable=unconvert \

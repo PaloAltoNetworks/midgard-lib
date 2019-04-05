@@ -76,7 +76,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPAddress'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPAddress'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -99,7 +99,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPBindDN'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPBindDN'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -123,7 +123,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPBindPassword'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPBindPassword'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -146,7 +146,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPBindSearchFilter'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPBindSearchFilter'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -170,7 +170,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPSubjectKey'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPSubjectKey'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -194,7 +194,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPIgnoredKeys'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPIgnoredKeys'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -218,7 +218,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPConnSecurityProtocol'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPConnSecurityProtocol'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -242,7 +242,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPUsername'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPUsername'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -266,7 +266,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPPassword'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPPassword'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -290,7 +290,7 @@ func TestLDAPUtils_LDAPInfoMissingKeys(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must contain the key 'LDAPBaseDN'")
+			So(err.Error(), ShouldEqual, "metadata must contain the key 'LDAPBaseDN'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -331,7 +331,7 @@ func TestLDAPUtils_LDAPInfoBadValues(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must be a string for key 'LDAPAddress'")
+			So(err.Error(), ShouldEqual, "metadata must be a string for key 'LDAPAddress'")
 		})
 
 		Convey("Then info should be nil", func() {
@@ -356,7 +356,7 @@ func TestLDAPUtils_LDAPInfoBadValues(t *testing.T) {
 
 		Convey("Then err should not be nil", func() {
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "Metadata must be a list of strings for key 'LDAPIgnoredKeys'")
+			So(err.Error(), ShouldEqual, "metadata must be a list of strings for key 'LDAPIgnoredKeys'")
 		})
 
 		Convey("Then info should be nil", func() {
