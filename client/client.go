@@ -426,6 +426,8 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 			return nil, err
 		}
 
+		request.Close = true
+
 		if a.TrackingType != "" {
 			request.Header.Set("X-External-Tracking-Type", a.TrackingType)
 		}
