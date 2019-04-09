@@ -29,15 +29,6 @@ func TestClient_NewClient(t *testing.T) {
 		Convey("Then client url should be set", func() {
 			So(cl.url, ShouldEqual, "http://com.com")
 		})
-
-		Convey("When I call cl.SetKeepAliveEnabled(true)", func() {
-
-			cl.SetKeepAliveEnabled(false)
-
-			Convey("Then the close con should be true ", func() {
-				So(cl.closeConn, ShouldBeTrue)
-			})
-		})
 	})
 
 	Convey("Given I create a new Client with a missing URL", t, func() {

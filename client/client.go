@@ -28,7 +28,6 @@ type Client struct {
 	url        string
 	tlsConfig  *tls.Config
 	httpClient *http.Client
-	closeConn  bool
 }
 
 // NewClient returns a new Client.
@@ -67,11 +66,6 @@ func NewClientWithTLS(url string, tlsConfig *tls.Config) *Client {
 			},
 		},
 	}
-}
-
-// SetKeepAliveEnabled sets if the connection should be reused of not.
-func (a *Client) SetKeepAliveEnabled(e bool) {
-	a.closeConn = !e
 }
 
 // Authentify authentifies the information included in the given token and
@@ -378,9 +372,11 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (str
 	if err := json.NewEncoder(buffer).Encode(issueRequest); err != nil {
 		return "", err
 	}
+	body := buffer.Bytes()
 
 	builder := func() (*http.Request, error) {
-		return http.NewRequest(http.MethodPost, a.url+"/issue", buffer)
+
+		return http.NewRequest(http.MethodPost, a.url+"/issue", bytes.NewBuffer(body))
 	}
 
 	resp, err := a.sendRetry(ctx, builder, "")
@@ -428,10 +424,6 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 		request, err := requestBuilder()
 		if err != nil {
 			return nil, err
-		}
-
-		if a.closeConn {
-			request.Close = true
 		}
 
 		if a.TrackingType != "" {
