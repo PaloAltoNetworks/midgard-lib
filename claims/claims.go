@@ -4,10 +4,10 @@ import jwt "github.com/dgrijalva/jwt-go"
 
 // MidgardClaims is a struct to represeting the data some a Midgard issued claims.
 type MidgardClaims struct {
-	Realm  string            `json:"realm"`
-	Quota  int               `json:"quota,omitempty"`
-	Data   map[string]string `json:"data"`
-	Opaque map[string]string `json:"opaque,omitempty"`
+	Realm  string            `msgpack:"realm" json:"realm"`
+	Quota  int               `msgpack:"quota,omitempty" json:"quota,omitempty"`
+	Data   map[string]string `msgpack:"data" json:"data"`
+	Opaque map[string]string `msgpack:"opaque,omitempty" json:"opaque,omitempty"`
 
 	jwt.StandardClaims
 }
