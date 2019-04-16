@@ -11,16 +11,16 @@ const (
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
-	Address              string                 `json:"LDAPAddress"`
-	BindDN               string                 `json:"LDAPBindDN"`
-	BindPassword         string                 `json:"LDAPBindPassword"`
-	BindSearchFilter     string                 `json:"LDAPBindSearchFilter"`
-	SubjectKey           string                 `json:"LDAPSubjectKey"`
-	IgnoreKeys           map[string]interface{} `json:"LDAPIgnoredKeys"`
-	BaseDN               string                 `json:"LDAPBaseDN"`
-	ConnSecurityProtocol string                 `json:"LDAPConnSecurityProtocol"`
-	Username             string                 `json:"LDAPUsername"`
-	Password             string                 `json:"LDAPPassword"`
+	Address              string                 `msgpack:"LDAPAddress" json:"LDAPAddress"`
+	BindDN               string                 `msgpack:"LDAPBindDN" json:"LDAPBindDN"`
+	BindPassword         string                 `msgpack:"LDAPBindPassword" json:"LDAPBindPassword"`
+	BindSearchFilter     string                 `msgpack:"LDAPBindSearchFilter" json:"LDAPBindSearchFilter"`
+	SubjectKey           string                 `msgpack:"LDAPSubjectKey" json:"LDAPSubjectKey"`
+	IgnoreKeys           map[string]interface{} `msgpack:"LDAPIgnoredKeys" json:"LDAPIgnoredKeys"`
+	BaseDN               string                 `msgpack:"LDAPBaseDN" json:"LDAPBaseDN"`
+	ConnSecurityProtocol string                 `msgpack:"LDAPConnSecurityProtocol" json:"LDAPConnSecurityProtocol"`
+	Username             string                 `msgpack:"LDAPUsername" json:"LDAPUsername"`
+	Password             string                 `msgpack:"LDAPPassword" json:"LDAPPassword"`
 }
 
 // NewLDAPInfo returns a new LDAPInfo, or an error
