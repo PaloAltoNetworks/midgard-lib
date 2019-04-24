@@ -142,8 +142,8 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromLDAP issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration, options ...Option) (string, error) {
+// IssueFromLDAP issues a Midgard JWT from an LDAP config for the given validity duration.
+func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, namespace string, validity time.Duration, options ...Option) (string, error) {
 
 	opts := issueOpts{}
 	for _, opt := range options {
@@ -158,8 +158,8 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vi
 	issueRequest.Opaque = opts.opaque
 	issueRequest.Audience = opts.audience
 
-	if vinceAccount != "" {
-		issueRequest.Metadata["account"] = vinceAccount
+	if namespace != "" {
+		issueRequest.Metadata["namespace"] = namespace
 	}
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")
