@@ -9,22 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package providers
-
-import (
-	"context"
-	"time"
-
-	"cloud.google.com/go/compute/metadata"
-)
-
-var (
-	identitySuffix = "instance/service-accounts/default/identity?audience=aporeto&format=full"
-)
-
-// GCPServiceAccountToken will retrieve the service account
-// token and call the midgard library.
-func GCPServiceAccountToken(ctx context.Context, validity time.Duration) (string, error) {
-
-	return metadata.Get(identitySuffix)
-}
+// Package providers contains helpers to retrieve tokens from cloud provider.
+// This package should not be in here. It will move. Don't use it.
+package providers // import "go.aporeto.io/midgard-lib/tokenmanager/providers"

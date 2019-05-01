@@ -9,22 +9,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package providers
-
-import (
-	"context"
-	"time"
-
-	"cloud.google.com/go/compute/metadata"
-)
-
-var (
-	identitySuffix = "instance/service-accounts/default/identity?audience=aporeto&format=full"
-)
-
-// GCPServiceAccountToken will retrieve the service account
-// token and call the midgard library.
-func GCPServiceAccountToken(ctx context.Context, validity time.Duration) (string, error) {
-
-	return metadata.Get(identitySuffix)
-}
+// Package client contains a client that can be used
+// to retrieve an Aporeto JWT from various authentication
+// sources.
+package midgardclient // import "go.aporeto.io/midgard-lib/client"
