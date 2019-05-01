@@ -9,7 +9,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package client contains a client that can be used
+// Package midgardclient contains a client that can be used
 // to retrieve an Aporeto JWT from various authentication
 // sources.
 package midgardclient // import "go.aporeto.io/midgard-lib/client"
