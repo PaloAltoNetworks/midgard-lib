@@ -143,7 +143,7 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 }
 
 // IssueFromLDAP issues a Midgard JWT from an LDAP config for the given validity duration.
-func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, namespace string, validity time.Duration, options ...Option) (string, error) {
+func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, namespace string, providerName string, validity time.Duration, options ...Option) (string, error) {
 
 	opts := issueOpts{}
 	for _, opt := range options {
@@ -153,14 +153,13 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, na
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmLDAP
 	issueRequest.Validity = validity.String()
-	issueRequest.Metadata = info.ToMap()
 	issueRequest.Quota = opts.quota
 	issueRequest.Opaque = opts.opaque
 	issueRequest.Audience = opts.audience
 
-	if namespace != "" {
-		issueRequest.Metadata["namespace"] = namespace
-	}
+	issueRequest.Metadata = info.ToMap()
+	issueRequest.Metadata["namespace"] = namespace
+	issueRequest.Metadata["LDAPProviderName"] = providerName
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")
 	defer span.Finish()
