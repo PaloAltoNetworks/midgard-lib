@@ -159,7 +159,7 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, na
 
 	issueRequest.Metadata = info.ToMap()
 	issueRequest.Metadata["namespace"] = namespace
-	issueRequest.Metadata["LDAPProviderName"] = providerName
+	issueRequest.Metadata["name"] = providerName
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")
 	defer span.Finish()

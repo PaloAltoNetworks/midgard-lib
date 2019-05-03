@@ -11,16 +11,16 @@ const (
 
 // LDAPInfo holds information to authenticate a user using an LDAP Server.
 type LDAPInfo struct {
-	Address              string                 `msgpack:"LDAPAddress" json:"LDAPAddress"`
-	BindDN               string                 `msgpack:"LDAPBindDN" json:"LDAPBindDN"`
-	BindPassword         string                 `msgpack:"LDAPBindPassword" json:"LDAPBindPassword"`
-	BindSearchFilter     string                 `msgpack:"LDAPBindSearchFilter" json:"LDAPBindSearchFilter"`
-	SubjectKey           string                 `msgpack:"LDAPSubjectKey" json:"LDAPSubjectKey"`
-	IgnoreKeys           map[string]interface{} `msgpack:"LDAPIgnoredKeys" json:"LDAPIgnoredKeys"`
-	BaseDN               string                 `msgpack:"LDAPBaseDN" json:"LDAPBaseDN"`
-	ConnSecurityProtocol string                 `msgpack:"LDAPConnSecurityProtocol" json:"LDAPConnSecurityProtocol"`
-	Username             string                 `msgpack:"LDAPUsername" json:"LDAPUsername"`
-	Password             string                 `msgpack:"LDAPPassword" json:"LDAPPassword"`
+	Address              string                 `msgpack:"address" json:"address"`
+	BindDN               string                 `msgpack:"bindDN" json:"bindDN"`
+	BindPassword         string                 `msgpack:"bindPassword" json:"bindPassword"`
+	BindSearchFilter     string                 `msgpack:"bindSearchFilter" json:"bindSearchFilter"`
+	SubjectKey           string                 `msgpack:"subjectKey" json:"subjectKey"`
+	IgnoreKeys           map[string]interface{} `msgpack:"ignoredKeys" json:"ignoredKeys"`
+	BaseDN               string                 `msgpack:"baseDN" json:"baseDN"`
+	ConnSecurityProtocol string                 `msgpack:"connSecurityProtocol" json:"connSecurityProtocol"`
+	Username             string                 `msgpack:"username" json:"username"`
+	Password             string                 `msgpack:"password" json:"password"`
 }
 
 // NewLDAPInfo returns a new LDAPInfo, or an error

@@ -2,14 +2,14 @@ package ldaputils
 
 // LDAP Key constant definitions.
 const (
-	LDAPAddressKey              = "LDAPAddress"
-	LDAPBindDNKey               = "LDAPBindDN"
-	LDAPBindPasswordKey         = "LDAPBindPassword"
-	LDAPBindSearchFilterKey     = "LDAPBindSearchFilter"
-	LDAPSubjectKey              = "LDAPSubjectKey"
-	LDAPIgnoredKeys             = "LDAPIgnoredKeys"
-	LDAPConnSecurityProtocolKey = "LDAPConnSecurityProtocol"
-	LDAPUsernameKey             = "LDAPUsername"
-	LDAPPasswordKey             = "LDAPPassword"
-	LDAPBaseDNKey               = "LDAPBaseDN"
+	LDAPAddressKey              = "address"
+	LDAPBindDNKey               = "bindDN"
+	LDAPBindPasswordKey         = "bindPassword"
+	LDAPBindSearchFilterKey     = "bindSearchFilter"
+	LDAPSubjectKey              = "subjectKey"
+	LDAPIgnoredKeys             = "ignoredKeys"
+	LDAPConnSecurityProtocolKey = "connSecurityProtocol"
+	LDAPUsernameKey             = "username"
+	LDAPPasswordKey             = "password"
+	LDAPBaseDNKey               = "baseDN"
 )
