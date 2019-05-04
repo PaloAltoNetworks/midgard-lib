@@ -9,18 +9,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ldaputils
-
-// LDAP Key constant definitions.
-const (
-	LDAPAddressKey              = "address"
-	LDAPBindDNKey               = "bindDN"
-	LDAPBindPasswordKey         = "bindPassword"
-	LDAPBindSearchFilterKey     = "bindSearchFilter"
-	LDAPSubjectKey              = "subjectKey"
-	LDAPIgnoredKeys             = "ignoredKeys"
-	LDAPConnSecurityProtocolKey = "connSecurityProtocol"
-	LDAPUsernameKey             = "username"
-	LDAPPasswordKey             = "password"
-	LDAPBaseDNKey               = "baseDN"
-)
+// Package midgardclient contains a client that can be used
+// to retrieve an Aporeto JWT from various authentication
+// sources.
+package midgardclient // import "go.aporeto.io/midgard-lib/client"

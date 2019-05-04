@@ -9,18 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ldaputils
-
-// LDAP Key constant definitions.
-const (
-	LDAPAddressKey              = "address"
-	LDAPBindDNKey               = "bindDN"
-	LDAPBindPasswordKey         = "bindPassword"
-	LDAPBindSearchFilterKey     = "bindSearchFilter"
-	LDAPSubjectKey              = "subjectKey"
-	LDAPIgnoredKeys             = "ignoredKeys"
-	LDAPConnSecurityProtocolKey = "connSecurityProtocol"
-	LDAPUsernameKey             = "username"
-	LDAPPasswordKey             = "password"
-	LDAPBaseDNKey               = "baseDN"
-)
+// Package providers contains helpers to retrieve tokens from cloud provider.
+// This package should not be in here. It will move. Don't use it.
+package providers // import "go.aporeto.io/midgard-lib/tokenmanager/providers"

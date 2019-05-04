@@ -9,18 +9,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ldaputils
-
-// LDAP Key constant definitions.
-const (
-	LDAPAddressKey              = "address"
-	LDAPBindDNKey               = "bindDN"
-	LDAPBindPasswordKey         = "bindPassword"
-	LDAPBindSearchFilterKey     = "bindSearchFilter"
-	LDAPSubjectKey              = "subjectKey"
-	LDAPIgnoredKeys             = "ignoredKeys"
-	LDAPConnSecurityProtocolKey = "connSecurityProtocol"
-	LDAPUsernameKey             = "username"
-	LDAPPasswordKey             = "password"
-	LDAPBaseDNKey               = "baseDN"
-)
+// Package ldaputils contains helpers to deal with LDAP.
+package ldaputils // import "go.aporeto.io/midgard-lib/ldaputils"
