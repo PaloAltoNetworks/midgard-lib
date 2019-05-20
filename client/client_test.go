@@ -295,7 +295,7 @@ func TestClient_IssueFromLDAP(t *testing.T) {
 				Password:     "Password",
 			}
 
-			token, err := cl.IssueFromLDAP(ctx, linfo, "account", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromLDAP(ctx, linfo, "namespace", "provider", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -303,13 +303,14 @@ func TestClient_IssueFromLDAP(t *testing.T) {
 
 			Convey("Then the issue request should be correct", func() {
 				So(expectedRequest.Realm, ShouldEqual, "LDAP")
-				So(expectedRequest.Metadata["account"], ShouldEqual, "account")
-				So(expectedRequest.Metadata["LDAPAddress"], ShouldEqual, "Address")
-				So(expectedRequest.Metadata["LDAPBindDN"], ShouldEqual, "BindDN")
-				So(expectedRequest.Metadata["LDAPBindPassword"], ShouldEqual, "BindPassword")
-				So(expectedRequest.Metadata["LDAPBaseDN"], ShouldEqual, "BaseDN")
-				So(expectedRequest.Metadata["LDAPUsername"], ShouldEqual, "Username")
-				So(expectedRequest.Metadata["LDAPPassword"], ShouldEqual, "Password")
+				So(expectedRequest.Metadata["namespace"], ShouldEqual, "namespace")
+				So(expectedRequest.Metadata["provider"], ShouldEqual, "provider")
+				So(expectedRequest.Metadata["address"], ShouldEqual, "Address")
+				So(expectedRequest.Metadata["bindDN"], ShouldEqual, "BindDN")
+				So(expectedRequest.Metadata["bindPassword"], ShouldEqual, "BindPassword")
+				So(expectedRequest.Metadata["baseDN"], ShouldEqual, "BaseDN")
+				So(expectedRequest.Metadata["username"], ShouldEqual, "Username")
+				So(expectedRequest.Metadata["password"], ShouldEqual, "Password")
 			})
 
 			Convey("Then token should be correct", func() {

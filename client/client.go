@@ -153,8 +153,8 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromLDAP issues a Midgard jwt from a LDAP for the given validity duration.
-func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vinceAccount string, validity time.Duration, options ...Option) (string, error) {
+// IssueFromLDAP issues a Midgard JWT from an LDAP config for the given validity duration.
+func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, namespace string, provider string, validity time.Duration, options ...Option) (string, error) {
 
 	opts := issueOpts{}
 	for _, opt := range options {
@@ -164,14 +164,13 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, vi
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmLDAP
 	issueRequest.Validity = validity.String()
-	issueRequest.Metadata = info.ToMap()
 	issueRequest.Quota = opts.quota
 	issueRequest.Opaque = opts.opaque
 	issueRequest.Audience = opts.audience
 
-	if vinceAccount != "" {
-		issueRequest.Metadata["account"] = vinceAccount
-	}
+	issueRequest.Metadata = info.ToMap()
+	issueRequest.Metadata["namespace"] = namespace
+	issueRequest.Metadata["provider"] = provider
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.ldap")
 	defer span.Finish()
@@ -304,12 +303,12 @@ func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, va
 
 // IssueFromOIDCStep1 issues a Midgard jwt from a OICD provider. This is performing the first step to
 // validate the issue requests and OIDC provider. It will return the OIDC auth endpoint
-func (a *Client) IssueFromOIDCStep1(ctx context.Context, namespace string, providerName string, redirectURL string) (string, error) {
+func (a *Client) IssueFromOIDCStep1(ctx context.Context, namespace string, provider string, redirectURL string) (string, error) {
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{
 		"namespace":        namespace,
-		"OIDCProviderName": providerName,
+		"OIDCProviderName": provider,
 		"redirectURL":      redirectURL,
 	}
 	issueRequest.Realm = gaia.IssueRealmOIDC
