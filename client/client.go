@@ -303,11 +303,11 @@ func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, va
 
 // IssueFromOIDCStep1 issues a Midgard jwt from a OICD provider. This is performing the first step to
 // validate the issue requests and OIDC provider. It will return the OIDC auth endpoint
-func (a *Client) IssueFromOIDCStep1(ctx context.Context, account string, provider string, redirectURL string) (string, error) {
+func (a *Client) IssueFromOIDCStep1(ctx context.Context, namespace string, provider string, redirectURL string) (string, error) {
 
 	issueRequest := gaia.NewIssue()
 	issueRequest.Metadata = map[string]interface{}{
-		"account":          account,
+		"namespace":        namespace,
 		"OIDCProviderName": provider,
 		"redirectURL":      redirectURL,
 	}
