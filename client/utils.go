@@ -24,7 +24,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"go.aporeto.io/gaia"
-	"go.aporeto.io/midgard-lib/claims"
+	"go.aporeto.io/gaia/types"
 	"go.aporeto.io/tg/tglib"
 )
 
@@ -111,7 +111,7 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 // VerifyTokenSignature verifies the jwt locally using the given certificate.
 func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string, error) {
 
-	c := &claims.MidgardClaims{}
+	c := &types.MidgardClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, c, func(token *jwt.Token) (interface{}, error) {
 
@@ -128,7 +128,7 @@ func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string,
 		return nil, err
 	}
 
-	return normalizeAuth(token.Claims.(*claims.MidgardClaims)), nil
+	return normalizeAuth(token.Claims.(*types.MidgardClaims)), nil
 }
 
 // UnsecureClaimsFromToken gets a token and returns the Aporeto
@@ -137,7 +137,7 @@ func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string,
 // first verified in order to use this function securely.
 func UnsecureClaimsFromToken(token string) ([]string, error) {
 
-	c := &claims.MidgardClaims{}
+	c := &types.MidgardClaims{}
 	p := jwt.Parser{}
 
 	if _, _, err := p.ParseUnverified(token, c); err != nil {
@@ -148,7 +148,7 @@ func UnsecureClaimsFromToken(token string) ([]string, error) {
 }
 
 // normalizeAuth normalizes the response to a simple structure.
-func normalizeAuth(c *claims.MidgardClaims) (claims []string) {
+func normalizeAuth(c *types.MidgardClaims) (claims []string) {
 
 	if c.Subject != "" {
 		claims = append(claims, "@auth:subject="+c.Subject)

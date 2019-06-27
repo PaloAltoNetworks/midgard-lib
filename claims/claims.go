@@ -15,6 +15,8 @@ import (
 	"go.aporeto.io/gaia/types"
 )
 
+// A MidgardClaims is an alias go.aporeto.io/gaia/types types.MidgardClaims
+// This is deprecated
 type MidgardClaims = types.MidgardClaims
 
 // NewMidgardClaims returns a new Claims.

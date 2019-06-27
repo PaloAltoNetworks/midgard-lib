@@ -16,12 +16,11 @@ import (
 	"crypto/tls"
 	"time"
 
-	"go.aporeto.io/manipulate"
 	midgardclient "go.aporeto.io/midgard-lib/client"
 )
 
 // NewX509TokenManager returns a new X509TokenManager.
-func NewX509TokenManager(url string, validity time.Duration, tlsConfig *tls.Config) manipulate.TokenManager {
+func NewX509TokenManager(url string, validity time.Duration, tlsConfig *tls.Config) *PeriodicTokenManager {
 
 	cl := midgardclient.NewClientWithTLS(url, tlsConfig)
 

@@ -15,7 +15,6 @@ import (
 	"context"
 	"time"
 
-	"go.aporeto.io/manipulate"
 	"go.uber.org/zap"
 )
 
@@ -32,7 +31,7 @@ type PeriodicTokenManager struct {
 }
 
 // NewPeriodicTokenManager returns a new PeriodicTokenManager backed by midgard.
-func NewPeriodicTokenManager(validity time.Duration, issuerFunc TokenIssuerFunc) manipulate.TokenManager {
+func NewPeriodicTokenManager(validity time.Duration, issuerFunc TokenIssuerFunc) *PeriodicTokenManager {
 
 	if issuerFunc == nil {
 		panic("issuerFunc cannot be nil")
