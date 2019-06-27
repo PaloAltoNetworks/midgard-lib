@@ -39,15 +39,13 @@ func TestTOkenManager_NewX509TokenManager(t *testing.T) {
 		})
 
 		Convey("Then it should be correctly initialized", func() {
-			tt := t.(*PeriodicTokenManager)
-			So(tt.validity, ShouldEqual, 10*time.Second)
-			So(tt.issuerFunc, ShouldNotBeNil)
+			So(t.validity, ShouldEqual, 10*time.Second)
+			So(t.issuerFunc, ShouldNotBeNil)
 		})
 
 		Convey("When I call the the issue func", func() {
 
-			tt := t.(*PeriodicTokenManager)
-			token, err := tt.issuerFunc(context.Background(), 10*time.Second)
+			token, err := t.issuerFunc(context.Background(), 10*time.Second)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
