@@ -7,7 +7,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
-	go.aporeto.io/addedeffect v1.41.1
+	go.aporeto.io/addedeffect v1.42.0
 	go.aporeto.io/elemental v1.62.0
 	go.aporeto.io/gaia v1.3.0
 	go.aporeto.io/manipulate v1.70.0
