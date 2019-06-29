@@ -3,11 +3,11 @@ module go.aporeto.io/midgard-lib
 go 1.12
 
 require (
-	go.aporeto.io/addedeffect master
-	go.aporeto.io/elemental master
-	go.aporeto.io/gaia master
-	go.aporeto.io/manipulate master
-	go.aporeto.io/tg master
+	go.aporeto.io/addedeffect v1.48.0
+	go.aporeto.io/elemental v1.69.0
+	go.aporeto.io/gaia v1.8.0
+	go.aporeto.io/manipulate v1.77.0
+	go.aporeto.io/tg v1.20.0
 )
 
 require (
