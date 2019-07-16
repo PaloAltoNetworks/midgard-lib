@@ -21,11 +21,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
-	"go.aporeto.io/addedeffect/tokenutils"
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/ldaputils"
@@ -462,7 +462,7 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 			}
 		}
 
-		err = tokenutils.Snip(err, token)
+		err = snipToken(err, token)
 		if span != nil {
 			span.SetTag("error", true)
 			span.LogFields(log.Error(err))
@@ -475,4 +475,19 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 			return nil, err
 		}
 	}
+}
+
+func snipToken(err error, token string) error {
+
+	if len(token) == 0 || err == nil {
+		return err
+	}
+
+	return fmt.Errorf("%s",
+		strings.Replace(
+			err.Error(),
+			token,
+			"[snip]",
+			-1),
+	)
 }

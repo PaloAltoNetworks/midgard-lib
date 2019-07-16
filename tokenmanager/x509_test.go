@@ -20,7 +20,6 @@ import (
 	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
-	"go.aporeto.io/manipulate"
 )
 
 func TestTOkenManager_NewX509TokenManager(t *testing.T) {
@@ -33,10 +32,6 @@ func TestTOkenManager_NewX509TokenManager(t *testing.T) {
 		defer ts.Close()
 
 		t := NewX509TokenManager(ts.URL, 10*time.Second, &tls.Config{})
-
-		Convey("Then t should should implement manipulate.TokenManager", func() {
-			So(t, ShouldImplement, (*manipulate.TokenManager)(nil))
-		})
 
 		Convey("Then it should be correctly initialized", func() {
 			So(t.validity, ShouldEqual, 10*time.Second)
