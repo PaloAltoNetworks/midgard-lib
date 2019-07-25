@@ -68,7 +68,7 @@ func NewClientWithTLS(url string, tlsConfig *tls.Config) *Client {
 		url:       url,
 		tlsConfig: tlsConfig,
 		httpClient: &http.Client{
-			Timeout: 5 * time.Second,
+			Timeout: 30 * time.Second,
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
 			},
