@@ -99,7 +99,7 @@ func TestUtils_normalizeAuth(t *testing.T) {
 
 	Convey("Given I have a Auth object", t, func() {
 
-		auth := gaia.NewAuth()
+		auth := gaia.NewAuthn()
 		auth.Claims.Realm = "realm"
 		auth.Claims.Subject = "subject"
 		auth.Claims.Data["d1"] = "v1"
