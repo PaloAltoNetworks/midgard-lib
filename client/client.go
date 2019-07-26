@@ -99,7 +99,7 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 		return nil, elemental.NewError("Unauthorized", fmt.Sprintf("Authentication rejected with error: %s", resp.Status), "midgard-lib", http.StatusUnauthorized)
 	}
 
-	auth := gaia.NewAuth()
+	auth := gaia.NewAuthn()
 
 	defer resp.Body.Close() // nolint: errcheck
 
