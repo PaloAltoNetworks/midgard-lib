@@ -87,7 +87,7 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 	defer span.Finish()
 
 	builder := func() (*http.Request, error) {
-		return http.NewRequest(http.MethodGet, a.url+"/auth?token="+token, nil)
+		return http.NewRequest(http.MethodGet, a.url+"/authn?token="+token, nil)
 	}
 
 	resp, err := a.sendRetry(subctx, builder, token)
