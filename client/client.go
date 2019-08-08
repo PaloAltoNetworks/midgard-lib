@@ -44,7 +44,7 @@ type Client struct {
 // NewClient returns a new Client.
 func NewClient(url string) *Client {
 
-	CAPool, err := x509.SystemCertPool()
+	CAPool, err := GetSystemCertPool()
 	if err != nil {
 		panic(fmt.Sprintf("Unable to load system cert pool: %s", err))
 	}
