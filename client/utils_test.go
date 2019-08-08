@@ -95,7 +95,7 @@ func TestUtils_extractJWT(t *testing.T) {
 	})
 }
 
-func TestUtils_normalizeAuth(t *testing.T) {
+func TestUtils_NormalizeAuth(t *testing.T) {
 
 	Convey("Given I have a Auth object", t, func() {
 
@@ -107,7 +107,7 @@ func TestUtils_normalizeAuth(t *testing.T) {
 
 		Convey("When I normalize it", func() {
 
-			v := normalizeAuth(auth.Claims)
+			v := NormalizeAuth(auth.Claims)
 
 			Convey("Then the subject should be correct", func() {
 				So(v, ShouldContain, "@auth:subject=subject")
@@ -119,6 +119,15 @@ func TestUtils_normalizeAuth(t *testing.T) {
 
 			Convey("Then the d2 should be correct", func() {
 				So(v, ShouldContain, "@auth:d2=v2")
+			})
+		})
+
+		Convey("When I normalize nil claims", func() {
+
+			v := NormalizeAuth(nil)
+
+			Convey("Then the subject should be correct", func() {
+				So(len(v), ShouldEqual, 0)
 			})
 		})
 	})

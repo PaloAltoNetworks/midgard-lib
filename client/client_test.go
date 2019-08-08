@@ -141,6 +141,32 @@ func TestClient_Authentify(t *testing.T) {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, `{
+                "claims": null
+            }`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call Authentify", func() {
+
+			n, err := cl.Authentify(context.TODO(), "thetoken")
+
+			Convey("Then normalization should be nil", func() {
+				So(n, ShouldBeNil)
+			})
+
+			Convey("Then err should be not nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "error 401 (midgard-lib): Unauthorized: No claims returned. Token may be invalid")
+			})
+		})
+	})
+
+	Convey("Given I have a Client and some valid http header but Midgard return no claims", t, func() {
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, `{
                 "claims
             }`)
 		}))
@@ -362,45 +388,6 @@ func TestClient_IssueFromVince(t *testing.T) {
 	})
 }
 
-func TestClient_AWSIdentityDocument(t *testing.T) {
-
-	Convey("Given I have a client and a fake working server", t, func() {
-
-		expectedRequest := gaia.NewIssue()
-
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
-				panic(err)
-			}
-			fmt.Fprintln(w, `{"data": "","realm": "google","token": "yeay!"}`)
-		}))
-		defer ts.Close()
-
-		cl := NewClient(ts.URL)
-
-		Convey("When I call IssueFromAWSIdentityDocument", func() {
-
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			defer cancel()
-
-			token, err := cl.IssueFromAWSIdentityDocument(ctx, "doc", 1*time.Minute, OptQuota(1))
-
-			Convey("Then err should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("Then the issue request should be correct", func() {
-				So(expectedRequest.Realm, ShouldEqual, "AWSIdentityDocument")
-				So(expectedRequest.Metadata["doc"], ShouldEqual, "doc")
-			})
-
-			Convey("Then token should be correct", func() {
-				So(token, ShouldEqual, "yeay!")
-			})
-		})
-	})
-}
-
 func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 
 	Convey("Given I have a client and a fake working server", t, func() {
@@ -490,6 +477,47 @@ func TestClient_IssueFromOIDCStep1(t *testing.T) {
 				panic(err)
 			}
 
+			w.Header().Set("Location", "http://laba")
+			w.WriteHeader(http.StatusFound)
+
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromOIDCStep1(", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			url, err := cl.IssueFromOIDCStep1(ctx, "aporeto", "okta", "http://ici")
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "OIDC")
+			})
+
+			Convey("Then url should be correct", func() {
+				So(url, ShouldEqual, "http://laba")
+			})
+		})
+	})
+}
+
+func TestClient_IssueFromOIDCStep2(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+
 			fmt.Fprintln(w, `{"data": "","realm": "oidc","token": "token"}`)
 
 		}))
@@ -521,7 +549,7 @@ func TestClient_IssueFromOIDCStep1(t *testing.T) {
 	})
 }
 
-func TestClient_IssueFromOIDCStep2(t *testing.T) {
+func TestClient_IssueFromSAMLStep1(t *testing.T) {
 
 	Convey("Given I have a client and a fake working server", t, func() {
 
@@ -540,23 +568,65 @@ func TestClient_IssueFromOIDCStep2(t *testing.T) {
 
 		cl := NewClient(ts.URL)
 
-		Convey("When I call IssueFromOIDCStep1(", func() {
+		Convey("When I call IssueFromSAMLStep1(", func() {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			url, err := cl.IssueFromOIDCStep1(ctx, "aporeto", "okta", "http://ici")
+			url, err := cl.IssueFromSAMLStep1(ctx, "aporeto", "okta", "http://ici")
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			Convey("Then the issue request should be correct", func() {
-				So(expectedRequest.Realm, ShouldEqual, "OIDC")
+				So(expectedRequest.Realm, ShouldEqual, "SAML")
 			})
 
 			Convey("Then url should be correct", func() {
 				So(url, ShouldEqual, "http://laba")
+			})
+		})
+	})
+}
+
+func TestClient_IssueFromSAMLStep2(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+
+			fmt.Fprintln(w, `{"data": "","realm": "saml","token": "token"}`)
+
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromSAMLStep2", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromSAMLStep2(ctx, "response", "state", 1*time.Minute, OptQuota(1))
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "SAML")
+				So(expectedRequest.Metadata["SAMLResponse"], ShouldEqual, "response")
+				So(expectedRequest.Metadata["relayState"], ShouldEqual, "state")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "token")
 			})
 		})
 	})
