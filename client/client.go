@@ -345,6 +345,50 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 	return a.sendRequest(subctx, issueRequest)
 }
 
+// IssueFromSAMLStep1 issues a Midgard jwt from a SAML provider. This is performing the first step to
+// validate the issue requests and OIDC provider. It will return the OIDC auth endpoint
+func (a *Client) IssueFromSAMLStep1(ctx context.Context, namespace string, provider string, redirectURL string) (string, error) {
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{
+		"namespace":        namespace,
+		"SAMLProviderName": provider,
+		"redirectURL":      redirectURL,
+	}
+	issueRequest.Realm = gaia.IssueRealmSAML
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.saml.step1")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
+// IssueFromSAMLStep2 issues a Midgard jwt from a SAML provider. This is performing the second step to
+// to exchange the code for a Midgard HWT.
+func (a *Client) IssueFromSAMLStep2(ctx context.Context, response string, state string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{
+		"SAMLResponse": response,
+		"relayState":   state,
+	}
+	issueRequest.Realm = gaia.IssueRealmSAML
+	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
+	issueRequest.Opaque = opts.opaque
+	issueRequest.Audience = opts.audience
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.saml.step2")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
 // IssueFromAzureIdentityToken issues a Midgard jwt from a signed Azure identity document for the given validity duration.
 func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, validity time.Duration, options ...Option) (string, error) {
 
