@@ -200,28 +200,6 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromAWSIdentityDocument issues a Midgard jwt from a signed AWS identity document for the given validity duration.
-func (a *Client) IssueFromAWSIdentityDocument(ctx context.Context, doc string, validity time.Duration, options ...Option) (string, error) {
-
-	opts := issueOpts{}
-	for _, opt := range options {
-		opt(&opts)
-	}
-
-	issueRequest := gaia.NewIssue()
-	issueRequest.Metadata = map[string]interface{}{"doc": doc}
-	issueRequest.Realm = gaia.IssueRealmAWSIdentityDocument
-	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
-
-	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
-	defer span.Finish()
-
-	return a.sendRequest(subctx, issueRequest)
-}
-
 // IssueFromAWSSecurityToken issues a Midgard jwt from a security token from amazon.
 // If you don't pass anything, this function will try to retrieve the token using aws magic ip.
 func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, secretAccessKey, token string, validity time.Duration, options ...Option) (string, error) {
