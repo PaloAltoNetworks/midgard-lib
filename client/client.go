@@ -107,7 +107,7 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 		return nil, err
 	}
 
-	return normalizeAuth(auth.Claims), nil
+	return NormalizeAuth(auth.Claims), nil
 }
 
 // IssueFromGoogle issues a Midgard jwt from a Google JWT for the given validity duration.
