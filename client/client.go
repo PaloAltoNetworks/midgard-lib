@@ -87,7 +87,13 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 	defer span.Finish()
 
 	builder := func() (*http.Request, error) {
-		return http.NewRequest(http.MethodGet, a.url+"/authn?token="+token, nil)
+		authn := gaia.NewAuthn()
+		authn.Token = token
+		data, err := json.Marshal(authn)
+		if err != nil {
+			return nil, err
+		}
+		return http.NewRequest(http.MethodPost, a.url+"/authn", bytes.NewBuffer(data))
 	}
 
 	resp, err := a.sendRetry(subctx, builder, token)
