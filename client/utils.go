@@ -128,7 +128,7 @@ func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string,
 		return nil, err
 	}
 
-	return normalizeAuth(token.Claims.(*types.MidgardClaims)), nil
+	return NormalizeAuth(token.Claims.(*types.MidgardClaims)), nil
 }
 
 // UnsecureClaimsFromToken gets a token and returns the Aporeto
@@ -144,11 +144,11 @@ func UnsecureClaimsFromToken(token string) ([]string, error) {
 		return nil, err
 	}
 
-	return normalizeAuth(c), nil
+	return NormalizeAuth(c), nil
 }
 
-// normalizeAuth normalizes the response to a simple structure.
-func normalizeAuth(c *types.MidgardClaims) (claims []string) {
+// NormalizeAuth normalizes the response to a simple structure.
+func NormalizeAuth(c *types.MidgardClaims) (claims []string) {
 
 	if c.Subject != "" {
 		claims = append(claims, "@auth:subject="+c.Subject)
