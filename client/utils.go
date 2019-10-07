@@ -150,6 +150,10 @@ func UnsecureClaimsFromToken(token string) ([]string, error) {
 // NormalizeAuth normalizes the response to a simple structure.
 func NormalizeAuth(c *types.MidgardClaims) (claims []string) {
 
+	if c == nil {
+		return
+	}
+
 	if c.Subject != "" {
 		claims = append(claims, "@auth:subject="+c.Subject)
 	}

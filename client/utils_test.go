@@ -121,6 +121,15 @@ func TestUtils_NormalizeAuth(t *testing.T) {
 				So(v, ShouldContain, "@auth:d2=v2")
 			})
 		})
+
+		Convey("When I normalize nil claims", func() {
+
+			v := NormalizeAuth(nil)
+
+			Convey("Then the subject should be correct", func() {
+				So(len(v), ShouldEqual, 0)
+			})
+		})
 	})
 }
 
