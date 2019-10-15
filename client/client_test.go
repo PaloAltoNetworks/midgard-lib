@@ -158,7 +158,7 @@ func TestClient_Authentify(t *testing.T) {
 
 			Convey("Then err should be not nil", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "error 401 (midgard-lib): Unauthorized: No claims returned. Token maye be invalid")
+				So(err.Error(), ShouldEqual, "error 401 (midgard-lib): Unauthorized: No claims returned. Token may be invalid")
 			})
 		})
 	})

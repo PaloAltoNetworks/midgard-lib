@@ -114,7 +114,7 @@ func (a *Client) Authentify(ctx context.Context, token string) ([]string, error)
 	}
 
 	if auth.Claims == nil {
-		return nil, elemental.NewError("Unauthorized", "No claims returned. Token maye be invalid", "midgard-lib", http.StatusUnauthorized)
+		return nil, elemental.NewError("Unauthorized", "No claims returned. Token may be invalid", "midgard-lib", http.StatusUnauthorized)
 	}
 
 	return NormalizeAuth(auth.Claims), nil
