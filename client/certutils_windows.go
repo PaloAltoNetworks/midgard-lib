@@ -8,9 +8,6 @@ import (
 	"unsafe"
 )
 
-// Imperfect implementation of SystemCertPool for windows.
-// Imperfect, because it does not necessarily include Windows root certs downloaded on demand.
-// This is ok for Aporeto purposes, but be advised.
 func GetSystemCertPool() (*x509.CertPool, error) {
 	return loadSystemRoots()
 }
