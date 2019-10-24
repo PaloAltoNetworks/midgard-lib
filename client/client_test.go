@@ -141,6 +141,32 @@ func TestClient_Authentify(t *testing.T) {
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, `{
+                "claims": null
+            }`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call Authentify", func() {
+
+			n, err := cl.Authentify(context.TODO(), "thetoken")
+
+			Convey("Then normalization should be nil", func() {
+				So(n, ShouldBeNil)
+			})
+
+			Convey("Then err should be not nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "error 401 (midgard-lib): Unauthorized: No claims returned. Token may be invalid")
+			})
+		})
+	})
+
+	Convey("Given I have a Client and some valid http header but Midgard return no claims", t, func() {
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, `{
                 "claims
             }`)
 		}))
