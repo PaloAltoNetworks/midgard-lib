@@ -3,9 +3,9 @@ module go.aporeto.io/midgard-lib
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20191106210659-e203ff490472
-	go.aporeto.io/gaia v1.94.1-0.20191106220741-a441e4075c35
-	go.aporeto.io/tg v1.34.1-0.20191109023217-abc7ad30b2e6
+	go.aporeto.io/elemental v1.100.1-0.20191113163130-1a5424313cb3
+	go.aporeto.io/gaia v1.94.1-0.20191113163204-0f461b551ea9
+	go.aporeto.io/tg v1.30.1
 )
 
 require (
@@ -14,4 +14,5 @@ require (
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
 	go.uber.org/zap v1.10.0
+	gopkg.in/yaml.v2 v2.2.5 // indirect
 )
