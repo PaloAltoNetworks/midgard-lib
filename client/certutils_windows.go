@@ -8,6 +8,7 @@ import (
 	"unsafe"
 )
 
+// GetSystemCertPool enumerates Windows certificates, because Go's SystemCertPool does not work for Windows
 func GetSystemCertPool() (*x509.CertPool, error) {
 	return loadSystemRoots()
 }
@@ -20,7 +21,7 @@ func loadSystemRoots() (*x509.CertPool, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer syscall.CertCloseStore(store, 0)
+	defer syscall.CertCloseStore(store, 0) //nolint
 
 	roots := x509.NewCertPool()
 	var cert *syscall.CertContext
