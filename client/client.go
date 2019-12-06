@@ -70,6 +70,7 @@ func NewClientWithTLS(url string, tlsConfig *tls.Config) *Client {
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 			Transport: &http.Transport{
+				Proxy:           http.ProxyFromEnvironment,
 				TLSClientConfig: tlsConfig,
 			},
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
