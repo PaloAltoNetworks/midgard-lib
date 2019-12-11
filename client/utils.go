@@ -62,7 +62,7 @@ func CredsToTLSConfig(creds *gaia.Credential) (tlsConfig *tls.Config, err error)
 		return nil, fmt.Errorf("unable to decode key: %s", err)
 	}
 
-	capool, err := tglib.GetSystemCertPool()
+	capool, err := tglib.SystemCertPool()
 	if err != nil {
 		return nil, fmt.Errorf("unable to read system cert pool: %s", err)
 	}
