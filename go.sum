@@ -185,8 +185,6 @@ go.aporeto.io/elemental v1.100.1-0.20191207025209-fcdec5ab5950/go.mod h1:L7wlJV8
 go.aporeto.io/gaia v1.94.1-0.20191211223811-f0ed8cb35ac3 h1:r6Fs8M5ferNkX2ityq5wJ6h0vF1xzRzoy86RbrKAl/U=
 go.aporeto.io/gaia v1.94.1-0.20191211223811-f0ed8cb35ac3/go.mod h1:4tu87WdStgt1pE/2V3NKWrK4Siyxz0QCcgMts/rukoU=
 go.aporeto.io/regolithe v1.50.1-0.20191120195320-d2b4b2337a9f/go.mod h1:n5Wi2kGXJ+eZe4fUTiVZ++RlgIo3DKiG71I7TV1Pfz4=
-go.aporeto.io/tg v1.34.1-0.20191109023217-abc7ad30b2e6 h1:OignF/1vJRp0+TPdnmf1NoTVgNr+vHuUHhEIjOcogVQ=
-go.aporeto.io/tg v1.34.1-0.20191109023217-abc7ad30b2e6/go.mod h1:ylsR0KTuv3cSfWPRDfv8ff1rKvuCUWdKDE3+kaVtmjc=
 go.aporeto.io/tg v1.34.1-0.20191212031200-49e4a3e985d8 h1:ngw1NIPglTWLQnjgz2IKiHftrNmZwOikuRpJVNK4/O8=
 go.aporeto.io/tg v1.34.1-0.20191212031200-49e4a3e985d8/go.mod h1:ylsR0KTuv3cSfWPRDfv8ff1rKvuCUWdKDE3+kaVtmjc=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
