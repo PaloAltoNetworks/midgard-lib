@@ -30,6 +30,7 @@ import (
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/midgard-lib/ldaputils"
 	"go.aporeto.io/midgard-lib/tokenmanager/providers"
+	"go.aporeto.io/tg/tglib"
 )
 
 // A Client allows to interract with a midgard server.
