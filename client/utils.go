@@ -109,7 +109,20 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 }
 
 // VerifyTokenSignature verifies the jwt locally using the given certificate.
+// Deprecated: VerifyTokenSignature is deprecated in favor of VerifyToken()
 func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string, error) {
+
+	fmt.Println("DEPRECATED: midgardclient.VerifyTokenSignature is deprecated in favor of midgardclient.VerifyToken")
+	c, err := VerifyToken(tokenString, cert)
+	if err != nil {
+		return nil, err
+	}
+
+	return NormalizeAuth(c), nil
+}
+
+// VerifyToken verifies the jwt locally using the given certificate.
+func VerifyToken(tokenString string, cert *x509.Certificate) (*types.MidgardClaims, error) {
 
 	c := &types.MidgardClaims{}
 
@@ -121,14 +134,13 @@ func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string,
 		}
 
 		return cert.PublicKey.(*ecdsa.PublicKey), nil
-
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return NormalizeAuth(token.Claims.(*types.MidgardClaims)), nil
+	return token.Claims.(*types.MidgardClaims), nil
 }
 
 // UnsecureClaimsFromToken gets a token and returns the Aporeto
