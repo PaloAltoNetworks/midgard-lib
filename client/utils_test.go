@@ -458,3 +458,25 @@ func TestVerifyToken(t *testing.T) {
 		})
 	})
 }
+
+func TestVerifyTokenSignature(t *testing.T) {
+
+	Convey("Given I verify a valid token", t, func() {
+
+		token := makeToken(
+			&jwt.StandardClaims{Subject: "sub"},
+			jwt.SigningMethodES256,
+			key(signerKey),
+		)
+
+		claims, err := VerifyTokenSignature(token, cert(signerCert))
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Then claims should be correct", func() {
+			So(claims, ShouldResemble, []string{"@auth:subject=sub"})
+		})
+	})
+}
