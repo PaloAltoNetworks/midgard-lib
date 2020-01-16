@@ -479,4 +479,23 @@ func TestVerifyTokenSignature(t *testing.T) {
 			So(claims, ShouldResemble, []string{"@auth:subject=sub"})
 		})
 	})
+
+	Convey("Given I verify a valid token with wrong signature", t, func() {
+
+		token := makeToken(
+			&jwt.StandardClaims{Subject: "sub"},
+			jwt.SigningMethodES256,
+			key(wrongSignerKey),
+		)
+
+		claims, err := VerifyTokenSignature(token, cert(signerCert))
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Then claims should be nil", func() {
+			So(claims, ShouldBeNil)
+		})
+	})
 }
