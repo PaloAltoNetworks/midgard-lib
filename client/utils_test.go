@@ -12,10 +12,14 @@
 package midgardclient
 
 import (
+	"crypto"
+	"crypto/x509"
+	"encoding/pem"
 	"net/http"
 	"reflect"
 	"testing"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.aporeto.io/gaia"
 )
@@ -357,4 +361,141 @@ func TestUnsecureClaimsFromToken(t *testing.T) {
 			}
 		})
 	}
+}
+
+var signerCert = []byte(`-----BEGIN CERTIFICATE-----
+MIIBPzCB56ADAgECAhEAlRc7rgkYskDa/lxWVs/dLzAKBggqhkjOPQQDAjARMQ8w
+DQYDVQQDEwZzaWduZXIwHhcNMTgwMzA3MTkzNTM3WhcNMjgwMTE0MTkzNTM3WjAR
+MQ8wDQYDVQQDEwZzaWduZXIwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARNXtH6
+Oppa77mBMd5FJV+lkCPG7BQlOWIxWDw0UoefDGR34lCu1Dv9aZRLwb9VSMw/VLMp
+Q2wJTNZuzYeGo8XmoyAwHjAOBgNVHQ8BAf8EBAMCB4AwDAYDVR0TAQH/BAIwADAK
+BggqhkjOPQQDAgNHADBEAiAZk088o0RxnDNnixJceFqlKWBErpGLNH1K1rZpcpk2
+kQIgSgmXP0fMXE3JhAAa70npHrptiUKFedU631t1ebfbs/E=
+-----END CERTIFICATE-----`)
+
+var signerKey = []byte(`-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIBL+5RFSepzRuQi/qLhUKp9JZvNqjuXZ1WJH3eNZJJ3GoAoGCCqGSM49
+AwEHoUQDQgAETV7R+jqaWu+5gTHeRSVfpZAjxuwUJTliMVg8NFKHnwxkd+JQrtQ7
+/WmUS8G/VUjMP1SzKUNsCUzWbs2HhqPF5g==
+-----END EC PRIVATE KEY-----`)
+
+var wrongSignerKey = []byte(`-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEILv+8L9D/fyQIg2t+y8+abHpKBjgr+NOd1ykmTdeYdE1oAoGCCqGSM49
+AwEHoUQDQgAEyPxsSGqLEH6yyKemBOCgED1y/0voTiAPQs0aRSi+Uto0ParJC+AN
+zXSz0haUGzMJoobuLTgnninur98NJhPftg==
+-----END EC PRIVATE KEY-----`)
+
+func cert(data []byte) *x509.Certificate {
+
+	b, _ := pem.Decode(data)
+	cert, err := x509.ParseCertificate(b.Bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	return cert
+}
+
+func key(data []byte) crypto.PrivateKey {
+
+	b, _ := pem.Decode(data)
+	k, err := x509.ParseECPrivateKey(b.Bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	return k
+}
+
+func makeToken(claims jwt.Claims, signMethod jwt.SigningMethod, key crypto.PrivateKey) string {
+
+	token := jwt.NewWithClaims(signMethod, claims)
+	t, err := token.SignedString(key)
+	if err != nil {
+		panic(err)
+	}
+
+	return t
+}
+
+func TestVerifyToken(t *testing.T) {
+
+	Convey("Given I verify a valid token", t, func() {
+
+		token := makeToken(
+			&jwt.StandardClaims{Subject: "sub"},
+			jwt.SigningMethodES256,
+			key(signerKey),
+		)
+
+		claims, err := VerifyToken(token, cert(signerCert))
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Then claims should be correct", func() {
+			So(claims.Valid(), ShouldBeNil)
+		})
+	})
+
+	Convey("Given I verify a valid token with wrong signature", t, func() {
+
+		token := makeToken(
+			&jwt.StandardClaims{Subject: "sub"},
+			jwt.SigningMethodES256,
+			key(wrongSignerKey),
+		)
+
+		claims, err := VerifyToken(token, cert(signerCert))
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Then claims should be nil", func() {
+			So(claims, ShouldBeNil)
+		})
+	})
+}
+
+func TestVerifyTokenSignature(t *testing.T) {
+
+	Convey("Given I verify a valid token", t, func() {
+
+		token := makeToken(
+			&jwt.StandardClaims{Subject: "sub"},
+			jwt.SigningMethodES256,
+			key(signerKey),
+		)
+
+		claims, err := VerifyTokenSignature(token, cert(signerCert))
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Then claims should be correct", func() {
+			So(claims, ShouldResemble, []string{"@auth:subject=sub"})
+		})
+	})
+
+	Convey("Given I verify a valid token with wrong signature", t, func() {
+
+		token := makeToken(
+			&jwt.StandardClaims{Subject: "sub"},
+			jwt.SigningMethodES256,
+			key(wrongSignerKey),
+		)
+
+		claims, err := VerifyTokenSignature(token, cert(signerCert))
+
+		Convey("Then err should be nil", func() {
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Then claims should be nil", func() {
+			So(claims, ShouldBeNil)
+		})
+	})
 }
