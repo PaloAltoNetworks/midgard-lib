@@ -205,7 +205,7 @@ func TestClient_IssueFromGoogle(t *testing.T) {
 
 		cl := NewClient(ts.URL)
 
-		Convey("When I call IssueFromVince", func() {
+		Convey("When I call IssueFromGoogle", func() {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
@@ -379,6 +379,46 @@ func TestClient_IssueFromVince(t *testing.T) {
 				So(expectedRequest.Metadata["vinceAccount"], ShouldEqual, "account")
 				So(expectedRequest.Metadata["vincePassword"], ShouldEqual, "password")
 				So(expectedRequest.Metadata["vinceOTP"], ShouldEqual, "otp")
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "yeay!")
+			})
+		})
+	})
+}
+
+func TestClient_IssueFromTwistlock(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+			fmt.Fprintln(w, `{"data": "","realm": "twistlock","token": "yeay!"}`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromTwistlock", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromTwistlock(ctx, "account", "password", 1*time.Minute, OptQuota(1))
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "Twistlock")
+				So(expectedRequest.Metadata["twistlockUser"], ShouldEqual, "account")
+				So(expectedRequest.Metadata["twistlockPassword"], ShouldEqual, "password")
 			})
 
 			Convey("Then token should be correct", func() {
