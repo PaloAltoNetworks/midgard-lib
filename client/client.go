@@ -212,7 +212,7 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromVince issues a Midgard jwt from a Vince for the given one time password and validity duration.
+// IssueFromTwistlock issues a Midgard jwt from a Twistlock for the given one time password and validity duration.
 func (a *Client) IssueFromTwistlock(ctx context.Context, username string, password string, validity time.Duration, options ...Option) (string, error) {
 
 	opts := issueOpts{}
