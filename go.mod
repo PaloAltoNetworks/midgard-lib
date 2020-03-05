@@ -8,6 +8,8 @@ require (
 	go.aporeto.io/tg v1.34.1-0.20200226171923-ea4a19fad759
 )
 
+replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200305171728-496030ddba51
+
 require (
 	cloud.google.com/go v0.53.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
