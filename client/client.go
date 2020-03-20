@@ -235,6 +235,32 @@ func (a *Client) IssueFromTwistlock(ctx context.Context, username string, passwo
 	return a.sendRequest(subctx, issueRequest)
 }
 
+// IssueFromPCCIdentityToken issues a Midgard jwt from a PCC token.
+func (a *Client) IssueFromPCCIdentityToken(ctx context.Context, namespace string, provider string, token string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{
+		"token":     token,
+		"namespace": namespace,
+		"provider":  provider,
+	}
+	issueRequest.Realm = gaia.IssueRealmPCCIdentityToken
+	issueRequest.Validity = validity.String()
+	issueRequest.Quota = opts.quota
+	issueRequest.Opaque = opts.opaque
+	issueRequest.Audience = opts.audience
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.pcc")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
 // IssueFromAWSSecurityToken issues a Midgard jwt from a security token from amazon.
 // If you don't pass anything, this function will try to retrieve the token using aws magic ip.
 func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, secretAccessKey, token string, validity time.Duration, options ...Option) (string, error) {
