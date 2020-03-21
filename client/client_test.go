@@ -409,16 +409,16 @@ func TestClient_IssueFromTwistlock(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromTwistlock(ctx, "account", "password", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromPCC(ctx, "/ns", "p1", "account", "password", 1*time.Minute, OptQuota(1))
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			Convey("Then the issue request should be correct", func() {
-				So(expectedRequest.Realm, ShouldEqual, "Twistlock")
-				So(expectedRequest.Metadata["twistlockUser"], ShouldEqual, "account")
-				So(expectedRequest.Metadata["twistlockPassword"], ShouldEqual, "password")
+				So(expectedRequest.Realm, ShouldEqual, "PCC")
+				So(expectedRequest.Metadata["user"], ShouldEqual, "account")
+				So(expectedRequest.Metadata["password"], ShouldEqual, "password")
 			})
 
 			Convey("Then token should be correct", func() {

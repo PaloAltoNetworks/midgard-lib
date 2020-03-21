@@ -213,8 +213,8 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 	return a.sendRequest(subctx, issueRequest)
 }
 
-// IssueFromTwistlock issues a Midgard jwt from a Twistlock for the given one time password and validity duration.
-func (a *Client) IssueFromTwistlock(ctx context.Context, username string, password string, validity time.Duration, options ...Option) (string, error) {
+// IssueFromPCC issues a Midgard jwt from a PCC for the given one time password and validity duration.
+func (a *Client) IssueFromPCC(ctx context.Context, namespace string, provider string, username string, password string, validity time.Duration, options ...Option) (string, error) {
 
 	opts := issueOpts{}
 	for _, opt := range options {
@@ -222,8 +222,13 @@ func (a *Client) IssueFromTwistlock(ctx context.Context, username string, passwo
 	}
 
 	issueRequest := gaia.NewIssue()
-	issueRequest.Metadata = map[string]interface{}{"twistlockUser": username, "twistlockPassword": password}
-	issueRequest.Realm = gaia.IssueRealmTwistlock
+	issueRequest.Metadata = map[string]interface{}{
+		"user":      username,
+		"password":  password,
+		"namespace": namespace,
+		"provider":  provider,
+	}
+	issueRequest.Realm = gaia.IssueRealmPCC
 	issueRequest.Validity = validity.String()
 	issueRequest.Quota = opts.quota
 	issueRequest.Opaque = opts.opaque
