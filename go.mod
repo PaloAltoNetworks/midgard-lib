@@ -16,6 +16,3 @@ require (
 	go.uber.org/zap v1.14.0
 	golang.org/x/tools v0.0.0-20200226171234-020676185e75 // indirect
 )
-
-// TEMP: for build
-replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200321005746-9bfefe039db1
