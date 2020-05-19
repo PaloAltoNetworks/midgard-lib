@@ -78,7 +78,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify(context.TODO(), "thetoken")
+			n, err := cl.Authentify(context.Background(), "thetoken")
 
 			Convey("Then I should get valid normalization", func() {
 				So(n, ShouldContain, "@auth:subject=10237207344299343489")
@@ -125,7 +125,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify(context.TODO(), "thetoken")
+			n, err := cl.Authentify(context.Background(), "thetoken")
 
 			Convey("Then normalization should be nil", func() {
 				So(n, ShouldBeNil)
@@ -150,7 +150,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify(context.TODO(), "thetoken")
+			n, err := cl.Authentify(context.Background(), "thetoken")
 
 			Convey("Then normalization should be nil", func() {
 				So(n, ShouldBeNil)
@@ -176,7 +176,7 @@ func TestClient_Authentify(t *testing.T) {
 
 		Convey("When I call Authentify", func() {
 
-			n, err := cl.Authentify(context.TODO(), "thetoken")
+			n, err := cl.Authentify(context.Background(), "thetoken")
 
 			Convey("Then normalization should be nil", func() {
 				So(n, ShouldBeNil)
@@ -368,7 +368,10 @@ func TestClient_IssueFromVince(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromVince(ctx, "account", "password", "otp", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromVince(ctx, "account", "password", "otp", 1*time.Minute,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -379,6 +382,8 @@ func TestClient_IssueFromVince(t *testing.T) {
 				So(expectedRequest.Metadata["vinceAccount"], ShouldEqual, "account")
 				So(expectedRequest.Metadata["vincePassword"], ShouldEqual, "password")
 				So(expectedRequest.Metadata["vinceOTP"], ShouldEqual, "otp")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -409,7 +414,10 @@ func TestClient_IssueFromTwistlock(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromPCC(ctx, "/ns", "p1", "account", "password", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromPCC(ctx, "/ns", "p1", "account", "password", 1*time.Minute,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -419,6 +427,8 @@ func TestClient_IssueFromTwistlock(t *testing.T) {
 				So(expectedRequest.Realm, ShouldEqual, "PCC")
 				So(expectedRequest.Metadata["user"], ShouldEqual, "account")
 				So(expectedRequest.Metadata["password"], ShouldEqual, "password")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -449,7 +459,10 @@ func TestClient_IssueFromPCCIdentityTokem(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromPCCIdentityToken(ctx, "namespace", "provider", "token", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromPCCIdentityToken(ctx, "namespace", "provider", "token", 1*time.Minute,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -460,6 +473,8 @@ func TestClient_IssueFromPCCIdentityTokem(t *testing.T) {
 				So(expectedRequest.Metadata["token"], ShouldEqual, "token")
 				So(expectedRequest.Metadata["provider"], ShouldEqual, "provider")
 				So(expectedRequest.Metadata["namespace"], ShouldEqual, "namespace")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -490,7 +505,10 @@ func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromGCPIdentityToken(ctx, "doc", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromGCPIdentityToken(ctx, "doc", 1*time.Minute,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -499,6 +517,8 @@ func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 			Convey("Then the issue request should be correct", func() {
 				So(expectedRequest.Realm, ShouldEqual, "GCPIdentityToken")
 				So(expectedRequest.Metadata["token"], ShouldEqual, "doc")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -529,7 +549,10 @@ func TestClient_IssueFromAzureIdentityToken(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromAzureIdentityToken(ctx, "doc", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromAzureIdentityToken(ctx, "doc", 1*time.Minute,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -538,6 +561,8 @@ func TestClient_IssueFromAzureIdentityToken(t *testing.T) {
 			Convey("Then the issue request should be correct", func() {
 				So(expectedRequest.Realm, ShouldEqual, "AzureIdentityToken")
 				So(expectedRequest.Metadata["token"], ShouldEqual, "doc")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -611,7 +636,10 @@ func TestClient_IssueFromOIDCStep2(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromOIDCStep2(ctx, "code", "state", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromOIDCStep2(ctx, "code", "state", 1*time.Minute,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -621,6 +649,8 @@ func TestClient_IssueFromOIDCStep2(t *testing.T) {
 				So(expectedRequest.Realm, ShouldEqual, "OIDC")
 				So(expectedRequest.Metadata["code"], ShouldEqual, "code")
 				So(expectedRequest.Metadata["state"], ShouldEqual, "state")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -694,7 +724,10 @@ func TestClient_IssueFromSAMLStep2(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			token, err := cl.IssueFromSAMLStep2(ctx, "response", "state", 1*time.Minute, OptQuota(1))
+			token, err := cl.IssueFromSAMLStep2(ctx, "response", "state", 1*time.Minute,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -704,6 +737,8 @@ func TestClient_IssueFromSAMLStep2(t *testing.T) {
 				So(expectedRequest.Realm, ShouldEqual, "SAML")
 				So(expectedRequest.Metadata["SAMLResponse"], ShouldEqual, "response")
 				So(expectedRequest.Metadata["relayState"], ShouldEqual, "state")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 
 			Convey("Then token should be correct", func() {
@@ -740,7 +775,10 @@ func TestClient_IssueFromAWSSecurityToken(t *testing.T) {
 
 		Convey("When I call IssueFromAWSSecurityToken with valid info", func() {
 
-			_, err := cl.IssueFromAWSSecurityToken(ctx, "x", "y", "z", 1*time.Second, OptQuota(1))
+			_, err := cl.IssueFromAWSSecurityToken(ctx, "x", "y", "z", 1*time.Second,
+				OptQuota(1),
+				OptLimitAuthz("/ns1", "@auth:role=toto"),
+			)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -751,6 +789,8 @@ func TestClient_IssueFromAWSSecurityToken(t *testing.T) {
 				So(expectedRequest.Metadata["accessKeyID"], ShouldEqual, "x")
 				So(expectedRequest.Metadata["secretAccessKey"], ShouldEqual, "y")
 				So(expectedRequest.Metadata["token"], ShouldEqual, "z")
+				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
 			})
 		})
 	})

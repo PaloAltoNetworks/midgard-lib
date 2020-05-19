@@ -12,9 +12,11 @@
 package midgardclient
 
 type issueOpts struct {
-	quota    int
-	opaque   map[string]string
-	audience string
+	quota                int
+	opaque               map[string]string
+	audience             string
+	authorizedNamespace  string
+	authorizedIdentities []string
 }
 
 // An Option is the type of various options
@@ -23,7 +25,7 @@ type Option func(*issueOpts)
 
 // OptQuota sets the maximum time the issued token
 // can be used.
-var OptQuota = func(quota int) Option {
+func OptQuota(quota int) Option {
 
 	if quota < 0 {
 		panic("quota must be a positive number")
@@ -36,7 +38,7 @@ var OptQuota = func(quota int) Option {
 
 // OptOpaque passes opaque data that will be
 // included in the JWT.
-var OptOpaque = func(opaque map[string]string) Option {
+func OptOpaque(opaque map[string]string) Option {
 
 	return func(opts *issueOpts) {
 		opts.opaque = opaque
@@ -44,9 +46,19 @@ var OptOpaque = func(opaque map[string]string) Option {
 }
 
 // OptAudience passes the requested audience for the token.
-var OptAudience = func(audience string) Option {
+// Using audience is deprecated. Switch to OptLimitAuthz.
+func OptAudience(audience string) Option {
 
 	return func(opts *issueOpts) {
 		opts.audience = audience
+	}
+}
+
+// OptLimitAuthz sets the authz limits for the token.
+func OptLimitAuthz(authorizedNamespace string, authorizedIdentities ...string) Option {
+
+	return func(opts *issueOpts) {
+		opts.authorizedNamespace = authorizedNamespace
+		opts.authorizedIdentities = authorizedIdentities
 	}
 }

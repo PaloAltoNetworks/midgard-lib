@@ -44,4 +44,10 @@ func TestBahamut_Options(t *testing.T) {
 		OptAudience("audience")(&c)
 		So(c.audience, ShouldResemble, "audience")
 	})
+
+	Convey("Calling OptLimitAuthz should work", t, func() {
+		OptLimitAuthz("/ns", "@auth:role=toto", "test,get,post,put")(&c)
+		So(c.authorizedIdentities, ShouldResemble, []string{"@auth:role=toto", "test,get,post,put"})
+		So(c.authorizedNamespace, ShouldEqual, "/ns")
+	})
 }
