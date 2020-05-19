@@ -370,7 +370,7 @@ func TestClient_IssueFromVince(t *testing.T) {
 
 			token, err := cl.IssueFromVince(ctx, "account", "password", "otp", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -416,7 +416,7 @@ func TestClient_IssueFromTwistlock(t *testing.T) {
 
 			token, err := cl.IssueFromPCC(ctx, "/ns", "p1", "account", "password", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -461,7 +461,7 @@ func TestClient_IssueFromPCCIdentityTokem(t *testing.T) {
 
 			token, err := cl.IssueFromPCCIdentityToken(ctx, "namespace", "provider", "token", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -507,7 +507,7 @@ func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 
 			token, err := cl.IssueFromGCPIdentityToken(ctx, "doc", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -551,7 +551,7 @@ func TestClient_IssueFromAzureIdentityToken(t *testing.T) {
 
 			token, err := cl.IssueFromAzureIdentityToken(ctx, "doc", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -638,7 +638,7 @@ func TestClient_IssueFromOIDCStep2(t *testing.T) {
 
 			token, err := cl.IssueFromOIDCStep2(ctx, "code", "state", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -726,7 +726,7 @@ func TestClient_IssueFromSAMLStep2(t *testing.T) {
 
 			token, err := cl.IssueFromSAMLStep2(ctx, "response", "state", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -777,7 +777,7 @@ func TestClient_IssueFromAWSSecurityToken(t *testing.T) {
 
 			_, err := cl.IssueFromAWSSecurityToken(ctx, "x", "y", "z", 1*time.Second,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", "@auth:role=toto"),
+				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
 			)
 
 			Convey("Then err should be nil", func() {

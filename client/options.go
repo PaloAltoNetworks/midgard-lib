@@ -55,7 +55,7 @@ func OptAudience(audience string) Option {
 }
 
 // OptLimitAuthz sets the authz limits for the token.
-func OptLimitAuthz(authorizedNamespace string, authorizedIdentities ...string) Option {
+func OptLimitAuthz(authorizedNamespace string, authorizedIdentities []string) Option {
 
 	return func(opts *issueOpts) {
 		opts.authorizedNamespace = authorizedNamespace
