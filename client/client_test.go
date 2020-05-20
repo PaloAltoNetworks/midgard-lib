@@ -370,7 +370,9 @@ func TestClient_IssueFromVince(t *testing.T) {
 
 			token, err := cl.IssueFromVince(ctx, "account", "password", "otp", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -382,8 +384,9 @@ func TestClient_IssueFromVince(t *testing.T) {
 				So(expectedRequest.Metadata["vinceAccount"], ShouldEqual, "account")
 				So(expectedRequest.Metadata["vincePassword"], ShouldEqual, "password")
 				So(expectedRequest.Metadata["vinceOTP"], ShouldEqual, "otp")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 
 			Convey("Then token should be correct", func() {
@@ -416,7 +419,9 @@ func TestClient_IssueFromTwistlock(t *testing.T) {
 
 			token, err := cl.IssueFromPCC(ctx, "/ns", "p1", "account", "password", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -427,8 +432,9 @@ func TestClient_IssueFromTwistlock(t *testing.T) {
 				So(expectedRequest.Realm, ShouldEqual, "PCC")
 				So(expectedRequest.Metadata["user"], ShouldEqual, "account")
 				So(expectedRequest.Metadata["password"], ShouldEqual, "password")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 
 			Convey("Then token should be correct", func() {
@@ -461,7 +467,9 @@ func TestClient_IssueFromPCCIdentityTokem(t *testing.T) {
 
 			token, err := cl.IssueFromPCCIdentityToken(ctx, "namespace", "provider", "token", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -473,8 +481,9 @@ func TestClient_IssueFromPCCIdentityTokem(t *testing.T) {
 				So(expectedRequest.Metadata["token"], ShouldEqual, "token")
 				So(expectedRequest.Metadata["provider"], ShouldEqual, "provider")
 				So(expectedRequest.Metadata["namespace"], ShouldEqual, "namespace")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 
 			Convey("Then token should be correct", func() {
@@ -507,7 +516,9 @@ func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 
 			token, err := cl.IssueFromGCPIdentityToken(ctx, "doc", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -517,8 +528,9 @@ func TestClient_IssueFromGCPIdentityToken(t *testing.T) {
 			Convey("Then the issue request should be correct", func() {
 				So(expectedRequest.Realm, ShouldEqual, "GCPIdentityToken")
 				So(expectedRequest.Metadata["token"], ShouldEqual, "doc")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 
 			Convey("Then token should be correct", func() {
@@ -551,7 +563,9 @@ func TestClient_IssueFromAzureIdentityToken(t *testing.T) {
 
 			token, err := cl.IssueFromAzureIdentityToken(ctx, "doc", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -561,8 +575,9 @@ func TestClient_IssueFromAzureIdentityToken(t *testing.T) {
 			Convey("Then the issue request should be correct", func() {
 				So(expectedRequest.Realm, ShouldEqual, "AzureIdentityToken")
 				So(expectedRequest.Metadata["token"], ShouldEqual, "doc")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 
 			Convey("Then token should be correct", func() {
@@ -638,7 +653,9 @@ func TestClient_IssueFromOIDCStep2(t *testing.T) {
 
 			token, err := cl.IssueFromOIDCStep2(ctx, "code", "state", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -649,8 +666,9 @@ func TestClient_IssueFromOIDCStep2(t *testing.T) {
 				So(expectedRequest.Realm, ShouldEqual, "OIDC")
 				So(expectedRequest.Metadata["code"], ShouldEqual, "code")
 				So(expectedRequest.Metadata["state"], ShouldEqual, "state")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 
 			Convey("Then token should be correct", func() {
@@ -726,7 +744,9 @@ func TestClient_IssueFromSAMLStep2(t *testing.T) {
 
 			token, err := cl.IssueFromSAMLStep2(ctx, "response", "state", 1*time.Minute,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -737,8 +757,9 @@ func TestClient_IssueFromSAMLStep2(t *testing.T) {
 				So(expectedRequest.Realm, ShouldEqual, "SAML")
 				So(expectedRequest.Metadata["SAMLResponse"], ShouldEqual, "response")
 				So(expectedRequest.Metadata["relayState"], ShouldEqual, "state")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 
 			Convey("Then token should be correct", func() {
@@ -777,7 +798,9 @@ func TestClient_IssueFromAWSSecurityToken(t *testing.T) {
 
 			_, err := cl.IssueFromAWSSecurityToken(ctx, "x", "y", "z", 1*time.Second,
 				OptQuota(1),
-				OptLimitAuthz("/ns1", []string{"@auth:role=toto"}),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
 			)
 
 			Convey("Then err should be nil", func() {
@@ -789,8 +812,9 @@ func TestClient_IssueFromAWSSecurityToken(t *testing.T) {
 				So(expectedRequest.Metadata["accessKeyID"], ShouldEqual, "x")
 				So(expectedRequest.Metadata["secretAccessKey"], ShouldEqual, "y")
 				So(expectedRequest.Metadata["token"], ShouldEqual, "z")
-				So(expectedRequest.AuthorizedIdentities, ShouldResemble, []string{"@auth:role=toto"})
-				So(expectedRequest.AuthorizedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
 			})
 		})
 	})

@@ -45,9 +45,18 @@ func TestBahamut_Options(t *testing.T) {
 		So(c.audience, ShouldResemble, "audience")
 	})
 
-	Convey("Calling OptLimitAuthz should work", t, func() {
-		OptLimitAuthz("/ns", []string{"@auth:role=toto", "test,get,post,put"})(&c)
-		So(c.authorizedIdentities, ShouldResemble, []string{"@auth:role=toto", "test,get,post,put"})
-		So(c.authorizedNamespace, ShouldEqual, "/ns")
+	Convey("Calling OptRestrictNamespace should work", t, func() {
+		OptRestrictNamespace("/ns")(&c)
+		So(c.restrictedNamespace, ShouldEqual, "/ns")
+	})
+
+	Convey("Calling OptRestrictPermissions should work", t, func() {
+		OptRestrictPermissions([]string{"@auth:role=toto", "test,get,post,put"})(&c)
+		So(c.restrictedPermissions, ShouldResemble, []string{"@auth:role=toto", "test,get,post,put"})
+	})
+
+	Convey("Calling OptRestrictNetworks should work", t, func() {
+		OptRestrictNetworks([]string{"1.0.0.0/8", "2.0.0.0/8"})(&c)
+		So(c.restrictedNetworks, ShouldResemble, []string{"1.0.0.0/8", "2.0.0.0/8"})
 	})
 }

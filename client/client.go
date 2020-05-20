@@ -559,8 +559,9 @@ func applyOptions(issueRequest *gaia.Issue, opts issueOpts) {
 	issueRequest.Quota = opts.quota
 	issueRequest.Opaque = opts.opaque
 	issueRequest.Audience = opts.audience
-	issueRequest.AuthorizedIdentities = opts.authorizedIdentities
-	issueRequest.AuthorizedNamespace = opts.authorizedNamespace
+	issueRequest.RestrictedPermissions = opts.restrictedPermissions
+	issueRequest.RestrictedNamespace = opts.restrictedNamespace
+	issueRequest.RestrictedNetworks = opts.restrictedNetworks
 }
 
 func snipToken(err error, token string) error {

@@ -12,11 +12,12 @@
 package midgardclient
 
 type issueOpts struct {
-	quota                int
-	opaque               map[string]string
-	audience             string
-	authorizedNamespace  string
-	authorizedIdentities []string
+	quota                 int
+	opaque                map[string]string
+	audience              string
+	restrictedNamespace   string
+	restrictedPermissions []string
+	restrictedNetworks    []string
 }
 
 // An Option is the type of various options
@@ -54,11 +55,26 @@ func OptAudience(audience string) Option {
 	}
 }
 
-// OptLimitAuthz sets the authz limits for the token.
-func OptLimitAuthz(authorizedNamespace string, authorizedIdentities []string) Option {
+// OptRestrictNamespace asks for a restricted token on the given namespace.
+func OptRestrictNamespace(namespace string) Option {
 
 	return func(opts *issueOpts) {
-		opts.authorizedNamespace = authorizedNamespace
-		opts.authorizedIdentities = authorizedIdentities
+		opts.restrictedNamespace = namespace
+	}
+}
+
+// OptRestrictPermissions asks for a restricted token on the given permissions.
+func OptRestrictPermissions(permissions []string) Option {
+
+	return func(opts *issueOpts) {
+		opts.restrictedPermissions = permissions
+	}
+}
+
+// OptRestrictNetworks asks for a restricted token on the given networks.
+func OptRestrictNetworks(networks []string) Option {
+
+	return func(opts *issueOpts) {
+		opts.restrictedNetworks = networks
 	}
 }

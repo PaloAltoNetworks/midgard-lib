@@ -17,4 +17,4 @@ require (
 	golang.org/x/tools v0.0.0-20200226171234-020676185e75 // indirect
 )
 
-replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200519191917-b55ff8b0bd5a
+replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200520061514-ef2c396bd7c2
