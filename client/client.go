@@ -135,9 +135,8 @@ func (a *Client) IssueFromGoogle(ctx context.Context, googleJWT string, validity
 	issueRequest.Realm = gaia.IssueRealmGoogle
 	issueRequest.Data = googleJWT
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.google")
 	defer span.Finish()
@@ -156,9 +155,8 @@ func (a *Client) IssueFromCertificate(ctx context.Context, validity time.Duratio
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmCertificate
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.certificate")
 	defer span.Finish()
@@ -177,9 +175,8 @@ func (a *Client) IssueFromLDAP(ctx context.Context, info *ldaputils.LDAPInfo, na
 	issueRequest := gaia.NewIssue()
 	issueRequest.Realm = gaia.IssueRealmLDAP
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	issueRequest.Metadata = info.ToMap()
 	issueRequest.Metadata["namespace"] = namespace
@@ -203,9 +200,8 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 	issueRequest.Metadata = map[string]interface{}{"vinceAccount": account, "vincePassword": password, "vinceOTP": otp}
 	issueRequest.Realm = gaia.IssueRealmVince
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.vince")
 	defer span.Finish()
@@ -230,9 +226,8 @@ func (a *Client) IssueFromPCC(ctx context.Context, namespace string, provider st
 	}
 	issueRequest.Realm = gaia.IssueRealmPCC
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.twistlock")
 	defer span.Finish()
@@ -256,9 +251,8 @@ func (a *Client) IssueFromPCCIdentityToken(ctx context.Context, namespace string
 	}
 	issueRequest.Realm = gaia.IssueRealmPCCIdentityToken
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.pcc")
 	defer span.Finish()
@@ -304,9 +298,8 @@ func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, sec
 
 	issueRequest.Realm = gaia.IssueRealmAWSSecurityToken
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aws")
 	defer span.Finish()
@@ -335,9 +328,8 @@ func (a *Client) IssueFromGCPIdentityToken(ctx context.Context, token string, va
 	issueRequest.Metadata = map[string]interface{}{"token": token}
 	issueRequest.Realm = gaia.IssueRealmGCPIdentityToken
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.gcp")
 	defer span.Finish()
@@ -379,9 +371,8 @@ func (a *Client) IssueFromOIDCStep2(ctx context.Context, code string, state stri
 	}
 	issueRequest.Realm = gaia.IssueRealmOIDC
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.oidc.step2")
 	defer span.Finish()
@@ -423,9 +414,8 @@ func (a *Client) IssueFromSAMLStep2(ctx context.Context, response string, state 
 	}
 	issueRequest.Realm = gaia.IssueRealmSAML
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.saml.step2")
 	defer span.Finish()
@@ -454,9 +444,8 @@ func (a *Client) IssueFromAzureIdentityToken(ctx context.Context, token string, 
 	issueRequest.Metadata = map[string]interface{}{"token": token}
 	issueRequest.Realm = gaia.IssueRealmAzureIdentityToken
 	issueRequest.Validity = validity.String()
-	issueRequest.Quota = opts.quota
-	issueRequest.Opaque = opts.opaque
-	issueRequest.Audience = opts.audience
+
+	applyOptions(issueRequest, opts)
 
 	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.azure")
 	defer span.Finish()
@@ -563,6 +552,16 @@ func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Req
 			return nil, err
 		}
 	}
+}
+
+func applyOptions(issueRequest *gaia.Issue, opts issueOpts) {
+
+	issueRequest.Quota = opts.quota
+	issueRequest.Opaque = opts.opaque
+	issueRequest.Audience = opts.audience
+	issueRequest.RestrictedPermissions = opts.restrictedPermissions
+	issueRequest.RestrictedNamespace = opts.restrictedNamespace
+	issueRequest.RestrictedNetworks = opts.restrictedNetworks
 }
 
 func snipToken(err error, token string) error {
