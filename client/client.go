@@ -209,6 +209,30 @@ func (a *Client) IssueFromVince(ctx context.Context, account string, password st
 	return a.sendRequest(subctx, issueRequest)
 }
 
+// IssueFromAporetoIdentityToken issues a Midgard jwt from an existing one.
+// This new token validity will be capped to the original expiration time and identity
+// claims will be identical. This can be used to issued a token with restrictions
+// without needing the original source of authentication.
+func (a *Client) IssueFromAporetoIdentityToken(ctx context.Context, token string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{"token": token}
+	issueRequest.Realm = gaia.IssueRealmAporetoIdentityToken
+	issueRequest.Validity = validity.String()
+
+	applyOptions(issueRequest, opts)
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.aporetoidentitytoken")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
 // IssueFromPCC issues a Midgard jwt from a PCC for the given one time password and validity duration.
 func (a *Client) IssueFromPCC(ctx context.Context, namespace string, provider string, username string, password string, validity time.Duration, options ...Option) (string, error) {
 
@@ -229,7 +253,7 @@ func (a *Client) IssueFromPCC(ctx context.Context, namespace string, provider st
 
 	applyOptions(issueRequest, opts)
 
-	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.twistlock")
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.pcc")
 	defer span.Finish()
 
 	return a.sendRequest(subctx, issueRequest)
@@ -254,7 +278,7 @@ func (a *Client) IssueFromPCCIdentityToken(ctx context.Context, namespace string
 
 	applyOptions(issueRequest, opts)
 
-	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.pcc")
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.pccidentitytoken")
 	defer span.Finish()
 
 	return a.sendRequest(subctx, issueRequest)
