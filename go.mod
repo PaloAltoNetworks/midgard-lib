@@ -3,9 +3,9 @@ module go.aporeto.io/midgard-lib
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20200507180645-f7ef7a598da7
-	go.aporeto.io/gaia v1.94.1-0.20200507180722-404db1271713
-	go.aporeto.io/tg v1.34.1-0.20200407170715-afab00a55eba
+	go.aporeto.io/elemental v1.100.1-0.20200617155434-2d1f67120246
+	go.aporeto.io/gaia v1.94.1-0.20200617172901-82733d6076e8
+	go.aporeto.io/tg v1.34.1-0.20200515195223-79e45f8c54f8
 )
 
 require (
@@ -16,5 +16,3 @@ require (
 	go.uber.org/zap v1.14.0
 	golang.org/x/tools v0.0.0-20200226171234-020676185e75 // indirect
 )
-
-replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200520061514-ef2c396bd7c2
