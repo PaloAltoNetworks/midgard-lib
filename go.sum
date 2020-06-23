@@ -234,6 +234,15 @@ go.aporeto.io/gaia v1.94.1-0.20200617164623-a2fa2783eb05/go.mod h1:Gd1KkMCs7l/D3
 go.aporeto.io/regolithe v1.50.1-0.20200407170620-d285a7684801/go.mod h1:+CaUtk6vhi0QJKdW6rabnCbqXUUBzQeQb6uMUNzmqZE=
 go.aporeto.io/tg v1.34.1-0.20200407170715-afab00a55eba h1:OE+e51Di0xYuVHnq6oZV/grNJMn/KgQ2se1NEgfnZR4=
 go.aporeto.io/tg v1.34.1-0.20200407170715-afab00a55eba/go.mod h1:tj9qQdWdzoQDz6pn1vJVCkpUAEOuUZGnP7DBdwBLfXs=
+go.aporeto.io/elemental v1.100.1-0.20200507181306-04bb5d99c40b h1:4qCgUQTl/SliFu8tTRjLsG1E9X/sQpiOqcB9bRPLZzM=
+go.aporeto.io/elemental v1.100.1-0.20200507181306-04bb5d99c40b/go.mod h1:Sy/SOOvxrPrk0KfDH0393Dw58GvstAsipd9afF80BUw=
+go.aporeto.io/gaia v1.94.1-0.20200521012706-db645176ba31 h1:BOZ3sSHGfZz7Ip1H8Z9fZd4CtykfQ8Yh8C8bbvlusBU=
+go.aporeto.io/gaia v1.94.1-0.20200521012706-db645176ba31/go.mod h1:QG7NZb0tNqivQcS/gFJzW9bgSIAXktdk/C71BJsif8Q=
+go.aporeto.io/gaia v1.94.1-0.20200522212148-cd96ee5a3498 h1:evCPGVRT/RxZT4rkOSrK7fM3Pm4cl2vkw6kokzOD9P0=
+go.aporeto.io/gaia v1.94.1-0.20200522212148-cd96ee5a3498/go.mod h1:QG7NZb0tNqivQcS/gFJzW9bgSIAXktdk/C71BJsif8Q=
+go.aporeto.io/regolithe v1.50.1-0.20200507173956-ac0245f292d1/go.mod h1:+CaUtk6vhi0QJKdW6rabnCbqXUUBzQeQb6uMUNzmqZE=
+go.aporeto.io/tg v1.34.1-0.20200407170614-39186fcd83e1 h1:gZRQLrqkLHnkgfzNNEPN6CcQwauI1YVj+NFqTp7Cl4k=
+go.aporeto.io/tg v1.34.1-0.20200407170614-39186fcd83e1/go.mod h1:tj9qQdWdzoQDz6pn1vJVCkpUAEOuUZGnP7DBdwBLfXs=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
