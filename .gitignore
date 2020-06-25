@@ -5,3 +5,4 @@ vendor
 *.lock
 *.cov
 artifacts
+dist
