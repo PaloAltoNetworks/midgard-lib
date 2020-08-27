@@ -474,6 +474,27 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (str
 	return issueRequest.Token, nil
 }
 
+// IssueFromPCCIdentityToken issues a Midgard jwt from a PCC token.
+func (a *Client) IssueFromPCIdentityToken(ctx context.Context, token string, validity time.Duration, options ...Option) (string, error) {
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{"token": token}
+	issueRequest.Realm = gaia.IssueRealmPCIdentityToken
+	issueRequest.Validity = validity.String()
+
+	applyOptions(issueRequest, opts)
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.pcidentitytoken")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
 func (a *Client) sendRetry(ctx context.Context, requestBuilder func() (*http.Request, error), token string) (*http.Response, error) {
 
 	for {

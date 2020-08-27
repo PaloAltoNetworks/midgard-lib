@@ -15,3 +15,5 @@ require (
 	github.com/smartystreets/goconvey v1.6.4
 	go.uber.org/zap v1.15.0
 )
+
+replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200827173832-97fd4ee2be85
