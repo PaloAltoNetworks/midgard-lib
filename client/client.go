@@ -474,7 +474,7 @@ func (a *Client) sendRequest(ctx context.Context, issueRequest *gaia.Issue) (str
 	return issueRequest.Token, nil
 }
 
-// IssueFromPCCIdentityToken issues a Midgard jwt from a PCC token.
+// IssueFromPCIdentityToken issues a Midgard jwt from a PCC token.
 func (a *Client) IssueFromPCIdentityToken(ctx context.Context, token string, validity time.Duration, options ...Option) (string, error) {
 
 	opts := issueOpts{}
