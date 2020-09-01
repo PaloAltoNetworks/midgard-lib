@@ -926,3 +926,50 @@ func TestTokenUtils_Snip(t *testing.T) {
 		})
 	})
 }
+
+func TestClient_IssueFromPCIdentityToken(t *testing.T) {
+
+	Convey("Given I have a client and a fake working server", t, func() {
+
+		expectedRequest := gaia.NewIssue()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(expectedRequest); err != nil {
+				panic(err)
+			}
+			fmt.Fprintln(w, `{"data": "","realm": "PCIdentityToken","token": "yeay!"}`)
+		}))
+		defer ts.Close()
+
+		cl := NewClient(ts.URL)
+
+		Convey("When I call IssueFromPCCToken", func() {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			token, err := cl.IssueFromPCIdentityToken(ctx, "token", 1*time.Minute,
+				OptQuota(1),
+				OptRestrictNamespace("/ns1"),
+				OptRestrictPermissions([]string{"@auth:role=toto"}),
+				OptRestrictNetworks([]string{"127.0.0.0/8"}),
+			)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the issue request should be correct", func() {
+				So(expectedRequest.Realm, ShouldEqual, "PCIdentityToken")
+				So(expectedRequest.Metadata["token"], ShouldEqual, "token")
+				So(expectedRequest.RestrictedPermissions, ShouldResemble, []string{"@auth:role=toto"})
+				So(expectedRequest.RestrictedNamespace, ShouldEqual, "/ns1")
+				So(expectedRequest.RestrictedNetworks, ShouldResemble, []string{"127.0.0.0/8"})
+			})
+
+			Convey("Then token should be correct", func() {
+				So(token, ShouldEqual, "yeay!")
+			})
+		})
+	})
+}
