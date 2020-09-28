@@ -275,6 +275,8 @@ github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.aporeto.io/elemental v1.100.1-0.20200731065958-3c0219b4b984 h1:hlvhDsLk8nVleqhi9cDuZmawJ/7OthGPMTZR5IOgJOs=
 go.aporeto.io/elemental v1.100.1-0.20200731065958-3c0219b4b984/go.mod h1:+Qd57BqNaf8fQZaJuVvjyyJmUq+CMrjCZf9Ons+k/kk=
+go.aporeto.io/elemental v1.100.1-0.20200918171102-0bf423f6b322 h1:RpT75GzpkoxSveGaNwuECVygOVFyBi2b8pWyD625CPk=
+go.aporeto.io/elemental v1.100.1-0.20200918171102-0bf423f6b322/go.mod h1:+Qd57BqNaf8fQZaJuVvjyyJmUq+CMrjCZf9Ons+k/kk=
 go.aporeto.io/gaia v1.94.1-0.20200827173832-97fd4ee2be85 h1:TMRy/f7VWYmJLfiohEmjhm98wczizJqzXAWnFJIABpE=
 go.aporeto.io/gaia v1.94.1-0.20200827173832-97fd4ee2be85/go.mod h1:24dmpD4HgF7E10kFfUfp10SVvXsK+FK8ZIwAB7aPcIU=
 go.aporeto.io/regolithe v1.50.1-0.20200731064742-c27fce5d67e4/go.mod h1:jCSinsI1iie5EHYrikCIVpynrWrYklwovogVbdHc1Sk=
