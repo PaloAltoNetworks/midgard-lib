@@ -108,7 +108,6 @@ func TestUtils_NormalizeAuth(t *testing.T) {
 		auth.Claims.Subject = "subject"
 		auth.Claims.Data["d1"] = "v1"
 		auth.Claims.Data["d2"] = "v2"
-		auth.Claims.Data["subject"] = "subject"
 
 		Convey("When I normalize it", func() {
 

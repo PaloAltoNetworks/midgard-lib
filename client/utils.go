@@ -166,21 +166,14 @@ func NormalizeAuth(c *types.MidgardClaims) (claims []string) {
 		return
 	}
 
-	cache := map[string]struct{}{}
-
 	if c.Subject != "" {
-		cache["@auth:subject="+c.Subject] = struct{}{}
+		claims = append(claims, "@auth:subject="+c.Subject)
 	}
 
 	for key, value := range c.Data {
-		if key != "subject" && value != "" {
-			cache["@auth:"+strings.ToLower(key)+"="+value] = struct{}{}
+		if value != "" {
+			claims = append(claims, "@auth:"+strings.ToLower(key)+"="+value)
 		}
-	}
-
-	// remove duplicates
-	for key, _ := range cache {
-		claims = append(claims, key)
 	}
 
 	sort.Strings(claims)
