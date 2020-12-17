@@ -3,8 +3,8 @@ module go.aporeto.io/midgard-lib
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20201110214307-3e4e638fb38b
-	go.aporeto.io/gaia v1.94.1-0.20201215224751-7d72a94126e5
+	go.aporeto.io/elemental v1.100.1-0.20201217210703-bdcc09510d93
+	go.aporeto.io/gaia v1.94.1-0.20201217212014-9be8b6e4ab7c
 	go.aporeto.io/tg v1.34.1-0.20201026071503-46fe5dfd3023
 )
 
@@ -15,5 +15,3 @@ require (
 	github.com/smartystreets/goconvey v1.6.4
 	go.uber.org/zap v1.15.0
 )
-
-replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200827173832-97fd4ee2be85
