@@ -6,3 +6,5 @@ vendor
 *.cov
 artifacts
 dist
+.DS_Store
+/scripts/codecov
