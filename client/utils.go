@@ -109,6 +109,7 @@ func ExtractJWTFromHeader(header http.Header) (string, error) {
 }
 
 // VerifyTokenSignature verifies the jwt locally using the given certificate.
+//
 // Deprecated: VerifyTokenSignature is deprecated in favor of VerifyToken()
 func VerifyTokenSignature(tokenString string, cert *x509.Certificate) ([]string, error) {
 

@@ -30,6 +30,8 @@ type TokenManager struct {
 }
 
 // NewMidgardTokenManager returns a new TokenManager backed by midgard.
+//
+// Deprecated: NewMidgardTokenManager() is deprecated in favor or go.aporeto.io/midgardlib/tokenmanager.NewX509TokenManager().
 func NewMidgardTokenManager(url string, validity time.Duration, tlsConfig *tls.Config) *TokenManager {
 
 	fmt.Fprintln(os.Stderr, "DEPRECATED: NewMidgardTokenManager() is deprecated in favor or go.aporeto.io/midgardlib/tokenmanager.NewX509TokenManager()")
