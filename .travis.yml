@@ -9,7 +9,11 @@ env:
     - GO111MODULE=on
 
 before_install:
+<<<<<<< HEAD
   - go get -u github.com/golangci/golangci-lint/cmd/golangci-lint@v1.24.0
+=======
+  - go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+>>>>>>> f3a29597170a1952785266a6a6529c4403317941
   - go get github.com/securego/gosec/cmd/gosec
 
 script:
