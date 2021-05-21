@@ -258,15 +258,6 @@ github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:
 github.com/yl2chen/cidranger v1.0.2 h1:lbOWZVCG1tCRX4u24kuM1Tb4nHqWkDxwLdoS+SevawU=
 github.com/yl2chen/cidranger v1.0.2/go.mod h1:9U1yz7WPYDwf0vpNWFaeRh0bjwz5RVgRy/9UEQfHl0g=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
-<<<<<<< HEAD
-go.aporeto.io/elemental v1.100.1-0.20210116012353-bf59238510ef h1:V54K0bgMJkynT9bg/6P/NlgT3yRyr44A+xPxnpQLT9E=
-go.aporeto.io/elemental v1.100.1-0.20210116012353-bf59238510ef/go.mod h1:dEPeesaLUHZVeZQr6Z+jYzy1IbweLWZ1tsywhSxTPeQ=
-go.aporeto.io/gaia v1.94.1-0.20210302190556-fde79fcea32a h1:XiUNRh5nSmrAlUzC5MMW6LuGbM6xF14lbB4wns9JVLA=
-go.aporeto.io/gaia v1.94.1-0.20210302190556-fde79fcea32a/go.mod h1:OjofSBOX5i+nUZftbaNlIdBMuZo7zPJfvCTvJ5thsPA=
-go.aporeto.io/regolithe v1.50.1-0.20201104174627-9a638d8ba486/go.mod h1:YnJqIj7KOAiAiSI7vPs3ELLjrbBdrOsouRRPLMyUlGA=
-go.aporeto.io/tg v1.34.1-0.20210128000739-9dff3a820553 h1:a1uiNrK/9eMFg5gJSQ/YtqHb0IfN8lpTFkNQ3ohfaSs=
-go.aporeto.io/tg v1.34.1-0.20210128000739-9dff3a820553/go.mod h1:lOiXtTqFG+QtMe52FzXEJqTcZWOrLqrYiy5vWg2HaJc=
-=======
 go.aporeto.io/elemental v1.100.1-0.20210428215439-6059ff91f9f7 h1:JOC4BEStOIkz76PiNUuGeYt6iHXqGc29NxJbYDw06YM=
 go.aporeto.io/elemental v1.100.1-0.20210428215439-6059ff91f9f7/go.mod h1:PIPBBu7d/Feb43jWR2o+tBHUZsYgJSbvB/7IWAUnXfI=
 go.aporeto.io/gaia v1.94.1-0.20210510155446-2e19d3882305 h1:+npd98IK1pxD+Q6p/9mCmD+aSz2CAWtCQnhENSpoQLE=
@@ -274,7 +265,6 @@ go.aporeto.io/gaia v1.94.1-0.20210510155446-2e19d3882305/go.mod h1:pQPCedYDOXY4a
 go.aporeto.io/regolithe v1.50.1-0.20210426235633-b469f0c145a4/go.mod h1:YnJqIj7KOAiAiSI7vPs3ELLjrbBdrOsouRRPLMyUlGA=
 go.aporeto.io/tg v1.34.1-0.20210427202027-51db463efa40 h1:thxe6Pw+wgKjHt4ho2EUQNfxmZVpsDfIS3vQqqVa72U=
 go.aporeto.io/tg v1.34.1-0.20210427202027-51db463efa40/go.mod h1:lOiXtTqFG+QtMe52FzXEJqTcZWOrLqrYiy5vWg2HaJc=
->>>>>>> f3a29597170a1952785266a6a6529c4403317941
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
