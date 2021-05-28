@@ -9,7 +9,7 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.53.0
+	cloud.google.com/go v0.82.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/smartystreets/goconvey v1.6.4
