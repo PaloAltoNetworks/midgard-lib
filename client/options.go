@@ -47,7 +47,7 @@ func OptOpaque(opaque map[string]string) Option {
 }
 
 // OptAudience passes the requested audience for the token.
-// Using audience is deprecated. Switch to OptLimitAuthz.
+// Using OptAudience is deprecated. Switch to OptLimitAuthz. (TODO: Find real mapping as OptLimitAuthz does not exist)
 func OptAudience(audience string) Option {
 
 	return func(opts *issueOpts) {
