@@ -3,9 +3,9 @@ module go.aporeto.io/midgard-lib
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20210713220758-ba8c4c6d8637
-	go.aporeto.io/gaia v1.94.1-0.20210714205711-d809525f2036
-	go.aporeto.io/tg v1.34.1-0.20210521191510-d369249d5f0c
+	go.aporeto.io/elemental v1.100.1-0.20210706184354-966eab3720af
+	go.aporeto.io/gaia v1.94.1-0.20210712165721-c3775d771236
+	go.aporeto.io/tg v1.34.1-0.20210528201128-159c302ba155
 )
 
 require (
