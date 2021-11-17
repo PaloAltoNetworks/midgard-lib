@@ -343,10 +343,10 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-go.aporeto.io/elemental v1.100.1-0.20211007231947-44c1aabe7914 h1:jOn0b9pZIcC+nBSmreptH1FMtdvuXUrHmvK6nr3C93E=
-go.aporeto.io/elemental v1.100.1-0.20211007231947-44c1aabe7914/go.mod h1:1WRCDolBBhyTFah5tpf9DNVHaJefug7lV9V9UzPNDAE=
-go.aporeto.io/gaia v1.94.1-0.20211108202809-f16188348138 h1:QhonnvCQfOKYaOrNCg1Teqnyjz/gCKTUH7akoK4atDU=
-go.aporeto.io/gaia v1.94.1-0.20211108202809-f16188348138/go.mod h1:j3hQIaDww3iCFfAA2Mc+PKhiR3L6osrEWK8SruyTzak=
+go.aporeto.io/elemental v1.100.1-0.20211117023454-0c8e5dca0782 h1:64leh7vqrQU45PXqYTbXne1Fdp5b9O2ie2IZsc0vmtU=
+go.aporeto.io/elemental v1.100.1-0.20211117023454-0c8e5dca0782/go.mod h1:1WRCDolBBhyTFah5tpf9DNVHaJefug7lV9V9UzPNDAE=
+go.aporeto.io/gaia v1.94.1-0.20211117023723-d8cc4ea34be0 h1:S7/rd27QGUkCtxDx8KFkEFFvsohcOJr4VcrIBszyYpE=
+go.aporeto.io/gaia v1.94.1-0.20211117023723-d8cc4ea34be0/go.mod h1:VLYPke8dxgZuBmKZCG3t5iynAp46uYx8tY6+UWGoH5c=
 go.aporeto.io/regolithe v1.50.1-0.20210528201106-653300479f97/go.mod h1:St1liiK+bGvmDNkVSfOP7iAlQmDkShfEcDZMXmFbyKk=
 go.aporeto.io/tg v1.34.1-0.20210528201128-159c302ba155 h1:/kTGNNFJzNRFpAJ+9ykVXW/lCnBKcMUGSMPWvXXjMJg=
 go.aporeto.io/tg v1.34.1-0.20210528201128-159c302ba155/go.mod h1:Hgsce79sVOYB4LMv/RA/vzJyftp7FhZbJT6SB8OJlso=
