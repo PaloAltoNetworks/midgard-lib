@@ -12,9 +12,14 @@
 package providers
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
+
+	"github.com/capitalone/cloud-custodian/tools/omnissm/pkg/aws/ec2metadata"
 )
 
 var (
@@ -53,4 +58,20 @@ func AWSServiceRoleToken() (roleData string, err error) {
 	}
 
 	return string(token), nil
+}
+
+// AWSIdentityToken gets the instance document and its signature
+func AWSIdentityDocumentSignature(ctx context.Context, validity time.Duration) (string, string, error) {
+
+	document := ec2metadata.GetLocalInstanceDocument()
+	if document == nil {
+		return "", "", errors.New("Failed to get aws instance identity document")
+	}
+
+	signature := ec2metadata.GetLocalInstanceSignature()
+	if signature == nil {
+		return "", "", errors.New("Failed to get aws instance identity signature")
+	}
+
+	return string(document), string(signature), nil
 }
