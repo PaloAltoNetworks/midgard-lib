@@ -3,6 +3,6 @@ midgardctl/midgardctl
 testresults.xml
 vendor
 *.lock
-*.cov
+unit_coverage.out
 artifacts
 dist
