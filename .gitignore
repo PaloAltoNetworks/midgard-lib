@@ -4,5 +4,6 @@ testresults.xml
 vendor
 *.lock
 unit_coverage.out
+cov.report
 artifacts
 dist
