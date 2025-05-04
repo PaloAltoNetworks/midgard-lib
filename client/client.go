@@ -233,6 +233,36 @@ func (a *Client) IssueFromAporetoIdentityToken(ctx context.Context, token string
 	return a.sendRequest(subctx, issueRequest)
 }
 
+// IssueFromAWSIdentityToken issues a Midgard jwt from a security token from amazon.
+// If you don't pass anything, this function will try to retrieve the token using aws magic ip.
+func (a *Client) IssueFromAWSIdentityToken(ctx context.Context, validity time.Duration, options ...Option) (string, error) {
+
+	var err error
+
+	document, signature, err := providers.AWSIdentityDocumentSignature(ctx, validity)
+
+	if err != nil {
+		return "", err
+	}
+
+	opts := issueOpts{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
+	issueRequest := gaia.NewIssue()
+	issueRequest.Metadata = map[string]interface{}{"document": document, "signature": signature}
+	issueRequest.Realm = gaia.IssueRealmAWSIdentityToken
+	issueRequest.Validity = validity.String()
+
+	applyOptions(issueRequest, opts)
+
+	span, subctx := opentracing.StartSpanFromContext(ctx, "midgardlib.client.issue.awsidentity")
+	defer span.Finish()
+
+	return a.sendRequest(subctx, issueRequest)
+}
+
 // IssueFromAWSSecurityToken issues a Midgard jwt from a security token from amazon.
 // If you don't pass anything, this function will try to retrieve the token using aws magic ip.
 func (a *Client) IssueFromAWSSecurityToken(ctx context.Context, accessKeyID, secretAccessKey, token string, validity time.Duration, options ...Option) (string, error) {
